@@ -1,0 +1,13 @@
+{% extends 'demo1/base.html' %}
+
+{% block content %}
+    <h2>Listado de pasajeros</h2>  
+    <div>
+        <ul>
+        {% for pasajero in pasajeros %}
+            <li><a href="">{{ pasajero }}</a></li>
+        {% endfor %}
+        </ul>
+    </div>
+    <div><a href="{% url 'principal' %}">Atras</a></div>
+{% endblock %}

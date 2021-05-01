@@ -1,62 +1,21 @@
 {% extends 'demo1/base.html' %}
    {% block content %}
         {% for admini in administrador %} {{ admini }}{% endfor %}
-            <div class="usuario">
-            <h2><a href="">Usuarios</a></h2>
-               {% for usuario in usuarios %}
-                 <div>
-                  <!--<h4><a href="">{{usuario}}</a></h2>
-                  <p>nombre de usuario: {{ usuario.username }}<p>
-                  <p>nombre: {{ usuario.first_name }}<p>
-                  <p>Apellido: {{ usuario.last_name }}<p>
-                  <p>contraseña: {{ usuario.password }}<p>
-                  -->
-                  <p><a href="{% url 'detalle_usuario' pk=usuario.pk %}">{{ usuario.username }}</a><p>
-                  <p>{{ usuario.text|linebreaksbr }}</p>
-                 </div>
-               {% endfor %}
-              </div>
-                <div>
-                  <h2><a href="">Personas</a></h2>
-                    {% for persona in personas %}
-                    <a href="">{{ persona }}</a>
-                    <p>{{ persona.text|linebreaksbr }}</p>
-                    {% endfor %}
-                 </div>
-                <div>
-                  <h2><a href="">Choferes</a></h2>
-                   {% for chofer in choferes %}
-                   <a href="">{{ chofer }}</a>
-                    <p>{{ chofer.text|linebreaksbr }}</p>
-                    {% endfor %}
-                </div>
-                 <div>
-               <h2><a href="">Pasajeros</a></h2>
-                  {% for pasajero in pasajeros %} {{ pasajero }}{% endfor %}
-                </div>
-                 <div>
-                <h2><a href="">Combis</a></h2>
-                  {% for combi in combis %} {{ combi }}{% endfor %}
-                </div>
-                 <div>
-                  <h2><a href="">Viajes</a></h2>
-                             {% for viaje in viajes %} {{ viaje }}{% endfor %}
-                        </div>
-                           <div>
-                          <h2><a href="">Insumos</a></h2>
-                              {% for insumo in insumos %} {{ insumo }}{% endfor %}    
-                          </div>
-                           <div>
-                              <h2><a href="">Rutas</a></h2>
-                              {% for ruta in rutas %} {{ ruta }}{% endfor %}
-            
-                           </div>
-                           <div>
-                           <h2><a href="">Lugares</a></h2>
-                              {% for lugar in Lugares %} {{ lugar }}{% endfor %}
-                        </div>
-                         <div>
-                         <h2><a href="">Tarjetas</a></h2>
-                             {% for tarjeta in tarjetas %} {{ tarjeta }}{% endfor %}
-                         </div>
+          <ul>
+            <div>
+              <h2><a href="{% url 'listado_usuario'%}">Usuarios</a></h2>
+            </div>
+              <h2><a href="{% url 'listado_persona' %}">Personas</a></h2>
+              <h2><a href="{% url 'listado_chofer' %}">Choferes</a></h2>
+              <h2><a href="{% url 'listado_pasajero' %}">Pasajeros</a></h2>
+              <h2><a href="{% url 'listado_combi' %}">Combis</a></h2>
+              <h2><a href="{% url 'listado_viaje'%}">Viajes</a></h2>
+              <h2><a href="{% url 'listado_insumo'%}">Insumos</a></h2>
+              <h2><a href="{% url 'listado_ruta'%}">Rutas</a></h2>
+            <div>
+              <h2><a href="{% url 'listado_lugar'%}">Lugares</a></h2>
+              <p><a href="{% url 'lugar_new' %}">Agregar Lugar</a></p>
+            </div>
+              <h2><a href="{% url 'listado_tarjeta' %}">Tarjetas</a></h2>
+          </ul>
      {% endblock %}

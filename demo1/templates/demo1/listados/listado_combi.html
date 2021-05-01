@@ -1,0 +1,13 @@
+{% extends 'demo1/base.html' %}
+
+{% block content %}
+    <h2>Listado de combis</h2>  
+    <div>
+        <ul>
+        {% for combi in combis %}
+            <li><a href="">{{ combi }}</a></li>
+        {% endfor %}
+        </ul>
+    </div>
+    <div><a href="{% url 'principal' %}">Atras</a></div>
+{% endblock %}

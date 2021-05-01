@@ -1,0 +1,13 @@
+{% extends 'demo1/base.html' %}
+
+{% block content %}
+    <h2>Listado de rutas</h2>  
+    <div>
+        <ul>
+        {% for ruta in rutas %}
+            <li><a href="">{{ ruta }}</a></li>
+        {% endfor %}
+        </ul>
+    </div>
+    <div><a href="{% url 'principal' %}">Atras</a></div>
+{% endblock %}

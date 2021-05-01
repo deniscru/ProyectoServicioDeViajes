@@ -1,0 +1,15 @@
+{% extends 'demo1/base_form.html' %}
+
+{% block formu %}
+    <div>
+        <h2>Nuevo lugar</h2>
+        <form method="POST" class="post-form">
+            {% csrf_token %}
+            {{ form.as_p}}
+            <button type="submit" class="guardar lugar">Guardar</button>
+        </form>
+    </div>
+    <div>
+        <h2><a href="{% url 'principal' %}"> salir</a></h2>
+    </div>
+{% endblock %}

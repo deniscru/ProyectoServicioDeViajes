@@ -45,6 +45,10 @@ class Lugar(models.Model):
     def __str__(self):
         return '%s %s' % (self.nombre_de_lugar, self.provincia)
 
+    def nombreYprovincia(self, unNombre, unaProvincia):
+        self.nombre_de_lugar= unNombre
+        self.provincia=unaProvincia
+
 class Combi(models.Model):
     TIPOS_COMBI = (
         ('C', 'Cama'),

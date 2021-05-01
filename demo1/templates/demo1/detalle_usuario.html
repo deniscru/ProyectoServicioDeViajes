@@ -2,11 +2,11 @@
 
 {% block content %}
     <div class="usuario">
-        {% for u in usuario %}<!-- Se que esta mal, hayq que averiguar como formatear la salida son el for  -->
-        <h4><a href="">{{u}}</a></h2>
+        <h4><a href="">{{u}}</a></h4>
+        {% for u in usuario%}
             <p>nombre de usuario: {{ u.username }}<p>
             <p>nombre: {{ u.first_name }}<p>
             <p>Apellido: {{ u.last_name }}<p>
-         {% endfor %}
+        {%endfor%}   
     </div>
 {% endblock %}

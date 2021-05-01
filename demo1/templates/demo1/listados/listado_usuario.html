@@ -1,0 +1,19 @@
+{% extends 'demo1/base.html' %}
+
+{% block content %}
+    <h2>Listado de usuarios</h2>  
+    <!--<h4><a href="">{{usuario}}</a></h2>
+    <p>nombre de usuario: {{ usuario.username }}<p>
+    <p>nombre: {{ usuario.first_name }}<p>
+    <p>Apellido: {{ usuario.last_name }}<p>
+    <p>contraseña: {{ usuario.password }}<p>
+    -->  
+    <div>
+        <ul>
+        {% for user in usuarios %}
+            <li><a href="{% url 'detalle_usuario' pk=user.pk%}">{{ user.username }}</a></li>
+        {% endfor %}
+        </ul>
+    </div>
+    <div><a href="{% url 'principal' %}">Atras</a></div>
+{% endblock %}
