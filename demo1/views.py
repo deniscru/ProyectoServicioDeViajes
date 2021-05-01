@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
+
 from .models import Chofer
 from .models import Pasajero
 from .models import Tarjeta
@@ -24,3 +25,7 @@ def principal(request):
     viajes = Viaje.objects.all()
 
     return render(request, 'demo1/principal.html', {'personas': Personas,'administrador': administrador, 'choferes': choferes, 'usuarios': usuarios, 'pasajeros': pasajeros, 'tarjetas': tarjetas, 'viajes': viajes, 'rutas': rutas, 'Lugares': Lugares, 'combis': combis, 'insumos': insumos})
+
+def detalle_usuario(request, pk):
+    usuario = User.objects.filter(pk=pk)
+    return render(request, 'demo1/detalle_usuario.html', {'usuario': usuario})

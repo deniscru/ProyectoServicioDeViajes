@@ -1,0 +1,12 @@
+{% extends 'demo1/base.html' %}
+
+{% block content %}
+    <div class="usuario">
+        {% for u in usuario %}<!-- Se que esta mal, hayq que averiguar como formatear la salida son el for  -->
+        <h4><a href="">{{u}}</a></h2>
+            <p>nombre de usuario: {{ u.username }}<p>
+            <p>nombre: {{ u.first_name }}<p>
+            <p>Apellido: {{ u.last_name }}<p>
+         {% endfor %}
+    </div>
+{% endblock %}

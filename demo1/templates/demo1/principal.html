@@ -1,53 +1,62 @@
-<html>
-    <head>
-        <title>Home</title>
-    </head>
-    <body>
-        <div>
-            <h1><a href="/">Home de Combi19</a></h1>
-        </div>
-        <div>
-            {{administrador}}
-        </div>
-        <div>
+{% extends 'demo1/base.html' %}
+   {% block content %}
+        {% for admini in administrador %} {{ admini }}{% endfor %}
+            <div class="usuario">
             <h2><a href="">Usuarios</a></h2>
-            {{usuarios}}
-        </div>
-        <div>
-            <h2><a href="">Personas</a></h2>
-            {{personas}}
-        </div>
-        <div>
-            <h2><a href="">Choferes</a></h2>
-            {{choferes}}
-        </div>
-        <div>
-            <h2><a href="">Pasajeros</a></h2>
-            {{pasajeros}}
-        </div>
-        <div>
-            <h2><a href="">Combis</a></h2>
-            {{combis}}
-        </div>
-        <div>
-            <h2><a href="">Viajes</a></h2>
-            {{viajes}}
-        </div>
-        <div>
-            <h2><a href="">Insumos</a></h2>
-            {{insumos}}
-        </div>
-        <div>
-            <h2><a href="">Rutas</a></h2>
-            {{rutas}}
-        </div>
-        <div>
-            <h2><a href="">Lugares</a></h2>
-            {{Lugares}}
-        </div>
-        <div>
-            <h2><a href="">Tarjetas</a></h2>
-            {{tarjetas}}
-        </div>
-    </body>
-</html>
+               {% for usuario in usuarios %}
+                 <div>
+                  <!--<h4><a href="">{{usuario}}</a></h2>
+                  <p>nombre de usuario: {{ usuario.username }}<p>
+                  <p>nombre: {{ usuario.first_name }}<p>
+                  <p>Apellido: {{ usuario.last_name }}<p>
+                  <p>contraseña: {{ usuario.password }}<p>
+                  -->
+                  <p><a href="{% url 'detalle_usuario' pk=usuario.pk %}">{{ usuario.username }}</a><p>
+                  <p>{{ usuario.text|linebreaksbr }}</p>
+                 </div>
+               {% endfor %}
+              </div>
+                <div>
+                  <h2><a href="">Personas</a></h2>
+                    {% for persona in personas %}
+                    <a href="">{{ persona }}</a>
+                    <p>{{ persona.text|linebreaksbr }}</p>
+                    {% endfor %}
+                 </div>
+                <div>
+                  <h2><a href="">Choferes</a></h2>
+                   {% for chofer in choferes %}
+                   <a href="">{{ chofer }}</a>
+                    <p>{{ chofer.text|linebreaksbr }}</p>
+                    {% endfor %}
+                </div>
+                 <div>
+               <h2><a href="">Pasajeros</a></h2>
+                  {% for pasajero in pasajeros %} {{ pasajero }}{% endfor %}
+                </div>
+                 <div>
+                <h2><a href="">Combis</a></h2>
+                  {% for combi in combis %} {{ combi }}{% endfor %}
+                </div>
+                 <div>
+                  <h2><a href="">Viajes</a></h2>
+                             {% for viaje in viajes %} {{ viaje }}{% endfor %}
+                        </div>
+                           <div>
+                          <h2><a href="">Insumos</a></h2>
+                              {% for insumo in insumos %} {{ insumo }}{% endfor %}    
+                          </div>
+                           <div>
+                              <h2><a href="">Rutas</a></h2>
+                              {% for ruta in rutas %} {{ ruta }}{% endfor %}
+            
+                           </div>
+                           <div>
+                           <h2><a href="">Lugares</a></h2>
+                              {% for lugar in Lugares %} {{ lugar }}{% endfor %}
+                        </div>
+                         <div>
+                         <h2><a href="">Tarjetas</a></h2>
+                             {% for tarjeta in tarjetas %} {{ tarjeta }}{% endfor %}
+                         </div>
+     {% endblock %}
