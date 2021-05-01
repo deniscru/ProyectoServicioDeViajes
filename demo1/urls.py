@@ -14,5 +14,7 @@ urlpatterns = [
     path('usuario/listaRuta',views.listado_ruta ,name='listado_ruta'),
     path('usuario/listaLugar', views.listado_lugar ,name='listado_lugar'),
     path('usuario/listaTarjeta', views.listado_tarjeta ,name='listado_tarjeta'),
-    path('usuario/lugarNew', views.lugar_new, name='lugar_new')
+    path('usuario/lugarNew', views.lugar_new, name='lugar_new'),
+    path('registrar/',views.pasajero_new , name='registrar'),
+]
 ]

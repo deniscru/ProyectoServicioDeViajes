@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from .forms import FormLugar
+from .forms import FormPasajero
+from datetime import date
 
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
 
@@ -63,4 +65,21 @@ def lugar_new(request):
                 lugar.save()
     else:
         form = FormLugar()
-    return render(request, 'demo1/formulario.html', {'form': form})    
+    return render(request, 'demo1/formulario.html', {'form': form})
+
+def pasajero_new(request):
+    if request.method=="POST":
+        form=FormPasajero(request.POST)
+        if form.is_valid():
+            p=form.cleaned_data
+            hoy=date.today()
+            edad=hoy.year - p["fecha_de_nacimiento"].year
+            edad-=((hoy.month,hoy.day)<(p["fecha_de_nacimiento"].month,p["fecha_de_nacimiento"].day))
+            if edad>=18:
+                pasajero=Pasajero.objects.create()
+                pasajero.registrar(p["email"],p["dni"],p["telefono"],p["first_name"],p["last_name"],p["fecha_de_nacimiento"],p["password"],p["tipo"])
+                pasajero.save()
+    else:
+        form=FormPasajero()
+        edad=18
+    return render(request,'demo1/formulario_usuario.html',{"form":form,"edad":edad})
