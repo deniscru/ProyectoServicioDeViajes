@@ -15,8 +15,8 @@ class FormPasajero(forms.Form):
         años.append(i)
     tipos=[("GOLD","GOLD"),("BASICO","BÁSICO")]
     email=forms.EmailField(required=True)
-    dni=forms.IntegerField(required=True,label="Dni")
-    telefono=forms.IntegerField(required=True,label="Teléfono")
+    dni=forms.CharField(required=True,label="Dni",max_length=8,min_length=8)
+    telefono=forms.CharField(required=True,label="Teléfono",max_length=15)
     nombre=forms.CharField(required=True,max_length=30,label="Nombre")
     apellido=forms.CharField(required=True,max_length=30,label="Apellido")
     fecha_de_nacimiento = forms.DateField(required=True,label='Fecha Nacimiento',widget=forms.SelectDateWidget(years=años))

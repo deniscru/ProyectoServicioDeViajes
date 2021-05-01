@@ -17,4 +17,3 @@ urlpatterns = [
     path('usuario/lugarNew', views.lugar_new, name='lugar_new'),
     path('registrar/',views.pasajero_new , name='registrar'),
 ]
-]

@@ -20,8 +20,8 @@ class Pasajero(Persona):
 
     def registrar(self,un_email,un_dni,untelefono,un_first_name,un_last_name,una_fecha,una_password,un_tipo):
         self.email=un_email
-        self.dni=un_dni
-        self.telefono=untelefono
+        self.dni=int(un_dni)
+        self.telefono=int(untelefono)
         self.first_name=un_first_name
         self.last_name=un_last_name
         self.password=una_password
