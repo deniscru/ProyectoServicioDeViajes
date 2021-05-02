@@ -1,0 +1,17 @@
+{% extends 'demo1/base.html' %}
+
+{% block content %}
+    <div class="viaje">
+        <h4><a href="">{{v}}</a></h4>
+        {% for v in viaje%}
+            <p>ruta: {{ v.ruta }}</p>
+            <p>insumos: {{ v.insumos }}</p>
+            <p>fecha: {{ v.fecha }}</p>
+            <p>precio: {{ v.precio }}</p>
+            <p>asientos: {{ v.asientos }}</p>
+        {%endfor%}   
+    </div>
+    <div>
+        <h2><a href="{% url 'principal' %}"> salir</a></h2>
+    </div>
+{% endblock %}

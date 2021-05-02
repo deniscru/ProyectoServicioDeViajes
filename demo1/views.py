@@ -12,7 +12,7 @@ def principal(request):
 
 def detalle_usuario(request, pk):
     usuario = User.objects.filter(pk=pk)
-    return render(request, 'demo1/detalle_usuario.html', {'usuario': usuario})
+    return render(request, 'demo1/detalle/detalle_usuario.html', {'usuario': usuario})
 
 def listado_chofer(request):
     choferes = Chofer.objects.all()
@@ -83,3 +83,35 @@ def pasajero_new(request):
         form=FormPasajero()
         edad=18
     return render(request,'demo1/formulario_usuario.html',{"form":form,"edad":edad})
+
+def detalle_pasajero(request, pk):
+    pasajero = Pasajero.objects.filter(pk=pk)
+    return render(request, 'demo1/detalle/detalle_pasajero.html', {'pasajero': pasajero})
+
+def detalle_chofer(request, pk):
+    chofer = Chofer.objects.filter(pk=pk)
+    return render(request, 'demo1/detalle/detalle_chofer.html', {'chofer': chofer})
+
+def detalle_combi(request, pk):
+    combi = Combi.objects.filter(pk=pk)
+    return render(request, 'demo1/detalle/detalle_combi.html', {'combi': combi})
+
+def detalle_viaje(request, pk):
+    viaje = Viaje.objects.filter(pk=pk)
+    return render(request, 'demo1/detalle/detalle_viaje.html', {'viaje': viaje})
+
+def detalle_insumo(request, pk):
+    insumo = Insumo.objects.filter(pk=pk)
+    return render(request, 'demo1/detalle/detalle_insumo.html', {'insumo': insumo})
+
+def detalle_ruta(request, pk):
+    ruta = Ruta.objects.filter(pk=pk)
+    return render(request, 'demo1/detalle/detalle_ruta.html', {'ruta': ruta})
+
+def detalle_lugar(request, pk):
+    lugar = Lugar.objects.filter(pk=pk)
+    return render(request, 'demo1/detalle/detalle_lugar.html', {'lugar': lugar})
+
+def detalle_tarjeta(request, pk):
+    tarjeta = Tarjeta.objects.filter(pk=pk)
+    return render(request, 'demo1/detalle/detalle_tarjeta.html', {'tarjeta': tarjeta})

@@ -1,0 +1,18 @@
+{% extends 'demo1/base.html' %}
+
+{% block content %}
+    <div class="Chofer">
+        <h4><a href="">{{c}}</a></h4>
+        {% for c in chofer%}
+            <p>nombre de usuario: {{ c.usuario.username }}</div>
+            <p>nombre: {{ c.usuario.first_name }}</p>
+            <p>Apellido: {{ c.usuario.last_name }}</p>
+            <p>Email: {{ c.usuario.email }}</p>
+            <p>Dni: {{ c.dni }}</p>
+            <p>Telefono: {{ c.telefono }}</p>
+        {%endfor%}   
+    </div>
+    <div>
+        <h2><a href="{% url 'principal' %}"> salir</a></h2>
+    </div>
+{% endblock %}

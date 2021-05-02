@@ -1,0 +1,16 @@
+{% extends 'demo1/base.html' %}
+
+{% block content %}
+    <div class="usuario">
+        <h4><a href="">{{u}}</a></h4>
+        {% for u in usuario%}
+            <p>nombre de usuario: {{ u.username }}</p>
+            <p>nombre: {{ u.first_name }}</p>
+            <p>Apellido: {{ u.last_name }}</p>
+            <p>Email: {{ u.email }}</p>
+        {%endfor%}   
+    </div>
+    <div>
+        <h2><a href="{% url 'principal' %}"> salir</a></h2>
+    </div>
+{% endblock %}

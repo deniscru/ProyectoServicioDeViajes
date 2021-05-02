@@ -1,0 +1,17 @@
+{% extends 'demo1/base.html' %}
+
+{% block content %}
+    <div class="tarjeta">
+        <h4><a href="">{{t}}</a></h4>
+        {% for t in tarjeta%}
+            <p>pasajero: {{ t.pasajero }}</p>
+            <p>numero: {{ t.numero }}</p>
+            <p>fecha de vencimiento: {{ t.fecha_de_vencimiento }}</p>
+            <p>codigo: {{ t.codigo }}</p>
+            
+        {%endfor%}   
+    </div>
+    <div>
+        <h2><a href="{% url 'principal' %}"> salir</a></h2>
+    </div>
+{% endblock %}

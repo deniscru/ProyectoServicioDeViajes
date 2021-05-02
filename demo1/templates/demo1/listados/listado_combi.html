@@ -5,7 +5,7 @@
     <div>
         <ul>
         {% for combi in combis %}
-            <li><a href="">{{ combi }}</a></li>
+            <li><a href="{% url 'detalle_combi' pk=combi.pk%}">{{ combi }}</a></li>
         {% endfor %}
         </ul>
     </div>

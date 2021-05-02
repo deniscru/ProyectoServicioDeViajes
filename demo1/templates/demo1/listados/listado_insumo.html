@@ -5,7 +5,7 @@
     <div>
         <ul>
         {% for insumo in insumos %}
-            <li><a href="">{{ insumo }}</a></li>
+            <li><a href="{% url 'detalle_insumo' pk=insumo.pk%}">{{ insumo }}</a></li>
         {% endfor %}
         </ul>
     </div>

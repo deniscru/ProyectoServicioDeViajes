@@ -1,0 +1,20 @@
+{% extends 'demo1/base.html' %}
+
+{% block content %}
+    <div class="pasajero">
+        <h4><a href="">{{p}}</a></h4>
+        {% for p in pasajero%}
+            <p>nombre de pasajero: {{ p.usuario.username }}</div>
+            <p>nombre: {{ p.usuario.first_name }}</p>
+            <p>Apellido: {{ p.usuario.last_name }}</p>
+            <p>Email: {{ p.usuario.email }}</p>
+            <p>Dni: {{ p.dni }}</p>
+            <p>Telefono: {{ p.telefono }}</p>
+            <p>tipo:  {{p.tipo}} </p>
+            <p>fecha de nacimiento: {{ p.fecha_de_nacimiento }}</p>
+        {%endfor%}   
+    </div>
+    <div>
+        <h2><a href="{% url 'principal' %}"> salir</a></h2>
+    </div>
+{% endblock %}

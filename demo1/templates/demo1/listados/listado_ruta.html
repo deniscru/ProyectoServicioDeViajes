@@ -5,7 +5,7 @@
     <div>
         <ul>
         {% for ruta in rutas %}
-            <li><a href="">{{ ruta }}</a></li>
+            <li><a href="{% url 'detalle_ruta' pk=ruta.pk%}">{{ ruta }}</a></li>
         {% endfor %}
         </ul>
     </div>

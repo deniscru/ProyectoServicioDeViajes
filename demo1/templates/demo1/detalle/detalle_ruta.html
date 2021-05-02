@@ -1,0 +1,17 @@
+{% extends 'demo1/base.html' %}
+
+{% block content %}
+    <div class="ruta">
+        <h4><a href="">{{r}}</a></h4>
+        {% for r in ruta%}
+            <p>combi: {{ r.combi }}</p>
+            <p>origen: {{ r.origen }}</p>
+            <p>destino: {{ r.destino }}</p>
+            <p>hora: {{ r.hora }}</p>
+            <p>distancia: {{ r.distancia }}</p>
+        {%endfor%}   
+    </div>
+    <div>
+        <h2><a href="{% url 'principal' %}"> salir</a></h2>
+    </div>
+{% endblock %}

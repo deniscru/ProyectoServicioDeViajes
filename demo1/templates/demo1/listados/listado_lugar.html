@@ -5,7 +5,7 @@
     <div>
         <ul>
         {% for lugar in lugares %}
-            <li><a href="">{{ lugar }}</a></li>
+            <li><a href="{% url 'detalle_lugar' pk=lugar.pk%}">{{ lugar }}</a></li>
         {% endfor %}
         </ul>
     </div>

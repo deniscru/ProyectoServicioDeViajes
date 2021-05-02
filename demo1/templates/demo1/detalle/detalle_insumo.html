@@ -1,0 +1,17 @@
+{% extends 'demo1/base.html' %}
+
+{% block content %}
+    <div class="insumo">
+        <h4><a href="">{{i}}</a></h4>
+        {% for i in insumo%}
+            <p>nombre: {{ i.nombre }}</p>
+            <p>precio: {{ i.precio }}</p>
+            <p>tipo: {{ i.tipo }}</p>
+            <p>pasajero: {{ i.pasajero }}</p>
+            <p>tarjeta: {{ i.tarjeta }}</p>
+        {%endfor%}   
+    </div>
+    <div>
+        <h2><a href="{% url 'principal' %}"> salir</a></h2>
+    </div>
+{% endblock %}
