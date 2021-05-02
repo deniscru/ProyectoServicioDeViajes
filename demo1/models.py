@@ -17,15 +17,6 @@ class Pasajero(Persona):
         ('G', 'Gold'),)
     tipo = models.CharField(max_length=1, choices=TIPOS_PLANES)
     fecha_de_nacimiento = models.DateField()
-
-    def registrar(self,un_email,un_dni,untelefono,un_first_name,un_last_name,una_fecha,una_password,un_tipo):
-        self.email=un_email
-        self.dni=int(un_dni)
-        self.telefono=int(untelefono)
-        self.first_name=un_first_name
-        self.last_name=un_last_name
-        self.password=una_password
-        self.tipo=un_tipo  
     
 class Tarjeta(models.Model):
     pasajero = models.ForeignKey(Pasajero, on_delete=models.CASCADE)

@@ -1,7 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
+from django.contrib.auth import login,authenticate
+from django.contrib import messages
 from .forms import FormLugar
 from .forms import FormPasajero
+from .forms import FormLogin
 from datetime import date
 
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
@@ -76,13 +79,31 @@ def pasajero_new(request):
             edad=hoy.year - p["fecha_de_nacimiento"].year
             edad-=((hoy.month,hoy.day)<(p["fecha_de_nacimiento"].month,p["fecha_de_nacimiento"].day))
             if edad>=18:
-                pasajero=Pasajero.objects.create()
-                pasajero.registrar(p["email"],p["dni"],p["telefono"],p["first_name"],p["last_name"],p["fecha_de_nacimiento"],p["password"],p["tipo"])
+                usuario=User.objects.create(is_superuser=False,username=p["email"],password=p["password"],email=p["email"],first_name=p["first_name"],last_name=p["last_name"])
+                pasajero=Pasajero.objects.create(usuario=usuario,dni=int(p["dni"]),telefono=int(p["telefono"]),tipo=p["tipo"],fecha_de_nacimiento=p["fecha_de_nacimiento"])
                 pasajero.save()
     else:
         form=FormPasajero()
-        edad=18
+        edad=0
     return render(request,'demo1/formulario_usuario.html',{"form":form,"edad":edad})
+
+def login_usuario(request):
+    if request.method == "POST":
+        form = FormLogin(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data.get('email')
+            password = form.cleaned_data.get('password')
+            user = authenticate(request,username=email,password=password)
+            if user is not None:
+                login(request, user)
+                return redirect("http://127.0.0.1:8000/registrar/")
+            else:
+                messages.error(request,"Invalid username or password.")
+        else:
+            messages.error(request,"Invalid username or password.")
+    else:
+        form = FormLogin()
+    return render(request, "demo1/login.html", {"form":form})
 
 def detalle_pasajero(request, pk):
     pasajero = Pasajero.objects.filter(pk=pk)

@@ -17,8 +17,12 @@ class FormPasajero(forms.Form):
     email=forms.EmailField(required=True)
     dni=forms.CharField(required=True,label="Dni",max_length=8,min_length=8)
     telefono=forms.CharField(required=True,label="Teléfono",max_length=15)
-    nombre=forms.CharField(required=True,max_length=30,label="Nombre")
-    apellido=forms.CharField(required=True,max_length=30,label="Apellido")
+    first_name=forms.CharField(required=True,max_length=30,label="Nombre")
+    last_name=forms.CharField(required=True,max_length=30,label="Apellido")
     fecha_de_nacimiento = forms.DateField(required=True,label='Fecha Nacimiento',widget=forms.SelectDateWidget(years=años))
     password = forms.CharField(required=True,label="Contraseña",min_length=6)
     tipo =forms.ChoiceField(widget=forms.RadioSelect, choices=tipos)
+
+class FormLogin(forms.Form):
+    email=forms.EmailField(required=True,label="Email")
+    password=forms.CharField(required=True,widget=forms.PasswordInput,label="Contraseña")

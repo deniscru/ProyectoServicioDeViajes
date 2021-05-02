@@ -1,0 +1,11 @@
+{% extends 'demo1/base_login.html' %}
+{% block content %}      
+    <h2>Login</h2>
+    <form method="POST" class="post-form">
+      {% csrf_token %}
+      {{ form.as_p}}
+      <button class="btn btn-primary" type="submit">Login</button>
+    </form>
+    <p class="text-center">Si no tiene una cuenta puede registrarse aqui <a href="/registrar">Crear Cuenta</a>.</p>
+{% endblock %}
+
