@@ -15,6 +15,7 @@ urlpatterns = [
     path('usuario/listaLugar', views.listado_lugar ,name='listado_lugar'),
     path('usuario/listaTarjeta', views.listado_tarjeta ,name='listado_tarjeta'),
     path('usuario/lugarNew', views.lugar_new, name='lugar_new'),
+    path('usuario/choferNew', views.chofer_new, name='chofer_new'),
     path('registrar/',views.pasajero_new , name='registrar'),
     path('usuario/listaPasajero/<int:pk>/', views.detalle_pasajero, name='detalle_pasajero'),
     path('usuario/listaChofer/<int:pk>/', views.detalle_chofer, name='detalle_chofer'),

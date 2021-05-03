@@ -2,9 +2,7 @@ from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login,authenticate
 from django.contrib import messages
-from .forms import FormLugar
-from .forms import FormPasajero
-from .forms import FormLogin
+from .forms import FormLugar, FormPasajero, FormLogin, FormChofer
 from datetime import date
 
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
@@ -68,7 +66,7 @@ def lugar_new(request):
                 lugar.save()
     else:
         form = FormLugar()
-    return render(request, 'demo1/formulario.html', {'form': form})
+    return render(request, 'demo1/form/formulario_lugar.html', {'form': form})
 
 def pasajero_new(request):
     if request.method=="POST":
@@ -85,7 +83,7 @@ def pasajero_new(request):
     else:
         form=FormPasajero()
         edad=0
-    return render(request,'demo1/formulario_usuario.html',{"form":form,"edad":edad})
+    return render(request,'demo1/form/formulario_usuario.html',{"form":form,"edad":edad})
 
 def login_usuario(request):
     if request.method == "POST":
@@ -104,6 +102,38 @@ def login_usuario(request):
     else:
         form = FormLogin()
     return render(request, "demo1/login.html", {"form":form})
+
+def comparar_dni(unDni):
+    dato=Chofer.objects.filter(dni=unDni)
+    if dato.count()!= 0:
+        return False
+    return True
+
+def comparar_email(unEmail):
+    dato=Chofer.objects.filter(email=unEmail)
+    if dato.count()!= 0:
+        return False
+    return True
+
+def chofer_new(request):
+    valor=False
+    if request.method=="POST":
+        form=FormChofer(request.POST)
+        if form.is_valid():
+            d=form.cleaned_data
+            valor=comparar_dni(int(d['dni']))
+            if valor:
+                user= User.objects.create(email=d['email'], password=d['password'], first_name=d['first_name'], last_name=d['last_name'], is_staff=False)
+                user.username=str(user.pk)+'pedroMartin'
+                user.save()
+                chofer= Chofer.objects.create(dni=int(d['dni']), telefono=d['telefono'], usuario=user)
+                chofer.save()
+                valor=False
+            else:
+                valor=True
+    else:
+        form=FormChofer()
+    return render(request,'demo1/form/formulario_chofer.html',{"form":form, "valor":valor})
 
 def detalle_pasajero(request, pk):
     pasajero = Pasajero.objects.filter(pk=pk)
