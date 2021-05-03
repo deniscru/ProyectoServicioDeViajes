@@ -1,13 +1,23 @@
 {% extends 'demo1/base.html' %}
 
 {% block content %}
+<div class="card">
     <h2>Listado de lugares</h2>  
-    <div>
+</div>
+    <div class="card">
         <ul>
         {% for lugar in lugares %}
-            <li><a href="{% url 'detalle_lugar' pk=lugar.pk%}">{{ lugar }}</a></li>
+            
+            <h4 class="card">{{ lugar }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="{% url 'detalle_lugar' pk=lugar.pk%}">detalle</a> 
+                &nbsp;&nbsp; <a href="{% url 'modificar_lugar' pk=lugar.pk%}"> modificar </a>
+                &nbsp;&nbsp; <a href="{% url 'eliminar_lugar' pk=lugar.pk%}"> eliminar </a></h4>
+            <br>
+        
         {% endfor %}
         </ul>
     </div>
-    <div><a href="{% url 'principal' %}">Atras</a></div>
+
+    <div class="card"><h4><a href="{% url 'principal' %}">Atras</a></h4></div>
 {% endblock %}

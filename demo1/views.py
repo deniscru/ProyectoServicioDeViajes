@@ -163,6 +163,26 @@ def detalle_lugar(request, pk):
     lugar = Lugar.objects.filter(pk=pk)
     return render(request, 'demo1/detalle/detalle_lugar.html', {'lugar': lugar})
 
+def modificar_lugar(request, pk):
+    if request.method == "POST":
+        form = FormLugar(request.POST)
+        if form.is_valid():
+            datos = form.cleaned_data
+            if datos['nombre']!='' and datos['provincia']!='':
+                lugar = Lugar.objects.get(pk=pk)
+                lugar.nombreYprovincia(datos['nombre'],datos['provincia'])
+                lugar.save()
+                
+    else:
+        form = FormLugar()
+    return render(request, 'demo1/form/formulario_lugar.html', {'form': form})
+
+def eliminar_lugar(request, pk):
+    lugar = Lugar.objects.filter(pk=pk).delete()
+    lugares=Lugar.objects.all()
+    return render(request, 'demo1/listados/listado_lugar.html', {'lugares':lugares})
+    
+
 def detalle_tarjeta(request, pk):
     tarjeta = Tarjeta.objects.filter(pk=pk)
     return render(request, 'demo1/detalle/detalle_tarjeta.html', {'tarjeta': tarjeta})

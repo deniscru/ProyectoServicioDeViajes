@@ -1,12 +1,23 @@
 h1 a, h2 a {
-    color: #020920;
+    color: #030c33;
     font-family: 'Lobster';
     padding: 20px 20px 20px 40px;
 }
+h3 p {
+    color: #02105e;
+    font-family: 'Lobster';
+    padding: 20px 20px 20px 40px;
+}
+h4 {
+    color: #02105e;}
 .page-header h1, .page-header h1 a, .page-header h1 a:visited, .page-header h1 a:active {
-    color: #053605;
+    color: #1322aa;
     font-size: 36pt;
     text-decoration: none;
+    display:inline;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 #header h2 { display:inline; }
 
@@ -44,3 +55,12 @@ h1, h2, h3, h4 {
 .usuario h2 a, .usuario h2 a:visited {
     color: #e4c517;
 }
+
+.card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card form {
+    max-width: 100%;} /* Handles the responsive part, it will cause your form to scale with a max-width of 100% */

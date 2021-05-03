@@ -4,11 +4,14 @@
     <div class="lugar">
         <h4><a href="">{{l}}</a></h4>
         {% for l in lugar%}
-            <p>nombre de Lugar: {{ l.nombre_de_lugar }}</p>
-            <p>provincia: {{ l.provincia }}</p>
+        <div class="card">
+            <h3><p>Nombre de Lugar: &nbsp;&nbsp;{{ l.nombre_de_lugar }}</p>
+            
+            <p>Provincia: &nbsp;&nbsp;{{ l.provincia }}</p></h3>
+        </div>
         {%endfor%}   
     </div>
-    <div>
+    <div class="card">
         <h2><a href="{% url 'principal' %}"> salir</a></h2>
     </div>
 {% endblock %}

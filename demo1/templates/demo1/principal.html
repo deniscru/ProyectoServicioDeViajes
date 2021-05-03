@@ -1,24 +1,26 @@
 {% extends 'demo1/base.html' %}
    {% block content %}
-       <!-- {% for admini in administrador %} {{ admini }}{% endfor %}-->
-          <ul>
-            <div>
-              <h2><a href="{% url 'listado_usuario'%}">Usuarios</a></h2>
-            </div>
-              <h2><a href="{% url 'listado_persona' %}">Personas</a></h2>
-            <div>
+         <ul>
+           <div class="card">            
+            <div id="header">
               <h2><a href="{% url 'listado_chofer' %}">Choferes</a></h2>
-              <p><a href="{% url 'chofer_new' %}">Agregar chofer</a></p>
-            </div>
+              <a href="{% url 'chofer_new' %}">Agregar chofer</a>
+              <br><br>
               <h2><a href="{% url 'listado_pasajero' %}">Pasajeros</a></h2>
+              <br><br>
               <h2><a href="{% url 'listado_combi' %}">Combis</a></h2>
+              <br><br>
               <h2><a href="{% url 'listado_viaje'%}">Viajes</a></h2>
+              <br><br>
               <h2><a href="{% url 'listado_insumo'%}">Insumos</a></h2>
+              <br><br>
               <h2><a href="{% url 'listado_ruta'%}">Rutas</a></h2>
-            <div>
+              <br><br>
               <h2><a href="{% url 'listado_lugar'%}">Lugares</a></h2>
-              <p><a href="{% url 'lugar_new' %}">Agregar Lugar</a></p>
-            </div>
+              <a href="{% url 'lugar_new' %}">Agregar Lugar</a>
+              <br><br>
               <h2><a href="{% url 'listado_tarjeta' %}">Tarjetas</a></h2>
+            </div>
+            </div>
           </ul>
      {% endblock %}
