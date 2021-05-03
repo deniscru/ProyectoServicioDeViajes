@@ -35,7 +35,7 @@ def lisatdo_pasajero(request):
 
 def listado_combi(request):
     combis=Combi.objects.all()
-    return render(request, 'demo1/listados/listado_pasajero.html', {'combis':combis})
+    return render(request, 'demo1/listados/listado_combi.html', {'combis':combis})
 
 def listado_tarjeta(request):
     tarjetas=Tarjeta.objects.all()
