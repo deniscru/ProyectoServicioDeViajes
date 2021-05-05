@@ -2,7 +2,7 @@ from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login,authenticate
 from django.contrib import messages
-from .forms import FormLugar, FormPasajero, FormLogin, FormChofer
+from .forms import FormLugar, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta
 from datetime import date
 
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
@@ -126,6 +126,7 @@ def chofer_new(request):
                 user= User.objects.create(email=d['email'], password=d['password'], first_name=d['first_name'], last_name=d['last_name'], is_staff=False)
                 user.username=str(user.pk)+'pedroMartin'
                 user.save()
+                print ('este es un: ', type(user))
                 chofer= Chofer.objects.create(dni=int(d['dni']), telefono=d['telefono'], usuario=user)
                 chofer.save()
                 valor=False
@@ -134,6 +135,54 @@ def chofer_new(request):
     else:
         form=FormChofer()
     return render(request,'demo1/form/formulario_chofer.html',{"form":form, "valor":valor})
+
+def choferDeNombre(idChofer):
+    #si es con id no se usa esta funcion
+    chofer=Chofer.objects.get(id=idChofer).values()
+    print ('uno: ', chofer)
+    return chofer
+
+def combi_new(request):
+    #si es guardar el id solo se pasa d['chofer'] al parametro de create (chofer=)
+    if request.method=='POST':
+        form=FormCombi(request.POST)
+        if form.is_valid():
+            d=form.cleaned_data
+            #dato=choferDeNombre(d['chofer'])
+            #print (dato)
+            #unChofer=Chofer()
+            #combi=Combi.objects.create(chofer=unChofer, modelo=d['modelo'], asientos=int(d['cantAsientos']), patente=d['patente'], tipo=d['tipo'])
+            #combi.save()
+    else:
+        form=FormCombi()
+    return render(request, 'demo1/form/formulario_combi.html', {'form': form})
+
+def viaje_new(request):
+    if request.method=='POST':
+        form=FormViaje(request.POST)
+        if form.is_valid():
+            d=form.cleaned_data    
+    else:
+        form=FormViaje()
+    return render(request, 'demo1/form/formulario_viaje.html', {'form': form})
+
+def insumo_new(request):
+    if request.method=='POST':
+        form=FormInsumo(request.POST)
+        if form.is_valid():
+            d=form.cleaned_data    
+    else:
+        form=FormInsumo()
+    return render(request, 'demo1/form/formulario_insumo.html', {'form': form})
+
+def ruta_new(request):
+    if request.method=='POST':
+        form=FormRuta(request.POST)
+        if form.is_valid():
+            d=form.cleaned_data    
+    else:
+        form=FormRuta()
+    return render(request, 'demo1/form/formulario_ruta.html', {'form': form})
 
 def detalle_pasajero(request, pk):
     pasajero = Pasajero.objects.filter(pk=pk)
