@@ -136,32 +136,28 @@ def chofer_new(request):
         form=FormChofer()
     return render(request,'demo1/form/formulario_chofer.html',{"form":form, "valor":valor})
 
-def choferDeNombre(idChofer):
-    #si es con id no se usa esta funcion
-    chofer=Chofer.objects.get(id=idChofer).values()
-    print ('uno: ', chofer)
-    return chofer
-
 def combi_new(request):
-    #si es guardar el id solo se pasa d['chofer'] al parametro de create (chofer=)
     if request.method=='POST':
         form=FormCombi(request.POST)
         if form.is_valid():
             d=form.cleaned_data
-            #dato=choferDeNombre(d['chofer'])
-            #print (dato)
-            #unChofer=Chofer()
-            #combi=Combi.objects.create(chofer=unChofer, modelo=d['modelo'], asientos=int(d['cantAsientos']), patente=d['patente'], tipo=d['tipo'])
-            #combi.save()
+            unChofer=Chofer.objects.get(id=d['chofer'])
+            combi=Combi.objects.create(chofer=unChofer, modelo=d['modelo'], asientos=int(d['cantAsientos']), patente=d['patente'], tipo=d['tipo'])
+            combi.save()
     else:
         form=FormCombi()
     return render(request, 'demo1/form/formulario_combi.html', {'form': form})
 
 def viaje_new(request):
+    # cuando se selecciona los insumos esto devuelve una lista de id, d['insumo']
+    # no lo q habia echo era recuperar con el id las tuplas para luego inicializar insumos con eso pero no se pude
     if request.method=='POST':
         form=FormViaje(request.POST)
         if form.is_valid():
-            d=form.cleaned_data    
+            d=form.cleaned_data   
+            unaRuta=Ruta.objects.get(id=d['ruta'])            
+            viaje=Viaje.objects.create(ruta=unaRuta, fecha=d['fecha'], precio=d['precio'], asientos=d['asientosDisponible'])
+            viaje.save() 
     else:
         form=FormViaje()
     return render(request, 'demo1/form/formulario_viaje.html', {'form': form})
@@ -170,7 +166,10 @@ def insumo_new(request):
     if request.method=='POST':
         form=FormInsumo(request.POST)
         if form.is_valid():
-            d=form.cleaned_data    
+            d=form.cleaned_data   
+            t=Tarjeta.objects.get(id=d['tarjeta'])
+            p=Pasajero.objects.get(id=d['pasajero']) 
+            insumo=Insumo.objects.create(tarjeta=t, pasajero=p, tipo=d['tipo'], nombre=d['nombre'],precio=d['precio'])
     else:
         form=FormInsumo()
     return render(request, 'demo1/form/formulario_insumo.html', {'form': form})
@@ -179,7 +178,12 @@ def ruta_new(request):
     if request.method=='POST':
         form=FormRuta(request.POST)
         if form.is_valid():
-            d=form.cleaned_data    
+            d=form.cleaned_data 
+            unOrigen=Lugar.objects.get(id=d['origen'])
+            unDestino=Lugar.objects.get(id=d['destino'])
+            unaCombi= Combi.objects.get(id=d['combi'])
+            ruta=Ruta.objects.create(combi=unaCombi, origen=unOrigen, destino=unDestino, distancia=d['distancia'], hora=d['hora'])
+            ruta.save()   
     else:
         form=FormRuta()
     return render(request, 'demo1/form/formulario_ruta.html', {'form': form})
