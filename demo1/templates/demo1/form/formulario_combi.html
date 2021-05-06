@@ -11,6 +11,11 @@
                 {{ form.as_p}}
                 <button type="submit" class="guardar chofer">Guardar</button>
             </form>
+            {% if valor %}
+                <div>
+                    <p>El chofer ingresado no esta disponible</p>
+                </div>
+            {% endif %}
         </div>
         <div>
             <h2><a href="{% url 'principal' %}"> salir</a></h2>

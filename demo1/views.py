@@ -55,18 +55,30 @@ def listado_viaje(request):
     viajes=Viaje.objects.all()
     return render(request, 'demo1/listados/listado_viaje.html', {'viajes':viajes})
 
+def compararLugar(d):
+    lugares= Lugar.objects.all().values()
+    for l in lugares:
+        if l['nombre_de_lugar']==d['nombre'] and l['provincia']==d['provincia']:
+            return False
+    return True
+
 def lugar_new(request):
+    exitoso=False
+    fallido=False
     if request.method == "POST":
         form = FormLugar(request.POST)
         if form.is_valid():
             datos = form.cleaned_data
-            if datos['nombre']!='' and datos['provincia']!='':
+            if compararLugar(datos):
                 lugar = Lugar.objects.create()
                 lugar.nombreYprovincia(datos['nombre'],datos['provincia'])
                 lugar.save()
+                exitoso=True
+            else:
+                fallido=True
     else:
         form = FormLugar()
-    return render(request, 'demo1/form/formulario_lugar.html', {'form': form})
+    return render(request, 'demo1/form/formulario_lugar.html', {'form': form, 'exitoso':exitoso, 'fallido':fallido})
 
 def pasajero_new(request):
     if request.method=="POST":
@@ -110,57 +122,76 @@ def comparar_dni(unDni):
     return True
 
 def comparar_email(unEmail):
-    dato=Chofer.objects.filter(email=unEmail)
+    dato=User.objects.filter(email=unEmail)
     if dato.count()!= 0:
         return False
     return True
 
 def chofer_new(request):
     valor=False
+    exitoso=False
     if request.method=="POST":
         form=FormChofer(request.POST)
         if form.is_valid():
             d=form.cleaned_data
-            valor=comparar_dni(int(d['dni']))
-            if valor:
+            if comparar_dni(int(d['dni'])) and comparar_email(d['email']):
                 user= User.objects.create(email=d['email'], password=d['password'], first_name=d['first_name'], last_name=d['last_name'], is_staff=False)
-                user.username=str(user.pk)+'pedroMartin'
+                user.username=d['email']
                 user.save()
-                print ('este es un: ', type(user))
                 chofer= Chofer.objects.create(dni=int(d['dni']), telefono=d['telefono'], usuario=user)
                 chofer.save()
-                valor=False
+                exitoso=True
             else:
                 valor=True
     else:
         form=FormChofer()
-    return render(request,'demo1/form/formulario_chofer.html',{"form":form, "valor":valor})
+    return render(request,'demo1/form/formulario_chofer.html',{"form":form, "valor":valor, "exitoso": exitoso})
+
+def verficarChofer(idChofer):
+    dato=Combi.objects.filter(chofer=idChofer)
+    if dato.count()!= 0:
+        return False
+    return True
 
 def combi_new(request):
+    valor=False
     if request.method=='POST':
         form=FormCombi(request.POST)
         if form.is_valid():
             d=form.cleaned_data
-            unChofer=Chofer.objects.get(id=d['chofer'])
-            combi=Combi.objects.create(chofer=unChofer, modelo=d['modelo'], asientos=int(d['cantAsientos']), patente=d['patente'], tipo=d['tipo'])
-            combi.save()
+            if verficarChofer(d['chofer']):
+                unChofer=Chofer.objects.get(id=d['chofer'])
+                combi=Combi.objects.create(chofer=unChofer, modelo=d['modelo'], asientos=int(d['cantAsientos']), patente=d['patente'], tipo=d['tipo'])
+                combi.save()
+            else:
+                valor=True
     else:
         form=FormCombi()
-    return render(request, 'demo1/form/formulario_combi.html', {'form': form})
+    return render(request, 'demo1/form/formulario_combi.html', {'form': form, 'valor': valor})
+
+def verificarRuta(idRuta):
+    dato=Viaje.objects.filter(ruta=idRuta)
+    if dato.count()!= 0:
+        return False
+    return True
 
 def viaje_new(request):
-    # cuando se selecciona los insumos esto devuelve una lista de id, d['insumo']
-    # no lo q habia echo era recuperar con el id las tuplas para luego inicializar insumos con eso pero no se pude
+    valor=False
     if request.method=='POST':
         form=FormViaje(request.POST)
         if form.is_valid():
-            d=form.cleaned_data   
-            unaRuta=Ruta.objects.get(id=d['ruta'])            
-            viaje=Viaje.objects.create(ruta=unaRuta, fecha=d['fecha'], precio=d['precio'], asientos=d['asientosDisponible'])
-            viaje.save() 
+            d=form.cleaned_data  
+            if verificarRuta(d['ruta']): 
+                unaRuta=Ruta.objects.get(id=d['ruta'])  
+                unosInsumos= Insumo.objects.filter(id__in= d['insumo'])       
+                viaje=Viaje.objects.create(ruta=unaRuta, fecha=d['fecha'], precio=d['precio'], asientos=d['asientosDisponible'])
+                viaje.insumos.set(unosInsumos)
+                viaje.save()
+            else:
+                valor=True 
     else:
         form=FormViaje()
-    return render(request, 'demo1/form/formulario_viaje.html', {'form': form})
+    return render(request, 'demo1/form/formulario_viaje.html', {'form': form, 'valor':valor})
 
 def insumo_new(request):
     if request.method=='POST':

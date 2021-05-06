@@ -4,8 +4,8 @@ from .models import Lugar, Pasajero, Chofer, Ruta, Insumo, Tarjeta, Combi, Perso
 from datetime import date
 
 class FormLugar(forms.Form):
-    nombre = forms.CharField(label='Nombre', max_length=50)
-    provincia= forms.CharField(label='Provincia', max_length=50)
+    nombre = forms.CharField(label='Nombre', max_length=50, required=True)
+    provincia= forms.CharField(label='Provincia', max_length=50, required=True)
 
 class FormPasajero(forms.Form):
     año=int(date.today().year)
@@ -56,7 +56,6 @@ class FormCombi(forms.Form):
     tipo=forms.ChoiceField(widget=forms.RadioSelect, choices=TIPOS_COMBI)
 
 class FormViaje(forms.Form):
-    # error sobre la base de datos
     def obtenerDatosDeRutas():
         rutas= Ruta.objects.all().values()
         lista=[]
@@ -79,11 +78,11 @@ class FormViaje(forms.Form):
     datosDeRutas=obtenerDatosDeRutas()
     datosDeInsumos=obtenerDatosDeInsumo()
     ruta = forms.ChoiceField(choices=datosDeRutas, widget=forms.Select())
-    insumo = forms.MultipleChoiceField(choices=datosDeInsumos)
+    insumo = forms.MultipleChoiceField(choices=datosDeInsumos, help_text='Para selecionar mas de una opcion maten precionado la tecla "ctrl"')
     años=[2021,2022]
     fecha = forms.DateField(required=True,label='Fecha',widget=forms.SelectDateWidget(years=años))
     precio = forms.FloatField(required=True,label="Precio")
-    asientosDisponible = forms.CharField(required=True,max_length=10,label="Asientos Disponibles")
+    asientosDisponible = forms.IntegerField(required=True,label="Asientos Disponibles")
 
 class FormInsumo(forms.Form):
     #duda, el insumo siempre se paga con una tarjeta registrada?
