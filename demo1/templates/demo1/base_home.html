@@ -1,0 +1,26 @@
+{% load static %}
+<html>
+    <head >
+        <title>Home</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="{% static 'css/demo1.css' %}">
+    </head>
+    <body>
+        <div class="page-header">
+            {% if user.is_authenticated %}
+                <h1>Bienvenido al home de Combi19</h1>
+                <h2>{{ user.get_username }}<a href="http://127.0.0.1:8000/logout/"> Cerrar Sesión </a></h2>
+            {% else %}
+                <h4>Error, No ha iniciado sesion</h4>
+            {% endif %}
+        </div>
+        <br>
+        <div>
+            <div class="content container">
+                {% block content %}
+                {% endblock %}
+            </div>  
+        </div>
+    </body>
+</html>

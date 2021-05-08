@@ -1,0 +1,12 @@
+{% extends 'demo1/base_tarjeta.html' %}
+
+{% block content %}
+    <form method="POST" class="post-form">
+        {% csrf_token %}
+        {{ form.as_p}}
+        <button type="submit" class="guardar tarjeta">Registrar tarjeta</button>
+    </form>
+    {% if exitoso %}
+        <meta http-equiv="refresh" content="0; URL=http://127.0.0.1:8000/login/" />>
+    {% endif %}
+{% endblock %}

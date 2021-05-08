@@ -2,10 +2,37 @@
 
 {% block content %}
     <h2>Registrarse</h2>
-    <form method="POST" class="post-form">
+    <form method="POST" class="post-form" id="usuarioForm">
         {% csrf_token %}
         {{ form.as_p}}
-        <button type="submit" class="save btn btn-default" formaction="http://127.0.0.1:8000/login/">Registrar</button>
+        <button type="submit" class="guardar usuario">Registrar</button>
     </form>
-    <h2><a href="{% url 'principal' %}"> salir</a></h2>
+    {% if exitoso %}
+        {% if tipo %}
+        <div>
+            <p> Se ha registrado exitosamente</p>
+            <meta http-equiv="refresh" content="0; URL=http://127.0.0.1:8000/login/" />
+        </div>
+        {% else %}
+        <div>
+            <meta http-equiv="refresh" content="0; URL=http://127.0.0.1:8000/registrar/tarjeta" />
+        </div>
+        {% endif %}
+    {% else %}
+        {% if fallido %}
+            {% if edad < 18 %}
+                <div>
+                    <p> No ha podido registrarse correctamente ya que debe ser mayor a 18 años</p>
+                    <meta http-equiv="refresh" content="1; URL=http://127.0.0.1:8000/registrar/" />
+                </div>
+            {% endif %}
+            <div>
+                <p> No ha podido registrarse correctamente ya que el email o dni ya existen </p>
+                <meta http-equiv="refresh" content="1; URL=http://127.0.0.1:8000/registrar/" />
+            </div>
+        {% endif %}
+    {% endif %}
+    <div>
+        <h2><a href="{% url 'principal' %}"> salir</a></h2>
+    </div>
 {% endblock %}

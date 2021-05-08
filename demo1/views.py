@@ -1,8 +1,8 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
-from django.contrib.auth import login,authenticate
+from django.contrib.auth import login,logout
 from django.contrib import messages
-from .forms import FormLugar, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormRutaModi
+from .forms import FormLugar, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormRutaModi,FormTarjeta
 from datetime import date
 
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
@@ -80,40 +80,121 @@ def lugar_new(request):
         form = FormLugar()
     return render(request, 'demo1/form/formulario_lugar.html', {'form': form, 'exitoso':exitoso, 'fallido':fallido})
 
+def tarjeta_new(request):
+    exitoso=False
+    if request.method=="POST":
+        form=FormTarjeta(request.POST)
+        if form.is_valid():
+            t=form.cleaned_data
+            tarjeta=Tarjeta.objects.create(pasajero=Pasajero.objects.last(),numero=t["numero"],fecha_de_vencimiento=t["fecha_de_vencimiento"],codigo=t["codigo"],activo=True)
+            tarjeta.save()
+            exitoso=True
+    else:
+        form=FormTarjeta()
+    return render(request,'demo1/form/formulario_tarjeta.html',{"form":form,"exitoso":exitoso}) 
+
+def calcular_edad(p):
+    hoy=date.today()
+    edad=hoy.year - p["fecha_de_nacimiento"].year
+    edad-=((hoy.month,hoy.day)<(p["fecha_de_nacimiento"].month,p["fecha_de_nacimiento"].day))
+    return edad
+
+def comparar_pasajero_dni(unDni):
+    dato_chofer=Chofer.objects.filter(dni=unDni)
+    dato_pasajero=Pasajero.objects.filter(dni=unDni)
+    if dato_chofer.count()!= 0 and dato_pasajero.count()!=0:
+        return False
+    return True
+
+def comparar_pasajero_email(unEmail):
+    dato=User.objects.filter(email=unEmail)
+    if dato.count()!=0:
+        return False
+    return True
+
 def pasajero_new(request):
+    exitoso=False
+    fallido=False
+    tipo=False
+    edad=None
     if request.method=="POST":
         form=FormPasajero(request.POST)
         if form.is_valid():
             p=form.cleaned_data
-            hoy=date.today()
-            edad=hoy.year - p["fecha_de_nacimiento"].year
-            edad-=((hoy.month,hoy.day)<(p["fecha_de_nacimiento"].month,p["fecha_de_nacimiento"].day))
-            if edad>=18:
-                usuario=User.objects.create(is_superuser=False,username=p["email"],password=p["password"],email=p["email"],first_name=p["first_name"],last_name=p["last_name"])
+            edad=calcular_edad(p)
+            if edad>=18 and comparar_pasajero_dni(p["dni"]) and comparar_pasajero_email(p["email"]):
+                usuario=User.objects.create(is_superuser=False,password=p["password"],email=p["email"],first_name=p["first_name"],last_name=p["last_name"])
+                usuario.username=p["email"]
+                usuario.save()
                 pasajero=Pasajero.objects.create(usuario=usuario,dni=int(p["dni"]),telefono=int(p["telefono"]),tipo=p["tipo"],fecha_de_nacimiento=p["fecha_de_nacimiento"])
                 pasajero.save()
+                if (p["tipo"]=="BASICO"):
+                    tipo=True
+                else:
+                   return redirect('http://127.0.0.1:8000/registrar/tarjeta/',pasajero)
+                exitoso=True
+            else:
+                fallido=True
     else:
         form=FormPasajero()
-        edad=0
-    return render(request,'demo1/form/formulario_usuario.html',{"form":form,"edad":edad})
+    return render(request,'demo1/form/formulario_usuario.html',{"form":form,"edad":edad,"exitoso":exitoso,"fallido":fallido,"tipo":tipo}) 
+
+def buscar_usuario(email,password):
+    try:
+        dato=User.objects.get(username=email,password=password) 
+        return dato
+    except:
+        return None
+
+def es_fallo_usuario(email):
+    try:
+        User.objects.get(username=email)
+        return False
+    except:
+        return True
+
+def es_pasajero(user):
+    persona=Persona.objects.get(usuario_id=user.id)
+    try:
+        Pasajero.objects.get(persona_ptr_id=persona.id)
+        return True
+    except:
+        return False
+
+def es_admin(user):
+    return user.is_superuser or user.is_staff
 
 def login_usuario(request):
+    fallo_usuario=False
+    fallo_password=False
     if request.method == "POST":
         form = FormLogin(request.POST)
         if form.is_valid():
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password')
-            user = authenticate(request,username=email,password=password)
+            user = buscar_usuario(email,password)
             if user is not None:
                 login(request, user)
-                return redirect("http://127.0.0.1:8000/registrar/")
+                if es_pasajero(user):
+                    return redirect("http://127.0.0.1:8000/home_usuario/")
+                elif es_admin(user):
+                    return redirect("http://127.0.0.1:8000")
+                else:
+                    return redirect("http://127.0.0.1:8000/home_usuario/")
+            elif es_fallo_usuario(email):
+               fallo_usuario=True
             else:
-                messages.error(request,"Invalid username or password.")
-        else:
-            messages.error(request,"Invalid username or password.")
+                fallo_password=True
     else:
         form = FormLogin()
-    return render(request, "demo1/login.html", {"form":form})
+    return render(request, "demo1/login.html", {"form":form,"falloU":fallo_usuario,"falloP":fallo_password})
+
+def home_usuario(request):
+    return render(request,"demo1/home_usuario.html")
+
+def logout_usuario(request):
+    logout(request)
+    return redirect("http://127.0.0.1:8000/login/")
 
 def comparar_dni(unDni):
     dato=Chofer.objects.filter(dni=unDni)
