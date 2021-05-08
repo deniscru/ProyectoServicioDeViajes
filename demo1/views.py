@@ -40,7 +40,7 @@ def listado_tarjeta(request):
     return render(request, 'demo1/listados/listado_tarjeta.html', {'tarjetas':tarjetas})
 
 def listado_lugar(request):
-    lugares=Lugar.objects.all()
+    lugares=Lugar.objects.filter(activo=True)
     return render(request, 'demo1/listados/listado_lugar.html', {'lugares':lugares})
 
 def listado_insumo(request):
@@ -262,8 +262,10 @@ def modificar_lugar(request, pk):
     return render(request, 'demo1/form/formulario_lugar.html', {'form': form})
 
 def eliminar_lugar(request, pk):
-    lugar = Lugar.objects.filter(pk=pk).delete()
-    lugares=Lugar.objects.all()
+    lugar = Lugar.objects.get(pk=pk)
+    lugar.activo = False
+    lugar.save()
+    lugares=Lugar.objects.filter(activo=True)
     return render(request, 'demo1/listados/listado_lugar.html', {'lugares':lugares})
     
 
