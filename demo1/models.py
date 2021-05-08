@@ -4,6 +4,7 @@ class Persona(models.Model):
     usuario = models.ForeignKey('auth.User', on_delete=models.CASCADE)
     dni = models.IntegerField(unique=True)
     telefono = models.BigIntegerField()
+    activo = models.BooleanField(default=True)
         
     def __str__(self):
         return '%s %s' % (self.usuario.first_name, self.usuario.last_name)
@@ -23,6 +24,7 @@ class Tarjeta(models.Model):
     numero = models.BigIntegerField(unique=True)
     fecha_de_vencimiento = models.DateField()
     codigo = models.IntegerField()
+    activo = models.BooleanField(default=True)
     
     def __str__(self):
          return '%s %s' % (self.pasajero.usuario.first_name, str(self.numero))
@@ -33,6 +35,7 @@ class Insumo(models.Model):
     nombre = models.CharField(max_length=30)
     tipo = models.CharField(max_length=30)
     precio = models.FloatField()
+    activo = models.BooleanField(default=True)
     
     def __str__(self):
         return '%s %s' % (self.nombre, self.pasajero.usuario.first_name)
@@ -60,6 +63,7 @@ class Combi(models.Model):
     tipo = models.CharField(max_length=1, choices=TIPOS_COMBI)
     modelo = models.CharField(max_length=40)
     asientos = models.IntegerField()
+    activo = models.BooleanField(default=True)
         
     def __str__(self):
         return '%s %s' % (self.patente, self.chofer.usuario.first_name)
@@ -70,6 +74,7 @@ class Ruta(models.Model):
     destino = models.ForeignKey(Lugar, on_delete=models.CASCADE, related_name='destino')
     hora = models.TimeField()
     distancia = models.IntegerField()
+    activo = models.BooleanField(default=True)
 
     def __str__(self):
         return '%s %s %s' % (self.origen.nombre_de_lugar, self.destino.nombre_de_lugar, str(self.hora))
@@ -80,6 +85,7 @@ class Viaje(models.Model):
     fecha = models.DateField()
     precio = models.FloatField()
     asientos = models.IntegerField()
+    activo = models.BooleanField(default=True)
     
     def __str__(self):
         return '%s %s' % (str(self.ruta), str(self.fecha))
