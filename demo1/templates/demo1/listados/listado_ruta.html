@@ -1,13 +1,20 @@
 {% extends 'demo1/base.html' %}
 
 {% block content %}
+<div class="card">
     <h2>Listado de rutas</h2>  
-    <div>
+</div>
+    <div class="card">
         <ul>
         {% for ruta in rutas %}
-            <li><a href="{% url 'detalle_ruta' pk=ruta.pk%}">{{ ruta }}</a></li>
+            <h4 class="card">{{ ruta }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="{% url 'detalle_ruta' pk=ruta.pk%}">detalle</a> 
+                &nbsp;&nbsp; <a href="{% url 'modificar_ruta' pk=ruta.pk%}"> modificar </a>
+                &nbsp;&nbsp; <a href="{% url 'eliminar_ruta' pk=ruta.pk%}"> eliminar </a></h4>
+            <br>
         {% endfor %}
         </ul>
     </div>
-    <div><a href="{% url 'principal' %}">Atras</a></div>
+    <div class="card"> <h3> <a href="{% url 'principal' %}">Atras</a></h3></div>
 {% endblock %}

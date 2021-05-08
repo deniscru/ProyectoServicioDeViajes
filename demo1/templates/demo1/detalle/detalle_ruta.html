@@ -4,14 +4,16 @@
     <div class="ruta">
         <h4><a href="">{{r}}</a></h4>
         {% for r in ruta%}
-            <p>combi: {{ r.combi }}</p>
-            <p>origen: {{ r.origen }}</p>
-            <p>destino: {{ r.destino }}</p>
-            <p>hora: {{ r.hora }}</p>
-            <p>distancia: {{ r.distancia }}</p>
+        <div class="card">
+            <h3><p>combi:&nbsp;&nbsp; {{ r.combi }}</p>
+            <p>origen:&nbsp;&nbsp; {{ r.origen }}</p>
+            <p>destino:&nbsp;&nbsp; {{ r.destino }}</p>
+            <p>hora:&nbsp;&nbsp; {{ r.hora }}</p>
+            <p>distancia:&nbsp;&nbsp; {{ r.distancia }}</p></h3>
+        </div>
         {%endfor%}   
     </div>
-    <div>
-        <h2><a href="{% url 'principal' %}"> salir</a></h2>
+    <div class="card">
+        <h3><a href="{% url 'listado_ruta' %}"> Atras</a></h3>
     </div>
 {% endblock %}

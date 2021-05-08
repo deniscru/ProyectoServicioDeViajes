@@ -103,7 +103,7 @@ class FormInsumo(forms.Form):
             lista.append(tupla)
         return lista
     
-    tipo_insumo= ( ('dulse', 'DULSE'), ('salado', 'SALADO') )
+    tipo_insumo= ( ('dulse', 'DULCE'), ('salado', 'SALADO') )
     tarjetas= obtenerTarjeta()
     pasajeros= obtenerPasajero()
     tarjeta = forms.ChoiceField(widget=forms.Select(), choices=tarjetas)
@@ -114,7 +114,7 @@ class FormInsumo(forms.Form):
 
 class FormRuta(forms.Form):
     def obtenerCombi():
-        combis= Combi.objects.all().values()
+        combis= Combi.objects.filter(activo=True).values()
         lista=[]
         for combi in combis:
             tupla=(combi['id'], 'Modelo: '+combi['modelo']+'; Patente: '+combi['patente'])
@@ -122,7 +122,7 @@ class FormRuta(forms.Form):
         return lista
 
     def obtenerLugar():
-        lugares= Lugar.objects.all().values()
+        lugares= Lugar.objects.filter(activo=True).values()
         lista=[]
         for lugar in lugares:
             tupla=(lugar['id'], 'Localidad: '+lugar['nombre_de_lugar']+'; Provincia: '+lugar['provincia'])
@@ -134,5 +134,12 @@ class FormRuta(forms.Form):
     combi =forms.ChoiceField(widget=forms.Select(), choices=combis)
     origen = forms.ChoiceField(widget=forms.Select(), choices=lugares)
     destino = forms.ChoiceField(widget=forms.Select(), choices=lugares)
+    hora = forms.TimeField(required=True,label="Hora", widget=forms.TimeInput())
+    distancia = forms.IntegerField(required=True,label="Distancia", max_value=50)
+
+class FormRutaModi(forms.Form):
+    combi =forms.ModelChoiceField(queryset=Combi.objects.filter(activo=True),label='combis', widget=forms.Select())
+    origen = forms.ModelChoiceField(queryset=Lugar.objects.filter(activo=True),label='Lugares',widget=forms.Select())
+    destino = forms.ModelChoiceField(queryset=Lugar.objects.filter(activo=True),label='Lugares',widget=forms.Select())
     hora = forms.TimeField(required=True,label="Hora", widget=forms.TimeInput())
     distancia = forms.IntegerField(required=True,label="Distancia", max_value=50)

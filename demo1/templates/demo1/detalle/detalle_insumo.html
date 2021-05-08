@@ -4,14 +4,16 @@
     <div class="insumo">
         <h4><a href="">{{i}}</a></h4>
         {% for i in insumo%}
-            <p>nombre: {{ i.nombre }}</p>
+        <div class="card">
+            <h3><p>nombre: {{ i.nombre }}</p>
             <p>precio: {{ i.precio }}</p>
             <p>tipo: {{ i.tipo }}</p>
             <p>pasajero: {{ i.pasajero }}</p>
-            <p>tarjeta: {{ i.tarjeta }}</p>
+            <p>tarjeta: {{ i.tarjeta }}</p></h3>
+        </div>
         {%endfor%}   
     </div>
-    <div>
-        <h2><a href="{% url 'principal' %}"> salir</a></h2>
+    <div class="card">
+        <h3><a href="{% url 'listado_insumo' %}"> Atras</a></h3>
     </div>
 {% endblock %}

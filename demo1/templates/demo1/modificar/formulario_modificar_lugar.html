@@ -1,0 +1,32 @@
+{% extends 'demo1/base_form.html' %}
+
+{% block formu %}
+<div class="page-header">
+    <h1>Modificar Lugar</h1>
+</div>
+<div>
+    <div class="formu container">
+    <div>
+        <form method="POST" class="post-form">
+            {% csrf_token %}
+            {{ form.as_p}}
+            <button type="submit" class="guardar lugar">Guardar</button>
+        </form>
+        {% if fallido %}
+        <div>
+            <p> El Lugar ya se encuentra registrado</p>
+        </div>
+        {% endif %}
+        {% if exitoso %}
+        <div>
+            <p> La carga se realizo con exito</p>
+        </div>
+        {% endif %}
+    </div>
+    <div>
+        <h3><a href="{% url 'listado_lugar' %}"> Atras</a></h3>
+    </div>
+    </div>
+</div>
+
+{% endblock %}

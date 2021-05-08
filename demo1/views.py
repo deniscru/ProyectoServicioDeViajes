@@ -2,7 +2,7 @@ from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login,authenticate
 from django.contrib import messages
-from .forms import FormLugar, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta
+from .forms import FormLugar, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormRutaModi
 from datetime import date
 
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
@@ -44,11 +44,11 @@ def listado_lugar(request):
     return render(request, 'demo1/listados/listado_lugar.html', {'lugares':lugares})
 
 def listado_insumo(request):
-    insumos=Insumo.objects.all()
+    insumos=Insumo.objects.filter(activo=True)
     return render(request, 'demo1/listados/listado_insumo.html', {'insumos':insumos})
 
 def listado_ruta(request):
-    rutas=Ruta.objects.all()
+    rutas=Ruta.objects.filter(activo=True)
     return render(request, 'demo1/listados/listado_ruta.html', {'rutas':rutas})
 
 def listado_viaje(request):
@@ -243,23 +243,78 @@ def detalle_ruta(request, pk):
     ruta = Ruta.objects.filter(pk=pk)
     return render(request, 'demo1/detalle/detalle_ruta.html', {'ruta': ruta})
 
+def modificar_ruta(request,pk):
+    ruta = Ruta.objects.get(pk=pk)
+    if request.method=='POST':
+        form=FormRutaModi(request.POST)
+        if form.is_valid():
+            d=form.cleaned_data 
+            unOrigen=d['origen']
+            unDestino=d['destino']
+            unaCombi= d['combi']
+            ruta.origen=unOrigen
+            ruta.destino=unDestino
+            ruta.combi=unaCombi
+            ruta.hora= d['hora']
+            ruta.distancia= d['distancia']
+            ruta.save()   
+    else:
+        data = {'combi': ruta.combi,'origen': ruta.origen,'destino': ruta.destino,'hora': ruta.hora,'distancia': ruta.distancia}
+        form=FormRutaModi(data)
+    return render(request, 'demo1/modificar/formulario_modificar_ruta.html', {'form': form})
+
+def modificar_insumo(request,pk):
+    insumo = Insumo.objects.get(pk=pk)
+    if request.method=='POST':
+        form=FormInsumo(request.POST)
+        if form.is_valid():
+            d=form.cleaned_data
+            t=Tarjeta.objects.get(id=d['tarjeta'])
+            p=Pasajero.objects.get(id=d['pasajero'])
+            insumo.tarjeta = t
+            insumo.pasajero = p
+            insumo.tipo = d['tipo']
+            insumo.nombre = d['nombre']
+            insumo.precio = d['precio']
+            insumo.save()
+            
+    else:
+        data = {'tarjeta': insumo.tarjeta,'pasajero': insumo.pasajero,'tipo': insumo.tipo,'nombre': insumo.nombre,'precio': insumo.precio}
+        form=FormInsumo(data)
+    return render(request, 'demo1/modificar/formulario_modificar_insumo.html', {'form': form})
+
 def detalle_lugar(request, pk):
     lugar = Lugar.objects.filter(pk=pk)
     return render(request, 'demo1/detalle/detalle_lugar.html', {'lugar': lugar})
 
 def modificar_lugar(request, pk):
+    lugar = Lugar.objects.get(pk=pk)
     if request.method == "POST":
         form = FormLugar(request.POST)
         if form.is_valid():
             datos = form.cleaned_data
             if datos['nombre']!='' and datos['provincia']!='':
-                lugar = Lugar.objects.get(pk=pk)
                 lugar.nombreYprovincia(datos['nombre'],datos['provincia'])
                 lugar.save()
                 
     else:
-        form = FormLugar()
-    return render(request, 'demo1/form/formulario_lugar.html', {'form': form})
+        data = {'nombre': lugar.nombre_de_lugar,'provincia': lugar.provincia}
+        form = FormLugar(data)
+    return render(request, 'demo1/modificar/formulario_modificar_lugar.html', {'form': form})
+
+def eliminar_ruta(request, pk):
+    ruta = Ruta.objects.get(pk=pk)
+    ruta.activo = False
+    ruta.save()
+    rutas=Ruta.objects.filter(activo=True)
+    return render(request, 'demo1/listados/listado_ruta.html', {'rutas':rutas})
+
+def eliminar_insumo(request, pk):
+    insumo = Insumo.objects.get(pk=pk)
+    insumo.activo = False
+    insumo.save()
+    insumos=Insumo.objects.filter(activo=True)
+    return render(request, 'demo1/listados/listado_insumo.html', {'insumos':insumos})
 
 def eliminar_lugar(request, pk):
     lugar = Lugar.objects.get(pk=pk)

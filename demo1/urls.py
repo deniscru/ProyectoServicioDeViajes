@@ -30,6 +30,10 @@ urlpatterns = [
     path('usuario/listaInsumo/<int:pk>/', views.detalle_insumo, name='detalle_insumo'),
     path('usuario/listaLugar/<int:pk>/', views.detalle_lugar, name='detalle_lugar'),
     path('usuario/listaLugar/modificar/<int:pk>/', views.modificar_lugar, name='modificar_lugar'),
+    path('usuario/listaInsumo/modificar/<int:pk>/', views.modificar_insumo, name='modificar_insumo'),
+    path('usuario/listaRuta/modificar/<int:pk>/', views.modificar_ruta, name='modificar_ruta'),
     path('usuario/listaLugar/eliminar/<int:pk>/', views.eliminar_lugar, name='eliminar_lugar'),
+    path('usuario/listaInsumo/eliminar/<int:pk>/', views.eliminar_insumo, name='eliminar_insumo'),
+    path('usuario/listaRuta/eliminar/<int:pk>/', views.eliminar_ruta, name='eliminar_ruta'),
     path('login/',views.login_usuario,name='login')
 ]
