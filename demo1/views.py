@@ -320,7 +320,9 @@ def combi_new(request):
 def verificarFechaYRuta(unaFecha, idRuta):
     dato=Viaje.objects.filter(fecha=unaFecha, ruta=idRuta).values()
     for i in dato:
-        if i['fecha']==unaFecha and i['ruta_id']==idRuta:
+        if i['fecha']==unaFecha and str(i['ruta_id'])==str(idRuta):
+            return False
+        if str(i['ruta_id'])==str(idRuta):
             return False
     return True
 
@@ -331,9 +333,10 @@ def viaje_new(request):
         form=FormViaje(request.POST)
         if form.is_valid():
             d=form.cleaned_data  
-            if verificarFechaYRuta(d['fecha'], d['ruta']): 
+            if verificarFechaYRuta(d['fecha'], d['ruta']):
+                ruta2=Ruta.objects.filter(id=d['ruta']).values()
                 unaRuta=Ruta.objects.get(id=d['ruta']) 
-                unaCombi=Combi.objects.filter(id=unaRuta['combi_id']).values() 
+                unaCombi=Combi.objects.filter(id=ruta2[0]['combi_id']).values() 
                 unosInsumos= Insumo.objects.filter(id__in= d['insumo'])       
                 viaje=Viaje.objects.create(ruta=unaRuta, fecha=d['fecha'], precio=d['precio'], asientos= unaCombi[0]['asientos'])
                 viaje.insumos.set(unosInsumos)
