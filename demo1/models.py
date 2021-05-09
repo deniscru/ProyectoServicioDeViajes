@@ -30,15 +30,13 @@ class Tarjeta(models.Model):
          return '%s %s' % (self.pasajero.usuario.first_name, str(self.numero))
 
 class Insumo(models.Model):
-    tarjeta = models.ForeignKey(Tarjeta, on_delete=models.CASCADE)
-    pasajero = models.ForeignKey(Pasajero, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=30)
     tipo = models.CharField(max_length=30)
     precio = models.FloatField()
     activo = models.BooleanField(default=True)
     
     def __str__(self):
-        return '%s %s' % (self.nombre, self.pasajero.usuario.first_name)
+        return '%s %s' % (self.nombre, self.tipo)
 
 
 class Lugar(models.Model):

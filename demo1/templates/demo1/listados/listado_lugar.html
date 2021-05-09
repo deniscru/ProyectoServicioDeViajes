@@ -5,19 +5,38 @@
     <h2>Listado de lugares</h2>  
 </div>
     <div class="card">
-        <ul>
-        {% for lugar in lugares %}
-            
-            <h4 class="card">{{ lugar }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="{% url 'detalle_lugar' pk=lugar.pk%}">detalle</a> 
-                &nbsp;&nbsp; <a href="{% url 'modificar_lugar' pk=lugar.pk%}"> modificar </a>
-                &nbsp;&nbsp; <a href="{% url 'eliminar_lugar' pk=lugar.pk%}"> eliminar </a></h4>
-            <br>
-        
-        {% endfor %}
-        </ul>
+    <table class="tablalista" width=100% border="1">
+        <tbody>
+        {% if cantidad %}
+            <tr>
+                <td align="center">Localidad</td>
+                <td align="center">Provincia</td>
+                <td align="center" colspan="2">Opcines</td>
+            </tr>
+            {% for lugar in page_obj %}
+                <tr>
+                    <td>{{lugar.nombre_de_lugar}}</td>
+                    <td>{{lugar.provincia }}</td>
+                    <td> 
+                        <a href="{% url 'eliminar_lugar' pk=lugar.pk%}">Eliminar</a></td>
+                    <td>
+                        <a href="{% url 'modificar_lugar' pk=lugar.pk%}">Modificar</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <p>No se registro ningun lugar</p>
+        {% endif %}
+    </tbody>
+    </table>
     </div>
-
-    <div class="card"><h4><a href="{% url 'principal' %}">Atras</a></h4></div>
+    <div>
+        {%if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+        {%endif%}
+        {%if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number}}">Siguiente</a>
+        {%endif%}
+</div>
+<div class="card"><h4><a href="{% url 'principal' %}">Atras</a></h4></div>
 {% endblock %}

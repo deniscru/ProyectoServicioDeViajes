@@ -13,7 +13,12 @@
             </form>
             {% if valor %}
                 <div>
-                    <p> La ruta ingresada no esta habilitada</p>
+                    <p> La ruta con la fecha ingresada ya está reservado</p>
+                </div>
+            {% endif %}
+            {% if exitoso %}
+                <div>
+                    <p> La carga se realizo con exito</p>
                 </div>
             {% endif %}
         </div>

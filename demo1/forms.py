@@ -73,7 +73,7 @@ class FormViaje(forms.Form):
             combi=Combi.objects.filter(id=ruta['combi_id']).values()
             origen=Lugar.objects.filter(id=ruta['origen_id']).values()
             destino=Lugar.objects.filter(id=ruta['destino_id']).values()
-            tupla=( ruta['id'] , 'Origen: '+origen[0]['nombre_de_lugar']+' de '+origen[0]['provincia']+'; Destino: '+destino[0]['nombre_de_lugar']+' de '+destino[0]['provincia']+'; Hora: '+ruta['hora'].isoformat())
+            tupla=( ruta['id'] , 'Origen: '+origen[0]['nombre_de_lugar']+'; Destino: '+destino[0]['nombre_de_lugar']+'; Hora: '+ruta['hora'].isoformat()+'; Cant de Asientos de la combi: '+str(combi[0]['asientos']))
             lista.append(tupla)
         return lista
     
@@ -92,33 +92,10 @@ class FormViaje(forms.Form):
     años=[2021,2022]
     fecha = forms.DateField(required=True,label='Fecha',widget=forms.SelectDateWidget(years=años))
     precio = forms.FloatField(required=True,label="Precio")
-    asientosDisponible = forms.IntegerField(required=True,label="Asientos Disponibles")
 
 class FormInsumo(forms.Form):
-    #duda, el insumo siempre se paga con una tarjeta registrada?
-    def obtenerTarjeta():
-        tarjetas= Tarjeta.objects.all().values()
-        lista=[]
-        for t in tarjetas:
-            tupla=(t['id'], 'Num° de Tarjeta: '+str(t['numero'])+'; Codigo: '+str(t['codigo']))
-            lista.append(tupla)
-        return lista
-
-    def obtenerPasajero():
-        pasajeros=Pasajero.objects.all().values()
-        lista=[]
-        for p in pasajeros:
-            u=User.objects.filter(id=p['usuario_id']).values()
-            tupla=(p['id'], 'Nombre: '+u[0]['first_name']+'; Apellido: '+u[0]['last_name']+'; DNI: '+str(p['dni']) )
-            lista.append(tupla)
-        return lista
-    
-    tipo_insumo= ( ('dulse', 'DULCE'), ('salado', 'SALADO') )
-    tarjetas= obtenerTarjeta()
-    pasajeros= obtenerPasajero()
-    tarjeta = forms.ChoiceField(widget=forms.Select(), choices=tarjetas)
-    pasajero = forms.ChoiceField(widget=forms.Select(), choices=pasajeros)
-    nombre = forms.CharField(required=True,max_length=70,label="Nombre")
+    tipo_insumo= ( ('dulse', 'DULSE'), ('salado', 'SALADO') )
+    nombre = forms.CharField(required=True,max_length=70,label="Nombre del Producto")
     tipo = forms.ChoiceField(widget=forms.RadioSelect, choices=tipo_insumo)
     precio = forms.FloatField(required=True, label='Precio')
 

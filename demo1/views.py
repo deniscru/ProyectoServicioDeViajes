@@ -4,7 +4,7 @@ from django.contrib.auth import login,logout
 from django.contrib import messages
 from .forms import FormLugar, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormRutaModi,FormTarjeta
 from datetime import date
-
+from django.core.paginator import Paginator
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
 
 def principal(request):
@@ -15,9 +15,21 @@ def detalle_usuario(request, pk):
     usuario = User.objects.filter(pk=pk)
     return render(request, 'demo1/detalle/detalle_usuario.html', {'usuario': usuario})
 
+def obtenerUser():
+    choferes= Chofer.objects.all().values()
+    lista=[]
+    print (choferes)
+    for i in choferes:
+        lista.append(i['usuario_id'])
+    return (User.objects.filter(id__in=lista))
+
 def listado_chofer(request):
-    choferes = Chofer.objects.all()
-    return render(request, 'demo1/listados/listado_chofer.html', {'choferes':choferes})
+    user= obtenerUser() 
+    paginator= Paginator(user, 10)
+    cantidad=False if (paginator.count == 0) else True 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'demo1/listados/listado_chofer.html', {'page_obj':page_obj, 'cantidad':cantidad})
 
 def listado_persona(request):
     personas= Persona.objects.all()
@@ -31,9 +43,23 @@ def lisatdo_pasajero(request):
     pasajeros=Pasajero.objects.all()
     return render(request, 'demo1/listados/listado_pasajero.html', {'pasajeros':pasajeros})
 
+def filaDeCombi():
+    combis=Combi.objects.all().values()
+    lista=[]
+    for c in combis:
+        chofer=Chofer.objects.filter(id=c['chofer_id']).values()
+        d=User.objects.filter(id=chofer[0]['usuario_id']).values()
+        dic={'modelo': c['modelo'], 'patente':c['patente'], 'chofer': d[0]['first_name']+' '+d[0]['last_name'], 'pk':c['id']}
+        lista.append(dic)
+    return lista
+
 def listado_combi(request):
-    combis=Combi.objects.all()
-    return render(request, 'demo1/listados/listado_combi.html', {'combis':combis})
+    combis=filaDeCombi()
+    paginator= Paginator(combis, 10)
+    cantidad=False if (paginator.count == 0) else True 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'demo1/listados/listado_combi.html', {'page_obj':page_obj, 'cantidad':cantidad})
 
 def listado_tarjeta(request):
     tarjetas=Tarjeta.objects.all()
@@ -41,19 +67,58 @@ def listado_tarjeta(request):
 
 def listado_lugar(request):
     lugares=Lugar.objects.filter(activo=True)
-    return render(request, 'demo1/listados/listado_lugar.html', {'lugares':lugares})
+    paginator= Paginator(lugares, 10)
+    cantidad=False if (paginator.count == 0) else True 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'demo1/listados/listado_lugar.html', {'page_obj':page_obj, 'cantidad':cantidad})
 
 def listado_insumo(request):
-    insumos=Insumo.objects.filter(activo=True)
-    return render(request, 'demo1/listados/listado_insumo.html', {'insumos':insumos})
+    insumos=Insumo.objects.all()
+    paginator= Paginator(insumos, 10)
+    cantidad=False if (paginator.count == 0) else True 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'demo1/listados/listado_insumo.html',{'page_obj':page_obj, 'cantidad':cantidad})
+
+def obtenerOrigenesDestino():
+    rutas=Ruta.objects.all().values()
+    lista=[]
+    for r in rutas:
+        o=Lugar.objects.filter(id=r['origen_id']).values()
+        d=Lugar.objects.filter(id=r['destino_id']).values()
+        dic={'origen': o[0]['nombre_de_lugar']+', '+o[0]['provincia'], 'destino': d[0]['nombre_de_lugar']+', '+d[0]['provincia'], 'hora':r['hora'], 'pk':r['id'] }
+        lista.append(dic)
+    return lista
 
 def listado_ruta(request):
-    rutas=Ruta.objects.filter(activo=True)
-    return render(request, 'demo1/listados/listado_ruta.html', {'rutas':rutas})
+    rutas=obtenerOrigenesDestino()
+    paginator= Paginator(rutas, 10)
+    cantidad=False if (paginator.count == 0) else True 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad})
+
+def armarFilaViaje():
+    viajes=Viaje.objects.all().values()
+    lista=[]
+    for v in viajes:
+        r=Ruta.objects.filter(id=v['ruta_id']).values()
+        combi=Combi.objects.filter(id=r[0]['combi_id']).values()
+        o=Lugar.objects.filter(id=r[0]['origen_id']).values()
+        d=Lugar.objects.filter(id=r[0]['destino_id']).values()
+        dic={'patente':combi[0]['patente'], 'origen':o[0]['nombre_de_lugar'], 'destino':d[0]['nombre_de_lugar'],
+            'hora': r[0]['hora'], 'distancia':r[0]['distancia'], 'cant': v['asientos'], 'fecha':v['fecha'], 'precio':v['precio'], 'pk':v['id']}
+        lista.append(dic)
+    return lista
 
 def listado_viaje(request):
-    viajes=Viaje.objects.all()
-    return render(request, 'demo1/listados/listado_viaje.html', {'viajes':viajes})
+    viajes=armarFilaViaje()
+    paginator= Paginator(viajes, 10)
+    cantidad=False if (paginator.count == 0) else True 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'demo1/listados/listado_viaje.html', {'page_obj':page_obj, 'cantidad':cantidad})
 
 def compararLugar(d):
     lugares= Lugar.objects.all().values()
@@ -236,6 +301,7 @@ def verficarChofer(idChofer):
 
 def combi_new(request):
     valor=False
+    exitoso=False
     if request.method=='POST':
         form=FormCombi(request.POST)
         if form.is_valid():
@@ -244,61 +310,91 @@ def combi_new(request):
                 unChofer=Chofer.objects.get(id=d['chofer'])
                 combi=Combi.objects.create(chofer=unChofer, modelo=d['modelo'], asientos=int(d['cantAsientos']), patente=d['patente'], tipo=d['tipo'])
                 combi.save()
+                exitoso=True
             else:
                 valor=True
     else:
         form=FormCombi()
-    return render(request, 'demo1/form/formulario_combi.html', {'form': form, 'valor': valor})
+    return render(request, 'demo1/form/formulario_combi.html', {'form': form, 'valor': valor, 'exitoso':exitoso})
 
-def verificarRuta(idRuta):
-    dato=Viaje.objects.filter(ruta=idRuta)
-    if dato.count()!= 0:
-        return False
+def verificarFechaYRuta(unaFecha, idRuta):
+    dato=Viaje.objects.filter(fecha=unaFecha, ruta=idRuta).values()
+    for i in dato:
+        if i['fecha']==unaFecha and i['ruta_id']==idRuta:
+            return False
     return True
 
 def viaje_new(request):
     valor=False
+    exitoso=False
     if request.method=='POST':
         form=FormViaje(request.POST)
         if form.is_valid():
             d=form.cleaned_data  
-            if verificarRuta(d['ruta']): 
-                unaRuta=Ruta.objects.get(id=d['ruta'])  
+            if verificarFechaYRuta(d['fecha'], d['ruta']): 
+                unaRuta=Ruta.objects.get(id=d['ruta']) 
+                unaCombi=Combi.objects.filter(id=unaRuta['combi_id']).values() 
                 unosInsumos= Insumo.objects.filter(id__in= d['insumo'])       
-                viaje=Viaje.objects.create(ruta=unaRuta, fecha=d['fecha'], precio=d['precio'], asientos=d['asientosDisponible'])
+                viaje=Viaje.objects.create(ruta=unaRuta, fecha=d['fecha'], precio=d['precio'], asientos= unaCombi[0]['asientos'])
                 viaje.insumos.set(unosInsumos)
                 viaje.save()
+                exitoso=True
             else:
                 valor=True 
     else:
         form=FormViaje()
-    return render(request, 'demo1/form/formulario_viaje.html', {'form': form, 'valor':valor})
+    return render(request, 'demo1/form/formulario_viaje.html', {'form': form, 'valor':valor, 'exitoso':exitoso})
+
+def verificarInsumo(datos):
+    insumos=Insumo.objects.all().values()
+    for i in insumos:
+        if i['nombre'].upper()==datos['nombre'].upper():
+            return False
+    return True
 
 def insumo_new(request):
+    valor=False
+    exitoso=False
     if request.method=='POST':
         form=FormInsumo(request.POST)
         if form.is_valid():
-            d=form.cleaned_data   
-            t=Tarjeta.objects.get(id=d['tarjeta'])
-            p=Pasajero.objects.get(id=d['pasajero']) 
-            insumo=Insumo.objects.create(tarjeta=t, pasajero=p, tipo=d['tipo'], nombre=d['nombre'],precio=d['precio'])
+            d=form.cleaned_data
+            if verificarInsumo(d):   
+                insumo=Insumo.objects.create(tipo=d['tipo'], nombre=d['nombre'],precio=d['precio'])
+                insumo.save()
+                exitoso=True
+            else: 
+                valor=True
     else:
         form=FormInsumo()
-    return render(request, 'demo1/form/formulario_insumo.html', {'form': form})
+    return render(request, 'demo1/form/formulario_insumo.html', {'form': form, 'valor':valor, 'exitoso':exitoso})
+
+def verficarRuta(d):
+    rutas=Ruta.objects.all().values()
+    for r in rutas:
+        if str(r['combi_id'])==str(d['combi'])and str(r['origen_id'])==str(d['origen']) and str(r['destino_id'])==str(d['destino']) and str(r['distancia'])==str(d['distancia']) and r['hora']==d['hora']:
+            return False
+    return True
 
 def ruta_new(request):
+    valor=False
+    exitoso=False
     if request.method=='POST':
         form=FormRuta(request.POST)
         if form.is_valid():
-            d=form.cleaned_data 
-            unOrigen=Lugar.objects.get(id=d['origen'])
-            unDestino=Lugar.objects.get(id=d['destino'])
-            unaCombi= Combi.objects.get(id=d['combi'])
-            ruta=Ruta.objects.create(combi=unaCombi, origen=unOrigen, destino=unDestino, distancia=d['distancia'], hora=d['hora'])
-            ruta.save()   
+            d=form.cleaned_data
+            if verficarRuta(d): 
+                unOrigen=Lugar.objects.get(id=d['origen'])
+                unDestino=Lugar.objects.get(id=d['destino'])
+                unaCombi= Combi.objects.get(id=d['combi'])
+                ruta=Ruta.objects.create(combi=unaCombi, origen=unOrigen, destino=unDestino, distancia=d['distancia'], hora=d['hora'])
+                ruta.save()
+                exitoso=True
+            else: 
+                valor=True   
     else:
         form=FormRuta()
-    return render(request, 'demo1/form/formulario_ruta.html', {'form': form})
+    return render(request, 'demo1/form/formulario_ruta.html', {'form': form, 'valor':valor, 'exitoso':exitoso})
 
 def detalle_pasajero(request, pk):
     pasajero = Pasajero.objects.filter(pk=pk)

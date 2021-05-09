@@ -1,13 +1,46 @@
 {% extends 'demo1/base.html' %}
 
 {% block content %}
-    <h2>Listado de combis</h2>  
-    <div>
-        <ul>
-        {% for combi in combis %}
-            <li><a href="{% url 'detalle_combi' pk=combi.pk%}">{{ combi }}</a></li>
-        {% endfor %}
-        </ul>
+<div class="card">
+    <h2>Listado de Combis</h2>  
+</div>
+    <div class="card">
+    <table class="tablalista" width=100% border="1">
+        <tbody>
+        {% if cantidad %}
+            <tr>
+                <td align="center">Nom. de Modelo</td>
+                <td align="center">Patente</td>
+                <td align="center">Nom. de Chofer</td>
+                <td align="center" colspan="3">Opcines</td>
+            </tr>
+            {% for c in page_obj %}
+                <tr>
+                    <td>{{c.modelo}}</td>
+                    <td>{{c.patente }}</td>
+                    <td>{{c.chofer }}</td>
+                    <td> 
+                        <a href="{% url 'detalle_combi' pk=c.pk%}">Detalle</a></td>
+                    <td> 
+                        <a href="">Eliminar</a></td>
+                    <td>
+                        <a href="">Modificar</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <p>No se registro ninguna combi</p>
+        {% endif %}
+    </tbody>
+    </table>
     </div>
-    <div><a href="{% url 'principal' %}">Atras</a></div>
+    <div>
+        {%if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+        {%endif%}
+        {%if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number}}">Siguiente</a>
+        {%endif%}
+</div>
+<div class="card"><h4><a href="{% url 'principal' %}">Atras</a></h4></div>
 {% endblock %}

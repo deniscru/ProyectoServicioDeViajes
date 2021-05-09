@@ -16,6 +16,11 @@
                     <p>El chofer ingresado no esta disponible</p>
                 </div>
             {% endif %}
+            {% if exitoso %}
+                <div>
+                    <p> La carga se realizo con exito</p>
+                </div>
+            {% endif %}
         </div>
         <div>
             <h2><a href="{% url 'principal' %}"> salir</a></h2>

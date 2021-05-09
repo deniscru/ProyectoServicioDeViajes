@@ -4,17 +4,41 @@
 <div class="card">
     <h2>Listado de rutas</h2>  
 </div>
-    <div class="card">
-        <ul>
-        {% for ruta in rutas %}
-            <h4 class="card">{{ ruta }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="{% url 'detalle_ruta' pk=ruta.pk%}">detalle</a> 
-                &nbsp;&nbsp; <a href="{% url 'modificar_ruta' pk=ruta.pk%}"> modificar </a>
-                &nbsp;&nbsp; <a href="{% url 'eliminar_ruta' pk=ruta.pk%}"> eliminar </a></h4>
-            <br>
-        {% endfor %}
-        </ul>
+    <div >
+    <table class="tablalista" width=100% border="1">
+        <tbody>
+        {% if cantidad %}
+            <tr>
+                <td align="center">Origen</td>
+                <td align="center">Destino</td>
+                <td align="center">Hora</td>
+                <td align="center" colspan="2">Opcines</td>
+            </tr>
+            {% for i in page_obj %}
+                <tr>
+                    <td>{{ i.origen  }}</td>
+                    <td>{{ i.destino }}</td>
+                    <td>{{ i.hora }}</td>
+                    <td>
+                        <a href="{% url 'eliminar_ruta' pk=i.pk%}">Eliminar</a></td>
+                    <td>
+                        <a href="{% url 'modificar_ruta' pk=i.pk%}">Modificar</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <p>No se registro ninguna ruta</p>
+        {% endif %}
+    </tbody>
+    </table>
     </div>
-    <div class="card"> <h3> <a href="{% url 'principal' %}">Atras</a></h3></div>
+    <div>
+        {%if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+        {%endif%}
+        {%if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number}}">Siguiente</a>
+        {%endif%}
+</div>
+<div class="card"><h4><a href="{% url 'principal' %}">Atras</a></h4></div>
 {% endblock %}

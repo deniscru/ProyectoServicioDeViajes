@@ -1,13 +1,46 @@
 {% extends 'demo1/base.html' %}
 
 {% block content %}
-    <h2>Listado de choferes</h2>    
+<div class="card">
+    <h2>Listado de Choferes</h2>  
+</div>
     <div>
-        <ul>
-        {% for chofer in choferes %}
-            <li><a href="{% url 'detalle_chofer' pk=chofer.pk%}">{{ chofer }}</a></li>
-        {% endfor %}
-        </ul>
+    <table class="tablalista" width=100% border="1">
+        <tbody>
+        {% if cantidad %}
+            <tr>
+                <td align="center">Nombre</td>
+                <td align="center">Apellido</td>
+                <td align="center">Email</td>
+                <td align="center" colspan="3">Opcines</td>
+            </tr>
+            {% for chofer in page_obj %}
+                <tr>
+                    <td>{{ chofer.first_name  }}</td>
+                    <td>{{ chofer.last_name }}</td>
+                    <td>{{ chofer.email }}</td>
+                    <td> 
+                        <a href="{% url 'detalle_chofer' pk=chofer.pk%}">Detalle</a></td>
+                    <td> 
+                        <a href="">Eliminar</a></td>
+                    <td>
+                        <a href="">Modificar</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <p>No se registro ningun Chofer</p>
+        {% endif %}
+    </tbody>
+    </table>
     </div>
-    <div><a href="{% url 'principal' %}">Atras</a></div>
+    <div>
+        {%if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+        {%endif%}
+        {%if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number}}">Siguiente</a>
+        {%endif%}
+</div>
+<div class="card"><h4><a href="{% url 'principal' %}">Atras</a></h4></div>
 {% endblock %}
