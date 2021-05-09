@@ -122,7 +122,7 @@ class FormRuta(forms.Form):
     origen = forms.ChoiceField(widget=forms.Select(), choices=lugares)
     destino = forms.ChoiceField(widget=forms.Select(), choices=lugares)
     hora = forms.TimeField(required=True,label="Hora", widget=forms.TimeInput())
-    distancia = forms.IntegerField(required=True,label="Distancia", max_value=50)
+    distancia = forms.IntegerField(required=True,label="Distancia", max_value=1000)
 
 class FormRutaModi(forms.Form):
     combi =forms.ModelChoiceField(queryset=Combi.objects.filter(activo=True),label='combis', widget=forms.Select())

@@ -74,7 +74,7 @@ def listado_lugar(request):
     return render(request, 'demo1/listados/listado_lugar.html', {'page_obj':page_obj, 'cantidad':cantidad})
 
 def listado_insumo(request):
-    insumos=Insumo.objects.all()
+    insumos=Insumo.objects.filter(activo=True)
     paginator= Paginator(insumos, 10)
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')
@@ -82,7 +82,7 @@ def listado_insumo(request):
     return render(request, 'demo1/listados/listado_insumo.html',{'page_obj':page_obj, 'cantidad':cantidad})
 
 def obtenerOrigenesDestino():
-    rutas=Ruta.objects.all().values()
+    rutas=Ruta.objects.filter(activo=True).values()
     lista=[]
     for r in rutas:
         o=Lugar.objects.filter(id=r['origen_id']).values()
@@ -483,23 +483,36 @@ def eliminar_ruta(request, pk):
     ruta = Ruta.objects.get(pk=pk)
     ruta.activo = False
     ruta.save()
-    rutas=Ruta.objects.filter(activo=True)
-    return render(request, 'demo1/listados/listado_ruta.html', {'rutas':rutas})
+    rutas=obtenerOrigenesDestino()
+    paginator= Paginator(rutas, 10)
+    cantidad=False if (paginator.count == 0) else True 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad})
+
 
 def eliminar_insumo(request, pk):
     insumo = Insumo.objects.get(pk=pk)
     insumo.activo = False
     insumo.save()
     insumos=Insumo.objects.filter(activo=True)
-    return render(request, 'demo1/listados/listado_insumo.html', {'insumos':insumos})
+    paginator= Paginator(insumos, 10)
+    cantidad=False if (paginator.count == 0) else True 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'demo1/listados/listado_insumo.html',{'page_obj':page_obj, 'cantidad':cantidad})
 
 def eliminar_lugar(request, pk):
     lugar = Lugar.objects.get(pk=pk)
     lugar.activo = False
     lugar.save()
     lugares=Lugar.objects.filter(activo=True)
-    return render(request, 'demo1/listados/listado_lugar.html', {'lugares':lugares})
-    
+    paginator= Paginator(lugares, 10)
+    cantidad=False if (paginator.count == 0) else True 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'demo1/listados/listado_lugar.html', {'page_obj':page_obj, 'cantidad':cantidad})
+   
 
 def detalle_tarjeta(request, pk):
     tarjeta = Tarjeta.objects.filter(pk=pk)
