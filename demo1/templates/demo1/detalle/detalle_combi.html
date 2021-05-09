@@ -4,14 +4,16 @@
     <div class="combi">
         <h4><a href="">{{c}}</a></h4>
         {% for c in combi%}
-            <p>chofer: {{ c.chofer }}</p>
+        <div class="card">
+            <h3><p>chofer: {{ c.chofer }}</p>
             <p>patente: {{ c.patente }}</p>
             <p>tipo: {{ c.tipo }}</p>
             <p>modelo: {{ c.modelo }}</p>
-            <p>asientos: {{ c.asientos }}</p>
+            <p>asientos: {{ c.asientos }}</p></h3>
+        </div>>
         {%endfor%}   
     </div>
-    <div>
-        <h2><a href="{% url 'principal' %}"> salir</a></h2>
+    <div class="card">
+        <h2><a href="{% url 'listado_combi' %}"> Atras</a></h2>
     </div>
 {% endblock %}

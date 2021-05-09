@@ -22,9 +22,9 @@
                     <td> 
                         <a href="{% url 'detalle_combi' pk=c.pk%}">Detalle</a></td>
                     <td> 
-                        <a href="">Eliminar</a></td>
+                        <a href="{% url 'eliminar_combi' pk=c.pk%}">Eliminar</a></td>
                     <td>
-                        <a href="">Modificar</a>
+                        <a href="{% url 'modificar_combi' pk=c.pk%}">Modificar</a>
                     </td>
                 </tr>
             {% endfor %}

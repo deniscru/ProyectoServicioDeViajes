@@ -1,0 +1,30 @@
+{% extends 'demo1/base_form.html' %}
+{% block formu %}
+<div class="page-header">
+    <h1>Modificar Chofer</h1>
+</div>
+<div class="card">
+    <div class="formu container">
+        <div class="card">
+            <form method="POST" class="post-form">
+                {% csrf_token %}
+                {{ form.as_p}}
+                <button type="submit" class="guardar chofer">Guardar</button>
+            </form>
+            {% if valor %}
+                <div class="card">
+                    <p> El dni o email ingresado ya esta registrado</p>
+                </div>
+            {% endif %}
+            {% if exitoso %}
+                <div class="card">
+                    <p> La carga se realizo con exito</p>
+                </div>
+            {% endif %}
+        </div>
+        <div class="card">
+            <h2><a href="{% url 'listado_chofer' %}"> Atras</a></h2>
+        </div>
+    </div>
+</div>
+{% endblock %}

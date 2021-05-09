@@ -2,7 +2,7 @@ from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout
 from django.contrib import messages
-from .forms import FormLugar, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormRutaModi,FormTarjeta
+from .forms import FormLugar, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje,FormViajeModi, FormInsumo, FormRuta,FormRutaModi,FormTarjeta,FormCombiModi
 from datetime import date
 from django.core.paginator import Paginator
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
@@ -16,7 +16,7 @@ def detalle_usuario(request, pk):
     return render(request, 'demo1/detalle/detalle_usuario.html', {'usuario': usuario})
 
 def obtenerUser():
-    choferes= Chofer.objects.all().values()
+    choferes= Chofer.objects.filter(activo=True).values()
     lista=[]
     print (choferes)
     for i in choferes:
@@ -44,7 +44,7 @@ def lisatdo_pasajero(request):
     return render(request, 'demo1/listados/listado_pasajero.html', {'pasajeros':pasajeros})
 
 def filaDeCombi():
-    combis=Combi.objects.all().values()
+    combis=Combi.objects.filter(activo=True).values()
     lista=[]
     for c in combis:
         chofer=Chofer.objects.filter(id=c['chofer_id']).values()
@@ -100,7 +100,7 @@ def listado_ruta(request):
     return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad})
 
 def armarFilaViaje():
-    viajes=Viaje.objects.all().values()
+    viajes=Viaje.objects.filter(activo=True).values()
     lista=[]
     for v in viajes:
         r=Ruta.objects.filter(id=v['ruta_id']).values()
@@ -121,7 +121,7 @@ def listado_viaje(request):
     return render(request, 'demo1/listados/listado_viaje.html', {'page_obj':page_obj, 'cantidad':cantidad})
 
 def compararLugar(d):
-    lugares= Lugar.objects.all().values()
+    lugares= Lugar.objects.filter(activo=True).values()
     for l in lugares:
         if l['nombre_de_lugar']==d['nombre'] and l['provincia']==d['provincia']:
             return False
@@ -478,6 +478,40 @@ def modificar_lugar(request, pk):
         form = FormLugar(data)
     return render(request, 'demo1/modificar/formulario_modificar_lugar.html', {'form': form})
 
+def eliminar_chofer(request, pk):
+    chofer = Chofer.objects.filter(pk=pk)
+    for object in chofer:
+        object.activo = False
+        object.save()
+    user= obtenerUser() 
+    paginator= Paginator(user, 10)
+    cantidad=False if (paginator.count == 0) else True 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'demo1/listados/listado_chofer.html', {'page_obj':page_obj, 'cantidad':cantidad})
+
+def eliminar_combi(request, pk):
+    combi = Combi.objects.get(pk=pk)
+    combi.activo = False
+    combi.save()
+    combis=filaDeCombi()
+    paginator= Paginator(combis, 10)
+    cantidad=False if (paginator.count == 0) else True 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'demo1/listados/listado_combi.html', {'page_obj':page_obj, 'cantidad':cantidad})
+
+def eliminar_viaje(request, pk):
+    viaje = Viaje.objects.get(pk=pk)
+    viaje.activo = False
+    viaje.save()
+    viajes=armarFilaViaje()
+    paginator= Paginator(viajes, 10)
+    cantidad=False if (paginator.count == 0) else True 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'demo1/listados/listado_viaje.html', {'page_obj':page_obj, 'cantidad':cantidad})
+
 def eliminar_ruta(request, pk):
     ruta = Ruta.objects.get(pk=pk)
     ruta.activo = False
@@ -488,7 +522,6 @@ def eliminar_ruta(request, pk):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad})
-
 
 def eliminar_insumo(request, pk):
     insumo = Insumo.objects.get(pk=pk)
@@ -512,7 +545,75 @@ def eliminar_lugar(request, pk):
     page_obj = paginator.get_page(page_number)
     return render(request, 'demo1/listados/listado_lugar.html', {'page_obj':page_obj, 'cantidad':cantidad})
    
-
 def detalle_tarjeta(request, pk):
     tarjeta = Tarjeta.objects.filter(pk=pk)
     return render(request, 'demo1/detalle/detalle_tarjeta.html', {'tarjeta': tarjeta})
+
+def modificar_chofer(request,pk):
+    valor=False
+    exitoso=False
+    if request.method=="POST":
+        form=FormChofer(request.POST)
+        if form.is_valid():
+            d=form.cleaned_data
+            if comparar_dni(int(d['dni'])) and comparar_email(d['email']):
+                user= User.objects.create(email=d['email'], password=d['password'], first_name=d['first_name'], last_name=d['last_name'], is_staff=False)
+                user.username=d['email']
+                user.save()
+                chofer= Chofer.objects.create(dni=int(d['dni']), telefono=d['telefono'], usuario=user)
+                chofer.save()
+                exitoso=True
+            else:
+                valor=True
+    else:
+        #data = {'nombre': lugar.nombre_de_lugar,'provincia': lugar.provincia}
+        form=FormChofer()
+    return render(request,'demo1/modificar/formulario_modificar_chofer.html',{"form":form, "valor":valor, "exitoso": exitoso})
+
+def modificar_viaje(request,pk):
+    viaje= Viaje.objects.get(pk=pk)
+    valor=False
+    
+    if request.method=='POST':
+        form=FormViajeModi(request.POST)
+        if form.is_valid():
+            d=form.cleaned_data  
+            if verificarFechaYRuta(d['fecha'], d['ruta']):
+                #ruta2=Ruta.objects.filter(id=d['ruta']).values()
+                #unaRuta=Ruta.objects.get(id=d['ruta']) 
+                #unaCombi=Combi.objects.filter(id=ruta2[0]['combi_id']).values() 
+                unosInsumos= Insumo.objects.filter(id__in= d['insumo'])       
+                viaje.insumos.set(unosInsumos)
+                viaje.ruta=d['ruta']
+                viaje.fecha=d['fecha']
+                viaje.precio= d['precio']
+                if viaje.ruta.combi.asientos >= d['asientos']:
+                    viaje.asientos=d['asientos']
+                viaje.save()
+                
+            else:
+                valor=True 
+    else:
+        data= {'ruta':viaje.ruta,'fecha':viaje.fecha,'insumo':viaje.insumos,'precio':viaje.precio,'asientos':viaje.asientos}
+        form=FormViajeModi(data)
+    return render(request, 'demo1/modificar/formulario_modificar_viaje.html', {'form': form, 'valor':valor})
+
+def modificar_combi(request,pk):
+    combi = Combi.objects.get(pk=pk)
+    valor=False
+    exitoso=False
+    if request.method=='POST':
+        form=FormCombiModi(request.POST)
+        if form.is_valid():
+            d=form.cleaned_data
+            combi.chofer= d['chofer']
+            combi.modelo= d['modelo']
+            combi.asientos= d['asientos']
+            combi.patente= d['patente']
+            combi.tipo=d['tipo']
+            combi.save()
+            
+    else:
+        data= {'chofer':combi.chofer,'modelo':combi.modelo,'patente':combi.patente,'tipo':combi.tipo,'asientos':combi.asientos}
+        form=FormCombiModi(data)
+    return render(request, 'demo1/modificar/formulario_modificar_combi.html', {'form': form, 'valor': valor, 'exitoso':exitoso})

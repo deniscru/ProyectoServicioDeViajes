@@ -33,9 +33,9 @@
                     <td>{{ v.fecha }}</td>
                     <td>{{ v.precio }}</td>
                     <td>
-                        <a href="">Eliminar</a></td>
+                        <a href="{% url 'eliminar_viaje' pk=v.pk%}">Eliminar</a></td>
                     <td>
-                        <a href="">Modificar</a>
+                        <a href="{% url 'modificar_viaje' pk=v.pk%}">Modificar</a>
                     </td>
                 </tr>
             {% endfor %}

@@ -1,0 +1,25 @@
+{% extends 'demo1/base_form.html' %}
+{% block formu %}
+<div class="page-header">
+    <h1>Modificar Viaje</h1>
+</div>
+<div class="card">
+    <div class="formu container">
+        <div class="card">
+            <form method="POST" class="post-form">
+                {% csrf_token %}
+                {{ form.as_p}}
+                <button type="submit" class="guardar chofer">Guardar</button>
+            </form>
+            {% if valor %}
+                <div class="card">
+                    <p> La ruta con la fecha ingresada ya está reservado</p>
+                </div>
+            {% endif %}
+        </div>
+        <div class="card">
+            <h2><a href="{% url 'listado_viaje' %}"> Atras</a></h2>
+        </div>
+    </div>
+</div>
+{% endblock %}

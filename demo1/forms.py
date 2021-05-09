@@ -65,23 +65,34 @@ class FormCombi(forms.Form):
     cantAsientos= forms.CharField(required=True,max_length=2,label="Cantidad de asientos")
     tipo=forms.ChoiceField(widget=forms.RadioSelect, choices=TIPOS_COMBI)
 
+class FormCombiModi(forms.Form):
+    TIPOS_COMBI = (
+        ('C', 'Cama'),
+        ('S', 'Semicama'),
+    )
+    chofer=forms.ModelChoiceField(queryset=Chofer.objects.filter(activo=True),label='choferes',widget=forms.Select())
+    modelo=forms.CharField(required=True,max_length=50,label="Modelo")
+    patente=forms.CharField(required=True,max_length=7,label="Patente")
+    asientos= forms.CharField(required=True,max_length=2,label="Cantidad de asientos")
+    tipo=forms.ChoiceField(widget=forms.RadioSelect, choices=TIPOS_COMBI)
+
+def obtenerDatosDeInsumo():
+        insumos= Insumo.objects.filter(activo=True).values()
+        lista=[]
+        for insumo in insumos:
+            tupla=(insumo['id'], 'Nombre: '+insumo['nombre']+', Tipo: '+insumo['tipo'])
+            lista.append(tupla)
+        return lista
+
 class FormViaje(forms.Form):
     def obtenerDatosDeRutas():
-        rutas= Ruta.objects.all().values()
+        rutas= Ruta.objects.filter(activo=True).values()
         lista=[]
         for ruta in rutas:
             combi=Combi.objects.filter(id=ruta['combi_id']).values()
             origen=Lugar.objects.filter(id=ruta['origen_id']).values()
             destino=Lugar.objects.filter(id=ruta['destino_id']).values()
             tupla=( ruta['id'] , 'Origen: '+origen[0]['nombre_de_lugar']+'; Destino: '+destino[0]['nombre_de_lugar']+'; Hora: '+ruta['hora'].isoformat()+'; Cant de Asientos de la combi: '+str(combi[0]['asientos']))
-            lista.append(tupla)
-        return lista
-    
-    def obtenerDatosDeInsumo():
-        insumos= Insumo.objects.all().values()
-        lista=[]
-        for insumo in insumos:
-            tupla=(insumo['id'], 'Nombre: '+insumo['nombre']+', Tipo: '+insumo['tipo'])
             lista.append(tupla)
         return lista
 
@@ -92,6 +103,7 @@ class FormViaje(forms.Form):
     años=[2021,2022]
     fecha = forms.DateField(required=True,label='Fecha',widget=forms.SelectDateWidget(years=años))
     precio = forms.FloatField(required=True,label="Precio")
+
 
 class FormInsumo(forms.Form):
     tipo_insumo= ( ('dulse', 'DULSE'), ('salado', 'SALADO') )
@@ -130,3 +142,14 @@ class FormRutaModi(forms.Form):
     destino = forms.ModelChoiceField(queryset=Lugar.objects.filter(activo=True),label='Lugares',widget=forms.Select())
     hora = forms.TimeField(required=True,label="Hora", widget=forms.TimeInput())
     distancia = forms.IntegerField(required=True,label="Distancia", max_value=50)
+
+class FormViajeModi(forms.Form):
+    datosDeInsumos=obtenerDatosDeInsumo()
+    ruta = forms.ModelChoiceField(queryset=Ruta.objects.filter(activo=True),label='Rutas', widget=forms.Select())
+    insumo = forms.MultipleChoiceField(choices=datosDeInsumos, help_text='Para selecionar mas de una opcion maten precionado la tecla "ctrl"')
+    años=[2021,2022]
+    fecha = forms.DateField(required=True,label='Fecha',widget=forms.SelectDateWidget(years=años))
+    precio = forms.FloatField(required=True,label="Precio")
+    asientos=forms.IntegerField(required=True,label="Asientos", help_text='Si va a modificar la cantida de asientos recuerde que no puede superar la capacidad maxima de la combi')
+
+
