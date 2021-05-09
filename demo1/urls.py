@@ -42,7 +42,7 @@ urlpatterns = [
     path('usuario/listaInsumo/eliminar/<int:pk>/', views.eliminar_insumo, name='eliminar_insumo'),
     path('usuario/listaRuta/eliminar/<int:pk>/', views.eliminar_ruta, name='eliminar_ruta'),
     path('login/',views.login_usuario,name='login'),
-    path('registrar/tarjeta/',views.tarjeta_new,name="registrar_tarjeta"),
+    path('registrar_tarjeta/',views.tarjeta_new,name="registrar_tarjeta"),
     path('home_usuario/',views.home_usuario,name="home_usuario"),
     path('logout/',views.logout_usuario,name='logout')
 ]

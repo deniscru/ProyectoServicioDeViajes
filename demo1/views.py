@@ -1,11 +1,12 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
-from django.contrib.auth import login,logout
+from django.contrib.auth import login,logout,authenticate
 from django.contrib import messages
 from .forms import FormLugar, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje,FormViajeModi, FormInsumo, FormRuta,FormRutaModi,FormTarjeta,FormCombiModi
 from datetime import date
 from django.core.paginator import Paginator
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
+from django.contrib.auth.hashers import make_password
 
 def principal(request):
     administrador = User.objects.filter(is_superuser=True)   
@@ -150,6 +151,13 @@ def tarjeta_new(request):
     if request.method=="POST":
         form=FormTarjeta(request.POST)
         if form.is_valid():
+            p=FormTarjeta.get_pasajero()
+            usuario=User.objects.create(is_superuser=False,password=p["password"],email=p["email"],first_name=p["first_name"],last_name=p["last_name"])
+            usuario.username=p["email"]
+            usuario.password=make_password(p["password"])
+            usuario.save()
+            pasajero=Pasajero.objects.create(usuario=usuario,dni=int(p["dni"]),telefono=int(p["telefono"]),tipo=p["tipo"],fecha_de_nacimiento=p["fecha_de_nacimiento"])
+            pasajero.save()
             t=form.cleaned_data
             tarjeta=Tarjeta.objects.create(pasajero=Pasajero.objects.last(),numero=t["numero"],fecha_de_vencimiento=t["fecha_de_vencimiento"],codigo=t["codigo"],activo=True)
             tarjeta.save()
@@ -181,35 +189,31 @@ def pasajero_new(request):
     exitoso=False
     fallido=False
     tipo=False
-    edad=None
+    edad=0
     if request.method=="POST":
         form=FormPasajero(request.POST)
         if form.is_valid():
             p=form.cleaned_data
             edad=calcular_edad(p)
             if edad>=18 and comparar_pasajero_dni(p["dni"]) and comparar_pasajero_email(p["email"]):
-                usuario=User.objects.create(is_superuser=False,password=p["password"],email=p["email"],first_name=p["first_name"],last_name=p["last_name"])
-                usuario.username=p["email"]
-                usuario.save()
-                pasajero=Pasajero.objects.create(usuario=usuario,dni=int(p["dni"]),telefono=int(p["telefono"]),tipo=p["tipo"],fecha_de_nacimiento=p["fecha_de_nacimiento"])
-                pasajero.save()
-                if (p["tipo"]=="BASICO"):
+                if p["tipo"]=="BASICO":
+                    usuario=User.objects.create(is_superuser=False,password=p["password"],email=p["email"],first_name=p["first_name"],last_name=p["last_name"])
+                    usuario.username=p["email"]
+                    usuario.password=make_password(p["password"])
+                    usuario.save()
+                    pasajero=Pasajero.objects.create(usuario=usuario,dni=int(p["dni"]),telefono=int(p["telefono"]),tipo=p["tipo"],fecha_de_nacimiento=p["fecha_de_nacimiento"])
+                    pasajero.save()
                     tipo=True
+                    exitoso=True
                 else:
-                   return redirect('http://127.0.0.1:8000/registrar/tarjeta/',pasajero)
-                exitoso=True
+                    t=FormTarjeta()
+                    t.change_pasajero(p)
+                    return redirect("http://127.0.0.1:8000/registrar_tarjeta/")
             else:
                 fallido=True
     else:
         form=FormPasajero()
     return render(request,'demo1/form/formulario_usuario.html',{"form":form,"edad":edad,"exitoso":exitoso,"fallido":fallido,"tipo":tipo}) 
-
-def buscar_usuario(email,password):
-    try:
-        dato=User.objects.get(username=email,password=password) 
-        return dato
-    except:
-        return None
 
 def es_fallo_usuario(email):
     try:
@@ -229,6 +233,8 @@ def es_pasajero(user):
 def es_admin(user):
     return user.is_superuser or user.is_staff
 
+
+
 def login_usuario(request):
     fallo_usuario=False
     fallo_password=False
@@ -237,13 +243,13 @@ def login_usuario(request):
         if form.is_valid():
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password')
-            user = buscar_usuario(email,password)
+            user = authenticate(username=email,password=password)
             if user is not None:
                 login(request, user)
-                if es_pasajero(user):
-                    return redirect("http://127.0.0.1:8000/home_usuario/")
-                elif es_admin(user):
+                if es_admin(user):
                     return redirect("http://127.0.0.1:8000")
+                elif es_pasajero(user):
+                    return redirect("http://127.0.0.1:8000/home_usuario/")
                 else:
                     return redirect("http://127.0.0.1:8000/home_usuario/")
             elif es_fallo_usuario(email):

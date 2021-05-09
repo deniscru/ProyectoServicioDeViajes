@@ -23,6 +23,7 @@ class FormPasajero(forms.Form):
     tipo =forms.ChoiceField(widget=forms.RadioSelect, choices=tipos)
 
 class FormTarjeta(forms.Form):
+    pasajero=None
     año=int(date.today().year)
     años=[]
     for i in range(año,(año+10)):
@@ -31,9 +32,17 @@ class FormTarjeta(forms.Form):
     fecha_de_vencimiento=forms.DateField(required=True,label="Fecha Vencimiento",widget=forms.SelectDateWidget(years=años))
     codigo=forms.CharField(required=True,label="Código seguridad",min_length=3,max_length=4)
 
+    @classmethod
+    def change_pasajero(self,p):
+        self.pasajero=p
+    
+    @classmethod
+    def get_pasajero(self):
+        return self.pasajero
+
 
 class FormLogin(forms.Form):
-    email=forms.EmailField(required=True,label="Email")
+    email=forms.CharField(required=True,label="Email")
     password=forms.CharField(required=True,widget=forms.PasswordInput,label="Contraseña")
 
 class FormChofer(forms.Form):
