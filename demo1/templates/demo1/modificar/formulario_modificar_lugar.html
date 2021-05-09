@@ -4,9 +4,9 @@
 <div class="page-header">
     <h1>Modificar Lugar</h1>
 </div>
-<div>
+<div class="card">
     <div class="formu container">
-    <div>
+    <div class="card">
         <form method="POST" class="post-form">
             {% csrf_token %}
             {{ form.as_p}}
@@ -23,7 +23,7 @@
         </div>
         {% endif %}
     </div>
-    <div>
+    <div class="card">
         <h3><a href="{% url 'listado_lugar' %}"> Atras</a></h3>
     </div>
     </div>

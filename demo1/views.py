@@ -446,17 +446,13 @@ def modificar_insumo(request,pk):
         form=FormInsumo(request.POST)
         if form.is_valid():
             d=form.cleaned_data
-            t=Tarjeta.objects.get(id=d['tarjeta'])
-            p=Pasajero.objects.get(id=d['pasajero'])
-            insumo.tarjeta = t
-            insumo.pasajero = p
             insumo.tipo = d['tipo']
             insumo.nombre = d['nombre']
             insumo.precio = d['precio']
             insumo.save()
             
     else:
-        data = {'tarjeta': insumo.tarjeta,'pasajero': insumo.pasajero,'tipo': insumo.tipo,'nombre': insumo.nombre,'precio': insumo.precio}
+        data = {'tipo': insumo.tipo,'nombre': insumo.nombre,'precio': insumo.precio}
         form=FormInsumo(data)
     return render(request, 'demo1/modificar/formulario_modificar_insumo.html', {'form': form})
 
