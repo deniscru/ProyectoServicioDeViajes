@@ -507,7 +507,7 @@ def eliminar_chofer(request, pk):
     for object in chofer:
         object.activo = False
         object.save()
-    user= obtenerUser() 
+    user= obtenerChoferes() 
     paginator= Paginator(user, 10)
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')
