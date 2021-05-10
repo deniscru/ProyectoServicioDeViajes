@@ -314,7 +314,7 @@ def combi_new(request):
             d=form.cleaned_data
             if verficarChofer(d['chofer']):
                 unChofer=Chofer.objects.get(id=d['chofer'])
-                combi=Combi.objects.create(chofer=unChofer, modelo=d['modelo'], asientos=int(d['cantAsientos']), patente=d['patente'], tipo=d['tipo'])
+                combi=Combi.objects.create(chofer=unChofer, modelo=d['modelo'], asientos=d['cantAsientos'], patente=d['patente'], tipo=d['tipo'])
                 combi.save()
                 exitoso=True
             else:
@@ -332,27 +332,38 @@ def verificarFechaYRuta(unaFecha, idRuta):
             return False
     return True
 
+def verifivarAsientos(d):
+    ruta2=Ruta.objects.filter(id=d['ruta']).values()
+    unaCombi=Combi.objects.filter(id=ruta2[0]['combi_id']).values()
+    if d['asientos'] <=unaCombi[0]['asientos']:
+        return True
+    else:
+        return False
+
 def viaje_new(request):
     valor=False
     exitoso=False
+    asientosValidos=False
     if request.method=='POST':
         form=FormViaje(request.POST)
         if form.is_valid():
             d=form.cleaned_data  
-            if verificarFechaYRuta(d['fecha'], d['ruta']):
-                ruta2=Ruta.objects.filter(id=d['ruta']).values()
-                unaRuta=Ruta.objects.get(id=d['ruta']) 
-                unaCombi=Combi.objects.filter(id=ruta2[0]['combi_id']).values() 
+            a=verificarFechaYRuta(d['fecha'], d['ruta'])
+            v=verifivarAsientos(d)
+            if a and v:
+                unaRuta=Ruta.objects.get(id=d['ruta'])  
                 unosInsumos= Insumo.objects.filter(id__in= d['insumo'])       
-                viaje=Viaje.objects.create(ruta=unaRuta, fecha=d['fecha'], precio=d['precio'], asientos= unaCombi[0]['asientos'])
+                viaje=Viaje.objects.create(ruta=unaRuta, fecha=d['fecha'], precio=d['precio'], asientos= d['asientos'])
                 viaje.insumos.set(unosInsumos)
                 viaje.save()
                 exitoso=True
-            else:
+            if not a:
                 valor=True 
+            if not v:
+                asientosValidos=True
     else:
         form=FormViaje()
-    return render(request, 'demo1/form/formulario_viaje.html', {'form': form, 'valor':valor, 'exitoso':exitoso})
+    return render(request, 'demo1/form/formulario_viaje.html', {'form': form, 'valor':valor, 'exitoso':exitoso, 'asientosValidos':asientosValidos})
 
 def verificarInsumo(datos):
     insumos=Insumo.objects.all().values()

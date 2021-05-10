@@ -21,6 +21,11 @@
                     <p> La carga se realizo con exito</p>
                 </div>
             {% endif %}
+            {% if asientosValidos %}
+                <div>
+                    <p> La cantidad de asientos debe ser menor o igual al de la combi</p>
+                </div>
+            {% endif %}
         </div>
         <div>
             <h2><a href="{% url 'principal' %}"> salir</a></h2>
