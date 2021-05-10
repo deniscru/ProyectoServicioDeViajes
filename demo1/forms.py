@@ -58,9 +58,10 @@ class FormCombi(forms.Form):
         choferes=Chofer.objects.all().values()
         lista=[]
         for chofer in choferes:
-            user=User.objects.filter(id=chofer['usuario_id']).values()
-            tupla=( chofer['id'] , user[0]['first_name']+' '+user[0]['last_name'])
-            lista.append(tupla)
+            if chofer['activo']:
+                user=User.objects.filter(id=chofer['usuario_id']).values()
+                tupla=( chofer['id'] , user[0]['first_name']+' '+user[0]['last_name'])
+                lista.append(tupla)
         return lista
 
     TIPOS_COMBI = (
@@ -161,6 +162,6 @@ class FormViajeModi(forms.Form):
     años=[2021,2022]
     fecha = forms.DateField(required=True,label='Fecha',widget=forms.SelectDateWidget(years=años))
     precio = forms.FloatField(required=True,label="Precio")
-    asientos=forms.IntegerField(required=True,label="Asientos", help_text='Si va a modificar la cantida de asientos recuerde que no puede superar la capacidad maxima de la combi')
+    asientos=forms.IntegerField(required=True,label="Asientos", help_text='Si va a modificar la cantidad de asientos recuerde que no puede superar la capacidad maxima de la combi')
 
 
