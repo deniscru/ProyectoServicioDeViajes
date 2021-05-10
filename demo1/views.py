@@ -253,7 +253,7 @@ def login_usuario(request):
                 elif es_pasajero(user):
                     return redirect("http://127.0.0.1:8000/home_usuario/")
                 else:
-                    return redirect("http://127.0.0.1:8000/home_usuario/")
+                    return redirect("http://127.0.0.1:8000/home_usuario_chofer/")
             elif es_fallo_usuario(email):
                fallo_usuario=True
             else:
@@ -264,6 +264,9 @@ def login_usuario(request):
 
 def home_usuario(request):
     return render(request,"demo1/home_usuario.html")
+
+def home_usuario_chofer(request):
+    return render(request,"demo1/home_usuario_chofer.html")
 
 def logout_usuario(request):
     logout(request)
@@ -290,6 +293,7 @@ def chofer_new(request):
             d=form.cleaned_data
             if comparar_dni(int(d['dni'])) and comparar_email(d['email']):
                 user= User.objects.create(email=d['email'], password=d['password'], first_name=d['first_name'], last_name=d['last_name'], is_staff=False)
+                user.password=make_password(d["password"])
                 user.username=d['email']
                 user.save()
                 chofer= Chofer.objects.create(dni=int(d['dni']), telefono=d['telefono'], usuario=user)
@@ -579,6 +583,7 @@ def modificar_chofer(request,pk):
             d=form.cleaned_data
             chofer.usuario.email= d['email']
             chofer.usuario.password= d['password']
+            chofer.usuario.password=make_password(d["password"])
             chofer.usuario.first_name=d['first_name']
             chofer.usuario.last_name= d['last_name']
             chofer.usuario.is_staff=False
@@ -588,7 +593,7 @@ def modificar_chofer(request,pk):
             chofer.telefono=d['telefono']
             chofer.save()
     else:
-        data = {'email': chofer.usuario.email,'password': chofer.usuario.password,'first_name': chofer.usuario.first_name,'last_name': chofer.usuario.last_name,'dni': chofer.dni,'telefono': chofer.telefono }
+        data = {'email': chofer.usuario.email,'password': 'nueva_clave','first_name': chofer.usuario.first_name,'last_name': chofer.usuario.last_name,'dni': chofer.dni,'telefono': chofer.telefono }
         form=FormChofer(data)
     return render(request,'demo1/modificar/formulario_modificar_chofer.html',{"form":form})
 
