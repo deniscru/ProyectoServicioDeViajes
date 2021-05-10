@@ -9,4 +9,9 @@
     {% if exitoso %}
         <meta http-equiv="refresh" content="0; URL=http://127.0.0.1:8000/login/" />>
     {% endif %}
+    {% if fv %}
+        <div>
+            <p>Fecha de vencimiento inválida</p>
+        </div>
+    {% endif %}
 {% endblock %}

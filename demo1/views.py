@@ -8,6 +8,8 @@ from django.core.paginator import Paginator
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
 from django.contrib.auth.hashers import make_password
 import time
+from django.db.models import Q
+
 def principal(request):
     administrador = User.objects.filter(is_superuser=True)   
     return render(request, 'demo1/principal.html', {'administrador': administrador})
@@ -16,13 +18,20 @@ def detalle_usuario(request, pk):
     usuario = User.objects.filter(pk=pk)
     return render(request, 'demo1/detalle/detalle_usuario.html', {'usuario': usuario})
 
+def no_se_encuentra_en_combi(chofer):
+    try:
+        Combi.objects.filter(chofer=chofer)
+        return False
+    except:
+        return True
+
 def obtenerChoferes():
     choferes= Chofer.objects.filter(activo=True).values()
     lista=[]
     for i in choferes:
         print (i)
         user=User.objects.get(id=i['usuario_id'])
-        dic={'first_name':user.first_name, 'last_name':user.last_name, 'email':user.email, 'pk':i['id']}
+        dic={'first_name':user.first_name, 'last_name':user.last_name, 'email':user.email, 'pk':i['id'],"puede":no_se_encuentra_en_combi(user)}
         lista.append(dic)
     return lista
 
@@ -162,25 +171,33 @@ def lugar_new(request):
         form = FormLugar()
     return render(request, 'demo1/form/formulario_lugar.html', {'form': form, 'exitoso':exitoso, 'fallido':fallido})
 
+def fecha_vencimiento_es_valida(fecha_de_vencimiento):
+    hoy=date.today()
+    return fecha_de_vencimiento > hoy
+
 def tarjeta_new(request):
     exitoso=False
+    fecha_vencimiento_no_es_valida=False
     if request.method=="POST":
         form=FormTarjeta(request.POST)
         if form.is_valid():
             p=FormTarjeta.get_pasajero()
-            usuario=User.objects.create(is_superuser=False,password=p["password"],email=p["email"],first_name=p["first_name"],last_name=p["last_name"])
-            usuario.username=p["email"]
-            usuario.password=make_password(p["password"])
-            usuario.save()
-            pasajero=Pasajero.objects.create(usuario=usuario,dni=int(p["dni"]),telefono=int(p["telefono"]),tipo=p["tipo"],fecha_de_nacimiento=p["fecha_de_nacimiento"])
-            pasajero.save()
             t=form.cleaned_data
-            tarjeta=Tarjeta.objects.create(pasajero=Pasajero.objects.last(),numero=t["numero"],fecha_de_vencimiento=t["fecha_de_vencimiento"],codigo=t["codigo"],activo=True)
-            tarjeta.save()
-            exitoso=True
+            if fecha_vencimiento_es_valida(t["fecha_de_vencimiento"]):
+                usuario=User.objects.create(is_superuser=False,password=p["password"],email=p["email"],first_name=p["first_name"],last_name=p["last_name"])
+                usuario.username=p["email"]
+                usuario.password=make_password(p["password"])
+                usuario.save()
+                pasajero=Pasajero.objects.create(usuario=usuario,dni=int(p["dni"]),telefono=int(p["telefono"]),tipo=p["tipo"],fecha_de_nacimiento=p["fecha_de_nacimiento"])
+                pasajero.save()
+                tarjeta=Tarjeta.objects.create(pasajero=Pasajero.objects.last(),numero=t["numero"],fecha_de_vencimiento=t["fecha_de_vencimiento"],codigo=t["codigo"],activo=True)
+                tarjeta.save()
+                exitoso=True
+            else:
+                fecha_vencimiento_no_es_valida=True
     else:
         form=FormTarjeta()
-    return render(request,'demo1/form/formulario_tarjeta.html',{"form":form,"exitoso":exitoso}) 
+    return render(request,'demo1/form/formulario_tarjeta.html',{"form":form,"exitoso":exitoso,"fv":fecha_vencimiento_no_es_valida}) 
 
 def calcular_edad(p):
     hoy=date.today()
@@ -332,7 +349,7 @@ def combi_new(request):
             d=form.cleaned_data
             if verficarChofer(d['chofer']):
                 unChofer=Chofer.objects.get(id=d['chofer'])
-                combi=Combi.objects.create(chofer=unChofer, modelo=d['modelo'], asientos=d['cantAsientos'], patente=d['patente'], tipo=d['tipo'])
+                combi=Combi.objects.create(chofer=unChofer, modelo=d['modelo'], asientos=d['cantAsientos'], patente=d['patente'], tipo=d['tipo'],activo=True)
                 combi.save()
                 exitoso=True
             else:
@@ -371,7 +388,7 @@ def viaje_new(request):
             if a and v:
                 unaRuta=Ruta.objects.get(id=d['ruta'])  
                 unosInsumos= Insumo.objects.filter(id__in= d['insumo'])       
-                viaje=Viaje.objects.create(ruta=unaRuta, fecha=d['fecha'], precio=d['precio'], asientos= d['asientos'])
+                viaje=Viaje.objects.create(ruta=unaRuta, fecha=d['fecha'], precio=d['precio'], asientos= d['asientos'],activo=True)
                 viaje.insumos.set(unosInsumos)
                 viaje.save()
                 exitoso=True
@@ -425,7 +442,7 @@ def ruta_new(request):
                 unOrigen=Lugar.objects.get(id=d['origen'])
                 unDestino=Lugar.objects.get(id=d['destino'])
                 unaCombi= Combi.objects.get(id=d['combi'])
-                ruta=Ruta.objects.create(combi=unaCombi, origen=unOrigen, destino=unDestino, distancia=d['distancia'], hora=d['hora'])
+                ruta=Ruta.objects.create(combi=unaCombi, origen=unOrigen, destino=unDestino, distancia=d['distancia'], hora=d['hora'],activo=True)
                 ruta.save()
                 exitoso=True
             else: 
@@ -516,15 +533,19 @@ def modificar_lugar(request, pk):
 
 def eliminar_chofer(request, pk):
     chofer = Chofer.objects.filter(pk=pk)
-    for object in chofer:
-        object.activo = False
-        object.save()
+    fallido=False
+    if(no_se_encuentra_en_combi(chofer)):
+        for object in chofer:
+            object.activo = False
+            object.save()
+    else:
+        fallido=True
     user= obtenerChoferes() 
     paginator= Paginator(user, 10)
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'demo1/listados/listado_chofer.html', {'page_obj':page_obj, 'cantidad':cantidad})
+    return render(request, 'demo1/listados/listado_chofer.html', {'page_obj':page_obj, 'cantidad':cantidad,"fallido":fallido})
 
 def eliminar_combi(request, pk):
     combi = Combi.objects.get(pk=pk)
@@ -576,16 +597,45 @@ def eliminar_insumo(request, pk):
     page_obj = paginator.get_page(page_number)
     return render(request, 'demo1/listados/listado_insumo.html',{'page_obj':page_obj, 'cantidad':cantidad})
 
+def es_activo_o_futuro(viaje):
+    return viaje.fecha >= date.today()
+
+
+def se_encuentra_en_viaje(ruta):
+    try:
+        viajes=Viaje.objects.all().filter(ruta=ruta)
+        for i in viajes:
+            if(es_activo_o_futuro(i)):
+                return True
+        return False
+    except:
+        return False
+
+def se_encuentra_en_ruta_activa(lugar):
+    try:
+        rutas=Ruta.objects.all().filter(Q(origen=lugar) | Q(destino=lugar))
+        for i in rutas:
+            if (se_encuentra_en_viaje(i)):
+                return True
+        return False
+    except:
+        return False
+
+
 def eliminar_lugar(request, pk):
     lugar = Lugar.objects.get(pk=pk)
-    lugar.activo = False
-    lugar.save()
+    fallido=False
+    if not se_encuentra_en_ruta_activa(lugar):
+        lugar.activo = False
+        lugar.save()
+    else:
+        fallido=True
     lugares=Lugar.objects.filter(activo=True)
     paginator= Paginator(lugares, 10)
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'demo1/listados/listado_lugar.html', {'page_obj':page_obj, 'cantidad':cantidad})
+    return render(request, 'demo1/listados/listado_lugar.html', {'page_obj':page_obj, 'cantidad':cantidad,"fallido":fallido})
    
 def detalle_tarjeta(request, pk):
     tarjeta = Tarjeta.objects.filter(pk=pk)

@@ -38,5 +38,10 @@
             <a href="?page={{ page_obj.next_page_number}}">Siguiente</a>
         {%endif%}
 </div>
+{% if fallido %}
+    <div>
+        <p>No fue posible borrar al chofer ya que se encuentra asignado a una combi</p>
+    </div>
+{% endif %} 
 <div class="card"><h4><a href="{% url 'principal' %}">Atras</a></h4></div>
 {% endblock %}
