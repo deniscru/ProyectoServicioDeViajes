@@ -16,17 +16,19 @@ def detalle_usuario(request, pk):
     usuario = User.objects.filter(pk=pk)
     return render(request, 'demo1/detalle/detalle_usuario.html', {'usuario': usuario})
 
-def obtenerUser():
+def obtenerChoferes():
     choferes= Chofer.objects.filter(activo=True).values()
     lista=[]
-    print (choferes)
     for i in choferes:
-        lista.append(i['usuario_id'])
-    return (User.objects.filter(id__in=lista))
+        print (i)
+        user=User.objects.get(id=i['usuario_id'])
+        dic={'first_name':user.first_name, 'last_name':user.last_name, 'email':user.email, 'pk':i['id']}
+        lista.append(dic)
+    return lista
 
 def listado_chofer(request):
-    user= obtenerUser() 
-    paginator= Paginator(user, 10)
+    choferes= obtenerChoferes() 
+    paginator= Paginator(choferes, 10)
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -421,6 +423,7 @@ def detalle_pasajero(request, pk):
     return render(request, 'demo1/detalle/detalle_pasajero.html', {'pasajero': pasajero})
 
 def detalle_chofer(request, pk):
+    print('detalle ',pk)
     chofer = Chofer.objects.filter(pk=pk)
     return render(request, 'demo1/detalle/detalle_chofer.html', {'chofer': chofer})
 
