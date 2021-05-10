@@ -556,25 +556,27 @@ def detalle_tarjeta(request, pk):
     return render(request, 'demo1/detalle/detalle_tarjeta.html', {'tarjeta': tarjeta})
 
 def modificar_chofer(request,pk):
-    valor=False
-    exitoso=False
+    queryset = Chofer.objects.filter(pk=pk)
+    for object in queryset:
+        chofer = object
     if request.method=="POST":
         form=FormChofer(request.POST)
         if form.is_valid():
             d=form.cleaned_data
-            if comparar_dni(int(d['dni'])) and comparar_email(d['email']):
-                user= User.objects.create(email=d['email'], password=d['password'], first_name=d['first_name'], last_name=d['last_name'], is_staff=False)
-                user.username=d['email']
-                user.save()
-                chofer= Chofer.objects.create(dni=int(d['dni']), telefono=d['telefono'], usuario=user)
-                chofer.save()
-                exitoso=True
-            else:
-                valor=True
+            chofer.usuario.email= d['email']
+            chofer.usuario.password= d['password']
+            chofer.usuario.first_name=d['first_name']
+            chofer.usuario.last_name= d['last_name']
+            chofer.usuario.is_staff=False
+            chofer.usuario.username=d['email']
+            chofer.usuario.save()
+            chofer.dni=d['dni']
+            chofer.telefono=d['telefono']
+            chofer.save()
     else:
-        #data = {'nombre': lugar.nombre_de_lugar,'provincia': lugar.provincia}
-        form=FormChofer()
-    return render(request,'demo1/modificar/formulario_modificar_chofer.html',{"form":form, "valor":valor, "exitoso": exitoso})
+        data = {'email': chofer.usuario.email,'password': chofer.usuario.password,'first_name': chofer.usuario.first_name,'last_name': chofer.usuario.last_name,'dni': chofer.dni,'telefono': chofer.telefono }
+        form=FormChofer(data)
+    return render(request,'demo1/modificar/formulario_modificar_chofer.html',{"form":form})
 
 def modificar_viaje(request,pk):
     viaje= Viaje.objects.get(pk=pk)
@@ -585,9 +587,6 @@ def modificar_viaje(request,pk):
         if form.is_valid():
             d=form.cleaned_data  
             if verificarFechaYRuta(d['fecha'], d['ruta']):
-                #ruta2=Ruta.objects.filter(id=d['ruta']).values()
-                #unaRuta=Ruta.objects.get(id=d['ruta']) 
-                #unaCombi=Combi.objects.filter(id=ruta2[0]['combi_id']).values() 
                 unosInsumos= Insumo.objects.filter(id__in= d['insumo'])       
                 viaje.insumos.set(unosInsumos)
                 viaje.ruta=d['ruta']
