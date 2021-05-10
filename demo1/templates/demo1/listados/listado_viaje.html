@@ -44,6 +44,9 @@
         {% endif %}
     </tbody>
     </table>
+    {% if exitoso %}
+        <p>El viaje a eliminar es presente o futuro, no se realizo la eliminación</p>
+    {% endif %}
     </div>
     <div>
         {%if page_obj.has_previous %}

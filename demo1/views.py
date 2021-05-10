@@ -3,11 +3,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
 from django.contrib import messages
 from .forms import FormLugar, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje,FormViajeModi, FormInsumo, FormRuta,FormRutaModi,FormTarjeta,FormCombiModi
-from datetime import date
+from datetime import date, datetime
 from django.core.paginator import Paginator
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
 from django.contrib.auth.hashers import make_password
-
+import time
 def principal(request):
     administrador = User.objects.filter(is_superuser=True)   
     return render(request, 'demo1/principal.html', {'administrador': administrador})
@@ -84,23 +84,37 @@ def listado_insumo(request):
     page_obj = paginator.get_page(page_number)
     return render(request, 'demo1/listados/listado_insumo.html',{'page_obj':page_obj, 'cantidad':cantidad})
 
+def verficarRuta2(pk):
+        viajes=Viaje.objects.filter(activo=True).values()
+        ruta = Ruta.objects.filter(pk=pk).values()
+        for v in viajes:
+            if ruta[0]['id']==v['ruta_id'] and v['fecha']>=date.today():
+                return False
+        return True
+
 def obtenerOrigenesDestino():
     rutas=Ruta.objects.filter(activo=True).values()
     lista=[]
     for r in rutas:
+        h=verficarRuta2(int(r['id']))
         o=Lugar.objects.filter(id=r['origen_id']).values()
         d=Lugar.objects.filter(id=r['destino_id']).values()
-        dic={'origen': o[0]['nombre_de_lugar']+', '+o[0]['provincia'], 'destino': d[0]['nombre_de_lugar']+', '+d[0]['provincia'], 'hora':r['hora'], 'pk':r['id'] }
+        dic={'origen': o[0]['nombre_de_lugar']+', '+o[0]['provincia'], 'destino': d[0]['nombre_de_lugar']+', '+d[0]['provincia'], 'hora':r['hora'], 'pk':r['id'], 'sePuede':h }
         lista.append(dic)
     return lista
 
 def listado_ruta(request):
+    noSePuede=False
+    print (request)
+    d=0
+    if int(d)>0:
+        noSePuede=True
     rutas=obtenerOrigenesDestino()
     paginator= Paginator(rutas, 10)
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad})
+    return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad, 'noSePuede':noSePuede})
 
 def armarFilaViaje():
     viajes=Viaje.objects.filter(activo=True).values()
@@ -234,8 +248,6 @@ def es_pasajero(user):
 
 def es_admin(user):
     return user.is_superuser or user.is_staff
-
-
 
 def login_usuario(request):
     fallo_usuario=False
@@ -527,25 +539,31 @@ def eliminar_combi(request, pk):
 
 def eliminar_viaje(request, pk):
     viaje = Viaje.objects.get(pk=pk)
-    viaje.activo = False
-    viaje.save()
+    exitoso=True
+    if viaje.fecha<date.today():
+        viaje.activo = False
+        viaje.save()
+        exitoso=False
     viajes=armarFilaViaje()
     paginator= Paginator(viajes, 10)
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'demo1/listados/listado_viaje.html', {'page_obj':page_obj, 'cantidad':cantidad})
+    return render(request, 'demo1/listados/listado_viaje.html', {'page_obj':page_obj, 'cantidad':cantidad, 'exitoso':exitoso})
 
 def eliminar_ruta(request, pk):
-    ruta = Ruta.objects.get(pk=pk)
-    ruta.activo = False
-    ruta.save()
+    exitosoE=True
+    if verficarRuta2(pk):
+        ruta = Ruta.objects.get(pk=pk)
+        ruta.activo = False
+        ruta.save()
+        exitosoE=False
     rutas=obtenerOrigenesDestino()
     paginator= Paginator(rutas, 10)
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad})
+    page_obj = paginator.get_page(page_number)  
+    return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad, 'exitosoE':exitosoE})
 
 def eliminar_insumo(request, pk):
     insumo = Insumo.objects.get(pk=pk)
