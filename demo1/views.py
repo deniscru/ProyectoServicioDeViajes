@@ -249,7 +249,7 @@ def login_usuario(request):
             if user is not None:
                 login(request, user)
                 if es_admin(user):
-                    return redirect("http://127.0.0.1:8000")
+                    return redirect("http://127.0.0.1:8000/admin")
                 elif es_pasajero(user):
                     return redirect("http://127.0.0.1:8000/home_usuario/")
                 else:
