@@ -77,8 +77,25 @@ def listado_tarjeta(request):
     tarjetas=Tarjeta.objects.all()
     return render(request, 'demo1/listados/listado_tarjeta.html', {'tarjetas':tarjetas})
 
+def obtenerValorUnLugar(id):
+    viajes=Viaje.objects.filter(activo=True).values()
+    for i in viajes:
+        ruta=Ruta.objects.filter(id=i['ruta_id']).values()
+        if ruta[0]['origen_id']==id or ruta[0]['destino_id']==id:
+            return False
+    return True
+
+def obtenerListaDeLugares():
+    lugares=Lugar.objects.filter(activo=True).values()
+    lista=[]
+    for l in lugares:
+        d=obtenerValorUnLugar(l['id'])
+        dic={'nombre_de_lugar':l['nombre_de_lugar'], 'provincia':l['provincia'], 'valor':d, 'pk':l['id']}
+        lista.append(dic)
+    return lista
+
 def listado_lugar(request):
-    lugares=Lugar.objects.filter(activo=True)
+    lugares=obtenerListaDeLugares()
     paginator= Paginator(lugares, 10)
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')

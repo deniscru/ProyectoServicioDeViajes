@@ -20,7 +20,11 @@
                     <td> 
                         <a href="{% url 'eliminar_lugar' pk=lugar.pk%}">Eliminar</a></td>
                     <td>
-                        <a href="{% url 'modificar_lugar' pk=lugar.pk%}">Modificar</a>
+                        {% if lugar.valor %}
+                            <a href="{% url 'modificar_lugar' pk=lugar.pk%}">Modificar</a>
+                        {% else %}
+                            <a href="{% url 'listado_lugar'%}">Modificar</a>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}
