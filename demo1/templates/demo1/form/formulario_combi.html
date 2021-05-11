@@ -21,6 +21,11 @@
                     <p> La carga se realizo con exito</p>
                 </div>
             {% endif %}
+            {% if patenteInvalido %}
+                <div>
+                    <p> La patente ingresado no es valido o ya esta registrado</p>
+                </div>
+            {% endif %}
         </div>
         <div>
             <h2><a href="{% url 'principal' %}"> salir</a></h2>

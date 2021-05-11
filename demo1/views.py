@@ -3,11 +3,10 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
 from django.contrib import messages
 from .forms import FormLugar, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje,FormViajeModi, FormInsumo, FormRuta,FormRutaModi,FormTarjeta,FormCombiModi
-from datetime import date, datetime
+from datetime import date
 from django.core.paginator import Paginator
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
 from django.contrib.auth.hashers import make_password
-import time
 from django.db.models import Q
 
 def principal(request):
@@ -18,20 +17,20 @@ def detalle_usuario(request, pk):
     usuario = User.objects.filter(pk=pk)
     return render(request, 'demo1/detalle/detalle_usuario.html', {'usuario': usuario})
 
-def no_se_encuentra_en_combi(chofer):
-    try:
-        Combi.objects.filter(chofer=chofer)
+def no_se_encuentra_en_combi(pk):
+    queryset = Combi.objects.filter(activo=True).values_list('chofer_id',flat=True)
+    if pk in queryset:
         return False
-    except:
+    else:
         return True
 
 def obtenerChoferes():
     choferes= Chofer.objects.filter(activo=True).values()
     lista=[]
     for i in choferes:
-        print (i)
         user=User.objects.get(id=i['usuario_id'])
-        dic={'first_name':user.first_name, 'last_name':user.last_name, 'email':user.email, 'pk':i['id'],"puede":no_se_encuentra_en_combi(user)}
+        d=no_se_encuentra_en_combi(i['id'])
+        dic={'first_name':user.first_name, 'last_name':user.last_name, 'email':user.email, 'pk':i['id'],"puede":d}
         lista.append(dic)
     return lista
 
@@ -94,6 +93,8 @@ def obtenerListaDeLugares():
         lista.append(dic)
     return lista
 
+
+
 def listado_lugar(request):
     lugares=obtenerListaDeLugares()
     paginator= Paginator(lugares, 10)
@@ -102,13 +103,31 @@ def listado_lugar(request):
     page_obj = paginator.get_page(page_number)
     return render(request, 'demo1/listados/listado_lugar.html', {'page_obj':page_obj, 'cantidad':cantidad})
 
+def verificarInsumoEnViaje(pk):
+    viajes=Viaje.objects.all()
+    for i in viajes:
+        insumos=i.insumos.values()
+        for j in insumos:
+            if j['id']==pk:
+                return False
+    return True
+
+def obtenerInsumosLista():
+    insumos=Insumo.objects.filter(activo=True).values()
+    lista=[]
+    for i in insumos:
+        dato=verificarInsumoEnViaje(i['id'])
+        dic={'nombre':i['nombre'], 'tipo':i['tipo'], 'precio':i['precio'], 'dato':dato}
+        lista.append(dic)
+    return lista
+
 def listado_insumo(request):
     insumos=Insumo.objects.filter(activo=True)
     paginator= Paginator(insumos, 10)
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'demo1/listados/listado_insumo.html',{'page_obj':page_obj, 'cantidad':cantidad})
+    return render(request, 'demo1/listados/listado_insumo.html',{'page_obj':page_obj, 'cantidad':cantidad, 'noSeElimina':False})
 
 def verficarRuta2(pk):
         viajes=Viaje.objects.filter(activo=True).values()
@@ -166,7 +185,7 @@ def listado_viaje(request):
 def compararLugar(d):
     lugares= Lugar.objects.filter(activo=True).values()
     for l in lugares:
-        if l['nombre_de_lugar']==d['nombre'] and l['provincia']==d['provincia']:
+        if l['nombre_de_lugar'].upper()==d['nombre'].upper() and l['provincia'].upper()==d['provincia'].upper():
             return False
     return True
 
@@ -357,23 +376,35 @@ def verficarChofer(idChofer):
         return False
     return True
 
+def verificarPatente(unaPatente):
+    combi=Combi.objects.filter(patente=unaPatente)
+    if combi.count()==0:
+        return True
+    return False
+
 def combi_new(request):
     valor=False
     exitoso=False
+    patenteInvalido=False
     if request.method=='POST':
         form=FormCombi(request.POST)
         if form.is_valid():
             d=form.cleaned_data
-            if verficarChofer(d['chofer']):
+            c=verficarChofer(d['chofer'])
+            p=False if len(d['patente'])<6 else True
+            patente=verificarPatente(d['patente'])
+            if c and p and patente:
                 unChofer=Chofer.objects.get(id=d['chofer'])
                 combi=Combi.objects.create(chofer=unChofer, modelo=d['modelo'], asientos=d['cantAsientos'], patente=d['patente'], tipo=d['tipo'],activo=True)
                 combi.save()
                 exitoso=True
-            else:
+            if not c:
                 valor=True
+            if not p or not patente:
+                patenteInvalido=True
     else:
         form=FormCombi()
-    return render(request, 'demo1/form/formulario_combi.html', {'form': form, 'valor': valor, 'exitoso':exitoso})
+    return render(request, 'demo1/form/formulario_combi.html', {'form': form, 'valor': valor, 'exitoso':exitoso, 'patenteInvalido':patenteInvalido})
 
 def verificarFechaYRuta(unaFecha, idRuta):
     dato=Viaje.objects.filter(fecha=unaFecha, ruta=idRuta).values()
@@ -445,6 +476,8 @@ def verficarRuta(d):
     rutas=Ruta.objects.all().values()
     for r in rutas:
         if str(r['combi_id'])==str(d['combi'])and str(r['origen_id'])==str(d['origen']) and str(r['destino_id'])==str(d['destino']) and str(r['distancia'])==str(d['distancia']) and r['hora']==d['hora']:
+            return False
+        if str(r['combi_id'])==str(d['combi']):
             return False
     return True
 
@@ -522,8 +555,7 @@ def modificar_insumo(request,pk):
             insumo.tipo = d['tipo']
             insumo.nombre = d['nombre']
             insumo.precio = d['precio']
-            insumo.save()
-            
+            insumo.save() 
     else:
         data = {'tipo': insumo.tipo,'nombre': insumo.nombre,'precio': insumo.precio}
         form=FormInsumo(data)
@@ -551,7 +583,7 @@ def modificar_lugar(request, pk):
 def eliminar_chofer(request, pk):
     chofer = Chofer.objects.filter(pk=pk)
     fallido=False
-    if(no_se_encuentra_en_combi(chofer)):
+    if(no_se_encuentra_en_combi(pk)):
         for object in chofer:
             object.activo = False
             object.save()
@@ -604,15 +636,19 @@ def eliminar_ruta(request, pk):
     return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad, 'exitosoE':exitosoE})
 
 def eliminar_insumo(request, pk):
-    insumo = Insumo.objects.get(pk=pk)
-    insumo.activo = False
-    insumo.save()
+    noSeElimina=False
+    if verificarInsumoEnViaje(pk):
+        insumo = Insumo.objects.get(pk=pk)
+        insumo.activo = False
+        insumo.save()
+    else:
+        noSeElimina=True
     insumos=Insumo.objects.filter(activo=True)
     paginator= Paginator(insumos, 10)
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'demo1/listados/listado_insumo.html',{'page_obj':page_obj, 'cantidad':cantidad})
+    return render(request, 'demo1/listados/listado_insumo.html',{'page_obj':page_obj, 'cantidad':cantidad, 'noSeElimina':noSeElimina})
 
 def es_activo_o_futuro(viaje):
     return viaje.fecha >= date.today()
@@ -726,3 +762,4 @@ def modificar_combi(request,pk):
         data= {'chofer':combi.chofer,'modelo':combi.modelo,'patente':combi.patente,'tipo':combi.tipo,'asientos':combi.asientos}
         form=FormCombiModi(data)
     return render(request, 'demo1/modificar/formulario_modificar_combi.html', {'form': form, 'valor': valor, 'exitoso':exitoso})
+
