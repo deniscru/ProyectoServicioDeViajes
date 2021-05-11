@@ -54,13 +54,22 @@ def lisatdo_pasajero(request):
     pasajeros=Pasajero.objects.all()
     return render(request, 'demo1/listados/listado_pasajero.html', {'pasajeros':pasajeros})
 
+def verificarSiCombiValido(id):
+    viajes=Viaje.objects.filter(activo=True).values()
+    for i in viajes:
+        ruta=Ruta.objects.filter(id=i['ruta_id']).values()
+        if ruta[0]['combi_id']==id:
+            return False
+    return True
+
 def filaDeCombi():
     combis=Combi.objects.filter(activo=True).values()
     lista=[]
     for c in combis:
         chofer=Chofer.objects.filter(id=c['chofer_id']).values()
+        n=verificarSiCombiValido(c['chofer_id'])
         d=User.objects.filter(id=chofer[0]['usuario_id']).values()
-        dic={'modelo': c['modelo'], 'patente':c['patente'], 'chofer': d[0]['first_name']+' '+d[0]['last_name'], 'pk':c['id']}
+        dic={'modelo': c['modelo'], 'patente':c['patente'], 'chofer': d[0]['first_name']+' '+d[0]['last_name'], 'pk':c['id'], 'sePuede':n}
         lista.append(dic)
     return lista
 
@@ -70,7 +79,7 @@ def listado_combi(request):
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'demo1/listados/listado_combi.html', {'page_obj':page_obj, 'cantidad':cantidad})
+    return render(request, 'demo1/listados/listado_combi.html', {'page_obj':page_obj, 'cantidad':cantidad, 'noSePuede':False})
 
 def listado_tarjeta(request):
     tarjetas=Tarjeta.objects.all()
@@ -93,8 +102,6 @@ def obtenerListaDeLugares():
         lista.append(dic)
     return lista
 
-
-
 def listado_lugar(request):
     lugares=obtenerListaDeLugares()
     paginator= Paginator(lugares, 10)
@@ -104,7 +111,7 @@ def listado_lugar(request):
     return render(request, 'demo1/listados/listado_lugar.html', {'page_obj':page_obj, 'cantidad':cantidad})
 
 def verificarInsumoEnViaje(pk):
-    viajes=Viaje.objects.all()
+    viajes=Viaje.objects.filter(activo=True)
     for i in viajes:
         insumos=i.insumos.values()
         for j in insumos:
@@ -117,12 +124,12 @@ def obtenerInsumosLista():
     lista=[]
     for i in insumos:
         dato=verificarInsumoEnViaje(i['id'])
-        dic={'nombre':i['nombre'], 'tipo':i['tipo'], 'precio':i['precio'], 'dato':dato}
+        dic={'nombre':i['nombre'], 'tipo':i['tipo'], 'precio':i['precio'], 'dato':dato , 'pk':i['id']}
         lista.append(dic)
     return lista
 
 def listado_insumo(request):
-    insumos=Insumo.objects.filter(activo=True)
+    insumos=obtenerInsumosLista()
     paginator= Paginator(insumos, 10)
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')
@@ -407,7 +414,7 @@ def combi_new(request):
     return render(request, 'demo1/form/formulario_combi.html', {'form': form, 'valor': valor, 'exitoso':exitoso, 'patenteInvalido':patenteInvalido})
 
 def verificarFechaYRuta(unaFecha, idRuta):
-    dato=Viaje.objects.filter(fecha=unaFecha, ruta=idRuta).values()
+    dato=Viaje.objects.filter(fecha=unaFecha, ruta=idRuta, activo=True).values()
     for i in dato:
         if i['fecha']==unaFecha and str(i['ruta_id'])==str(idRuta):
             return False
@@ -597,15 +604,19 @@ def eliminar_chofer(request, pk):
     return render(request, 'demo1/listados/listado_chofer.html', {'page_obj':page_obj, 'cantidad':cantidad,"fallido":fallido})
 
 def eliminar_combi(request, pk):
-    combi = Combi.objects.get(pk=pk)
-    combi.activo = False
-    combi.save()
+    noSePuede=False
+    if verificarSiCombiValido(pk):
+        combi = Combi.objects.get(pk=pk)
+        combi.activo = False
+        combi.save()
+    else:
+        noSePuede=True
     combis=filaDeCombi()
     paginator= Paginator(combis, 10)
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'demo1/listados/listado_combi.html', {'page_obj':page_obj, 'cantidad':cantidad})
+    return render(request, 'demo1/listados/listado_combi.html', {'page_obj':page_obj, 'cantidad':cantidad, 'noSePuede':noSePuede})
 
 def eliminar_viaje(request, pk):
     viaje = Viaje.objects.get(pk=pk)

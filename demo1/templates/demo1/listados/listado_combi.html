@@ -12,7 +12,7 @@
                 <td align="center">Nom. de Modelo</td>
                 <td align="center">Patente</td>
                 <td align="center">Nom. de Chofer</td>
-                <td align="center" colspan="3">Opcines</td>
+                <td align="center" colspan="3">Opciones</td>
             </tr>
             {% for c in page_obj %}
                 <tr>
@@ -24,7 +24,11 @@
                     <td> 
                         <a href="{% url 'eliminar_combi' pk=c.pk%}">Eliminar</a></td>
                     <td>
+                        {% if c.sePuede %}
                         <a href="{% url 'modificar_combi' pk=c.pk%}">Modificar</a>
+                        {% else %}
+                        <a href="">Modificar</a>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}
@@ -33,6 +37,11 @@
         {% endif %}
     </tbody>
     </table>
+    {% if noSePuede %}
+    <div>
+        <a>No se puede eliminar la combi seleccionado por que esta en un viaje</a>
+    </div>
+    {% endif %}
     </div>
     <div>
         {%if page_obj.has_previous %}

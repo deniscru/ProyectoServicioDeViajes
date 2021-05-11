@@ -55,7 +55,7 @@ class FormChofer(forms.Form):
 
 class FormCombi(forms.Form):
     def obtenerNombresDeChoferes():
-        choferes=Chofer.objects.all().values()
+        choferes=Chofer.objects.filter().values()
         lista=[]
         for chofer in choferes:
             if chofer['activo']:
@@ -71,7 +71,7 @@ class FormCombi(forms.Form):
     nombreDeChoferes=obtenerNombresDeChoferes()
     chofer=forms.ChoiceField(widget=forms.Select(), choices=nombreDeChoferes)
     modelo=forms.CharField(required=True,max_length=50,label="Modelo")
-    patente=forms.CharField(required=True,max_length=7,label="Patente")
+    patente=forms.CharField(required=True,max_length=9,label="Patente")
     cantAsientos= forms.IntegerField(required=True,label="Cantidad de asientos")
     tipo=forms.ChoiceField(widget=forms.RadioSelect, choices=TIPOS_COMBI)
 
@@ -118,7 +118,7 @@ class FormViaje(forms.Form):
 
 
 class FormInsumo(forms.Form):
-    tipo_insumo= ( ('dulse', 'DULSE'), ('salado', 'SALADO') )
+    tipo_insumo= ( ('dulse', 'DULCE'), ('salado', 'SALADO') )
     nombre = forms.CharField(required=True,max_length=70,label="Nombre del Producto")
     tipo = forms.ChoiceField(widget=forms.RadioSelect, choices=tipo_insumo)
     precio = forms.FloatField(required=True, label='Precio')
