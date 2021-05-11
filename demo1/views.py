@@ -86,10 +86,9 @@ def listado_tarjeta(request):
     return render(request, 'demo1/listados/listado_tarjeta.html', {'tarjetas':tarjetas})
 
 def obtenerValorUnLugar(id):
-    viajes=Viaje.objects.filter(activo=True).values()
-    for i in viajes:
-        ruta=Ruta.objects.filter(id=i['ruta_id']).values()
-        if ruta[0]['origen_id']==id or ruta[0]['destino_id']==id:
+    rutas=Ruta.objects.filter(activo=True).values()
+    for i in rutas:
+        if i['origen_id']==id or i['destino_id']==id:
             return False
     return True
 
@@ -661,35 +660,10 @@ def eliminar_insumo(request, pk):
     page_obj = paginator.get_page(page_number)
     return render(request, 'demo1/listados/listado_insumo.html',{'page_obj':page_obj, 'cantidad':cantidad, 'noSeElimina':noSeElimina})
 
-def es_activo_o_futuro(viaje):
-    return viaje.fecha >= date.today()
-
-
-def se_encuentra_en_viaje(ruta):
-    try:
-        viajes=Viaje.objects.all().filter(ruta=ruta)
-        for i in viajes:
-            if(es_activo_o_futuro(i)):
-                return True
-        return False
-    except:
-        return False
-
-def se_encuentra_en_ruta_activa(lugar):
-    try:
-        rutas=Ruta.objects.all().filter(Q(origen=lugar) | Q(destino=lugar))
-        for i in rutas:
-            if (se_encuentra_en_viaje(i)):
-                return True
-        return False
-    except:
-        return False
-
-
 def eliminar_lugar(request, pk):
     lugar = Lugar.objects.get(pk=pk)
     fallido=False
-    if not se_encuentra_en_ruta_activa(lugar):
+    if obtenerValorUnLugar(lugar.id):
         lugar.activo = False
         lugar.save()
     else:
