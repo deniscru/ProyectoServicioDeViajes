@@ -247,30 +247,22 @@ def calcular_edad(p):
     edad-=((hoy.month,hoy.day)<(p["fecha_de_nacimiento"].month,p["fecha_de_nacimiento"].day))
     return edad
 
-def comparar_pasajero_dni(unDni):
-    dato_chofer=Chofer.objects.filter(dni=unDni)
-    dato_pasajero=Pasajero.objects.filter(dni=unDni)
-    if dato_chofer.count()!= 0 and dato_pasajero.count()!=0:
-        return False
-    return True
-
-def comparar_pasajero_email(unEmail):
-    dato=User.objects.filter(email=unEmail)
-    if dato.count()!=0:
-        return False
-    return True
 
 def pasajero_new(request):
     exitoso=False
     fallido=False
     tipo=False
     edad=0
+    dniUnico=True
+    mailUnico=True
     if request.method=="POST":
         form=FormPasajero(request.POST)
         if form.is_valid():
             p=form.cleaned_data
             edad=calcular_edad(p)
-            if edad>=18 and comparar_pasajero_dni(p["dni"]) and comparar_pasajero_email(p["email"]):
+            dniUnico= not Persona.objects.filter(dni=(p["dni"])).exists()
+            mailUnico= not User.objects.filter(email=(p["email"])).exists()
+            if (edad>=18 and dniUnico and mailUnico):
                 if p["tipo"]=="BASICO":
                     usuario=User.objects.create(is_superuser=False,password=p["password"],email=p["email"],first_name=p["first_name"],last_name=p["last_name"])
                     usuario.username=p["email"]
@@ -288,7 +280,7 @@ def pasajero_new(request):
                 fallido=True
     else:
         form=FormPasajero()
-    return render(request,'demo1/form/formulario_usuario.html',{"form":form,"edad":edad,"exitoso":exitoso,"fallido":fallido,"tipo":tipo}) 
+    return render(request,'demo1/form/formulario_usuario.html',{"form":form,"edad":edad,"exitoso":exitoso,"fallido":fallido,"tipo":tipo,"dniUnico":dniUnico,"mailUnico":mailUnico}) 
 
 def es_fallo_usuario(email):
     try:

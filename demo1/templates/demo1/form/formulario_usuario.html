@@ -23,11 +23,25 @@
         {% if fallido %}
             {% if edad < 18 %}
                 <div>
-                    <p> No ha podido registrarse correctamente ya que debe ser mayor a 18 años</p>
+                    <h3> No ha podido registrarse correctamente ya que debe ser mayor a 18 años</h3>
                 </div>
-            {% else %}
+            {% elif not mailUnico and not dniUnico %}
                 <div>
-                    <p> No ha podido registrarse correctamente ya que el email o dni ya existen </p>
+                    <h3>No se ha podido registrar correctamente porque en mail y el dni ya existen</h3>
+
+
+                </div>
+            
+            
+            {% elif not mailUnico %}
+                <div>
+                    <h3>No se ha podido registrar correctamente porque en mail ya existe</h3>
+
+
+                </div>
+            {% elif not dniUnico %}
+                <div>
+                    <h3> No ha podido registrarse correctamente ya que el dni ya existe </h3>
                 </div>
             {% endif %}
         {% endif %}
