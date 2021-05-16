@@ -23,15 +23,10 @@
                         <a href="{% url 'detalle_chofer' pk=chofer.pk%}">Detalle</a></td>
                     <td> 
                         <a href="{% url 'eliminar_chofer' pk=chofer.pk%}">Eliminar</a></td>
-                    {% if chofer.puede %}
+                    
                         <td>
                             <a href="{% url 'modificar_chofer' pk=chofer.pk%}">Modificar</a>
                         </td>
-                    {% else %}
-                        <td>
-                            <a href="">Modificar</a>
-                        </td>
-                    {% endif %}
                 </tr>
             {% endfor %}
         {% else %}
@@ -48,9 +43,13 @@
             <a href="?page={{ page_obj.next_page_number}}">Siguiente</a>
         {%endif%}
 </div>
-{% if fallido %}
+{% if noEliminado %}
     <div>
-        <p>No fue posible borrar al chofer ya que se encuentra asignado a una combi</p>
+        <h3>No fue posible borrar al chofer ya que se encuentra asignado a una combi</h3>
+    </div>
+{% elif noModificado %}
+    <div>
+        <h3>No fue posible modificar al chofer ya que se encuentra asignado a una combi</h3>
     </div>
 {% endif %} 
 <div class="card"><h4><a href="{% url 'principal' %}">Atras</a></h4></div>

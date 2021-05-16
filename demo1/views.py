@@ -250,7 +250,6 @@ def calcular_edad(p):
 
 def pasajero_new(request):
     exitoso=False
-    fallido=False
     tipo=False
     edad=0
     dniUnico=True
@@ -276,11 +275,10 @@ def pasajero_new(request):
                     t=FormTarjeta()
                     t.change_pasajero(p)
                     return redirect("http://127.0.0.1:8000/registrar_tarjeta/")
-            else:
-                fallido=True
+            
     else:
         form=FormPasajero()
-    return render(request,'demo1/form/formulario_usuario.html',{"form":form,"edad":edad,"exitoso":exitoso,"fallido":fallido,"tipo":tipo,"dniUnico":dniUnico,"mailUnico":mailUnico}) 
+    return render(request,'demo1/form/formulario_usuario.html',{"form":form,"edad":edad,"exitoso":exitoso,"tipo":tipo,"dniUnico":dniUnico,"mailUnico":mailUnico}) 
 
 def es_fallo_usuario(email):
     try:
@@ -348,13 +346,16 @@ def comparar_email(unEmail):
     return True
 
 def chofer_new(request):
-    valor=False
     exitoso=False
+    dniUnico=True
+    mailUnico=True
     if request.method=="POST":
         form=FormChofer(request.POST)
         if form.is_valid():
             d=form.cleaned_data
-            if comparar_dni(int(d['dni'])) and comparar_email(d['email']):
+            dniUnico= not Persona.objects.filter(dni=(d["dni"])).exists()
+            mailUnico= not User.objects.filter(email=(d["email"])).exists()
+            if dniUnico and mailUnico:
                 user= User.objects.create(email=d['email'], password=d['password'], first_name=d['first_name'], last_name=d['last_name'], is_staff=False)
                 user.password=make_password(d["password"])
                 user.username=d['email']
@@ -362,11 +363,9 @@ def chofer_new(request):
                 chofer= Chofer.objects.create(dni=int(d['dni']), telefono=d['telefono'], usuario=user)
                 chofer.save()
                 exitoso=True
-            else:
-                valor=True
     else:
         form=FormChofer()
-    return render(request,'demo1/form/formulario_chofer.html',{"form":form, "valor":valor, "exitoso": exitoso})
+    return render(request,'demo1/form/formulario_chofer.html',{"form":form,"exitoso": exitoso,'dniUnico':dniUnico,'mailUnico':mailUnico})
 
 def verficarChofer(idChofer):
     dato=Combi.objects.filter(chofer=idChofer)
@@ -580,19 +579,19 @@ def modificar_lugar(request, pk):
 
 def eliminar_chofer(request, pk):
     chofer = Chofer.objects.filter(pk=pk)
-    fallido=False
+    noEliminado=False
     if(no_se_encuentra_en_combi(pk)):
         for object in chofer:
             object.activo = False
             object.save()
     else:
-        fallido=True
+        noEliminado=True
     user= obtenerChoferes() 
     paginator= Paginator(user, 10)
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'demo1/listados/listado_chofer.html', {'page_obj':page_obj, 'cantidad':cantidad,"fallido":fallido})
+    return render(request, 'demo1/listados/listado_chofer.html', {'page_obj':page_obj, 'cantidad':cantidad,"noEliminado":noEliminado})
 
 def eliminar_combi(request, pk):
     noSePuede=False
@@ -672,28 +671,49 @@ def detalle_tarjeta(request, pk):
     return render(request, 'demo1/detalle/detalle_tarjeta.html', {'tarjeta': tarjeta})
 
 def modificar_chofer(request,pk):
-    queryset = Chofer.objects.filter(pk=pk)
-    for object in queryset:
-        chofer = object
-    if request.method=="POST":
-        form=FormChofer(request.POST)
-        if form.is_valid():
-            d=form.cleaned_data
-            chofer.usuario.email= d['email']
-            chofer.usuario.password= d['password']
-            chofer.usuario.password=make_password(d["password"])
-            chofer.usuario.first_name=d['first_name']
-            chofer.usuario.last_name= d['last_name']
-            chofer.usuario.is_staff=False
-            chofer.usuario.username=d['email']
-            chofer.usuario.save()
-            chofer.dni=d['dni']
-            chofer.telefono=d['telefono']
-            chofer.save()
+    noModificado=False
+    if(no_se_encuentra_en_combi(pk)):
+        dniUnico=True
+        mailUnico=True
+        fercho = Chofer.objects.get(pk=pk)
+        data = {'email':fercho.usuario.email,'password':'','first_name':fercho.usuario.first_name,'last_name':fercho.usuario.last_name,'username':fercho.usuario.username,'dni':fercho.dni,'telefono':fercho.telefono}
+        if request.method=="GET":
+            form=FormChofer(data)
+        else:
+            form=FormChofer(request.POST)
+            if form.is_valid():
+                d=form.cleaned_data
+                userpk=fercho.usuario.pk
+                dniUnico= not Persona.objects.exclude(pk=pk).filter(dni=(d["dni"])).exists()
+                mailUnico= not User.objects.exclude(pk=userpk).filter(email=(d["email"])).exists()
+                if dniUnico and mailUnico:
+                    fercho.usuario.email= d['email']
+                    fercho.usuario.password= d['password']
+                    fercho.usuario.password=make_password(d["password"])
+                    fercho.usuario.first_name=d['first_name']
+                    fercho.usuario.last_name= d['last_name']
+                    fercho.usuario.is_staff=False
+                    fercho.usuario.username=d['email']
+                    fercho.usuario.save()
+                    fercho.dni=d['dni']
+                    fercho.telefono=d['telefono']
+                    fercho.save()
+                    return redirect('listado_chofer')
+        return render(request,'demo1/modificar/formulario_modificar_chofer.html',{"form":form,'dniUnico':dniUnico,'mailUnico':mailUnico})
     else:
-        data = {'email': chofer.usuario.email,'password': 'nueva_clave','first_name': chofer.usuario.first_name,'last_name': chofer.usuario.last_name,'dni': chofer.dni,'telefono': chofer.telefono }
-        form=FormChofer(data)
-    return render(request,'demo1/modificar/formulario_modificar_chofer.html',{"form":form})
+        noModificado = True
+        user= obtenerChoferes() 
+        paginator= Paginator(user, 10)
+        cantidad=False if (paginator.count == 0) else True 
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        return render(request, 'demo1/listados/listado_chofer.html', {'page_obj':page_obj, 'cantidad':cantidad,"noModificado":noModificado})
+        
+       
+
+
+    
+
 
 def modificar_viaje(request,pk):
     viaje= Viaje.objects.get(pk=pk)

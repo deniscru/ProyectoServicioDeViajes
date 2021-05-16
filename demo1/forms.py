@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
+from django.forms import widgets
 from .models import Lugar, Pasajero, Chofer, Ruta, Insumo, Tarjeta, Combi, Persona
 from datetime import date
 
@@ -52,6 +53,7 @@ class FormChofer(forms.Form):
     last_name=forms.CharField(required=True,max_length=30,label="Apellido")
     password = forms.CharField(required=True,label="Contraseña",min_length=6)
     telefono=forms.CharField(required=True,label="Teléfono",max_length=15)
+
 
 class FormCombi(forms.Form):
     def obtenerNombresDeChoferes():

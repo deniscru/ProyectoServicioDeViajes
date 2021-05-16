@@ -3,16 +3,30 @@
 <div class="page-header">
     <h1>Modificar Chofer</h1>
 </div>
-<div class="card">
+<div>
     <div class="formu container">
-        <div class="card">
+        <div>
             <form method="POST" class="post-form">
                 {% csrf_token %}
                 {{ form.as_p}}
                 <button type="submit" class="guardar chofer">Guardar</button>
             </form>
+            {% if not dniUnico and not mailUnico %}
+                <div>
+                    <h3> El dni y el mail ya estan registrado</h3>
+                </div>
+            {% elif not dniUnico %}
+                <div>
+                    <h3> El dni ya estan registrado</h3>
+                </div>
+            {% elif not mailUnico %}
+                <div>
+                    <h3> El mail ya estan registrado</h3>
+                </div>
+            
+            {% endif %}
         </div>
-        <div class="card">
+        <div>
             <h2><a href="{% url 'listado_chofer' %}"> Atras</a></h2>
         </div>
     </div>
