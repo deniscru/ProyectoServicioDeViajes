@@ -8,6 +8,7 @@ from django.core.paginator import Paginator
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
 from django.contrib.auth.hashers import make_password
 from django.db.models import Q
+import datetime
 
 def principal(request):
     administrador = User.objects.filter(is_superuser=True)   
@@ -739,23 +740,57 @@ def modificar_viaje(request,pk):
         form=FormViajeModi(data)
     return render(request, 'demo1/modificar/formulario_modificar_viaje.html', {'form': form, 'valor':valor})
 
+def no_se_encuentra_en_viaje(pk):
+    hoy= datetime.date.today()
+    todosLosViaje=Viaje.objects.filter(activo=True)
+    for viaje in todosLosViaje:
+        if viaje.fecha >= hoy:
+            if viaje.ruta.combi.id == pk:
+                return False
+    return True
+
+def no_se_encuentra_en_ruta(pk):
+    queryset = Ruta.objects.filter(activo=True)
+    for ruta in queryset:
+        if ruta.combi.id == pk:
+            return False
+    return True
+
 def modificar_combi(request,pk):
-    combi = Combi.objects.get(pk=pk)
-    valor=False
-    exitoso=False
-    if request.method=='POST':
-        form=FormCombi(request.POST)
-        if form.is_valid():
-            d=form.cleaned_data
-            combi.chofer= d['chofer']
-            combi.modelo= d['modelo']
-            combi.asientos= d['asientos']
-            combi.patente= d['patente']
-            combi.tipo=d['tipo']
-            combi.save()
-            
+    noModificado=False
+    if(no_se_encuentra_en_viaje(pk)):
+        choferRep=False
+        modiTodo=True
+        combi = Combi.objects.get(pk=pk)
+        data = {'chofer':combi.chofer,'modelo':combi.modelo,'patente':combi.patente,'tipo':combi.tipo,'cantAsientos':combi.asientos}
+        if request.method=="GET":
+            form=FormCombi(data)
+        else:
+            form=FormCombi(request.POST)
+            if form.is_valid():
+                d=form.cleaned_data
+                choferRep=True if (combi.chofer != d['chofer'] and no_se_encuentra_en_combi(d['chofer']) ) else False
+                modiTodo=True if (no_se_encuentra_en_ruta(pk)) else False
+                if ((not choferRep) and modiTodo):
+                    combi.chofer= d['chofer']
+                    combi.tipo=d['tipo']
+                    combi.modelo= d['modelo']
+                    combi.asientos= d['cantAsientos']
+                    combi.patente= d['patente']
+                    combi.save()
+                    return redirect('listado_combi')
+                elif ((not choferRep) and not modiTodo):
+                    combi.chofer= d['chofer']
+                    combi.tipo=d['tipo']
+                    combi.save()
+                    return redirect('listado_combi')
+        return render(request,'demo1/modificar/formulario_modificar_combi.html',{"form":form,'choferRep':choferRep,'modiTodo':modiTodo})
     else:
-        data= {'chofer':combi.chofer,'modelo':combi.modelo,'patente':combi.patente,'tipo':combi.tipo,'asientos':combi.asientos}
-        form=FormCombi(data)
-    return render(request, 'demo1/modificar/formulario_modificar_combi.html', {'form': form, 'valor': valor, 'exitoso':exitoso})
+        noModificado = True
+        combis=filaDeCombi()
+        paginator= Paginator(combis, 10)
+        cantidad=False if (paginator.count == 0) else True 
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        return render(request, 'demo1/listados/listado_combi.html', {'page_obj':page_obj, 'cantidad':cantidad, 'noModificado':noModificado})
 

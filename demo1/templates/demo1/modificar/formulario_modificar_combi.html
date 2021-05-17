@@ -6,22 +6,26 @@
 <div class="card">
     <div class="formu container">
         <div class="card">
+            
             <form method="POST" class="post-form">
                 {% csrf_token %}
                 {{ form.as_p}}
                 <button type="submit" class="guardar chofer">Guardar</button>
             </form>
-            {% if valor %}
-                <div class="card">
-                    <p>El chofer ingresado no esta disponible</p>
+        </div>
+        <div class="card">
+            {% if not modiTodo %}
+                <div>
+                    <h3> La combi ya esta asignada a una ruta por lo que solo es posible modificar el chofer el tipo</h3>
                 </div>
             {% endif %}
-            {% if exitoso %}
-                <div class="card">
-                    <p> La carga se realizo con exito</p>
+            {% if choferRep %}
+                <div>
+                    <h3> No es posible asignar el chofer elegido porque el mismo ya fue asigando a otra combi</h3>
                 </div>
             {% endif %}
         </div>
+        
         <div class="card">
             <h2><a href="{% url 'listado_combi' %}"> Atras</a></h2>
         </div>
