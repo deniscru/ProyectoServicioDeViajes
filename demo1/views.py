@@ -2,7 +2,7 @@ from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
 from django.contrib import messages
-from .forms import FormLugar, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje,FormViajeModi, FormInsumo, FormRuta,FormRutaModi,FormTarjeta,FormCombiModi
+from .forms import FormLugar, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje,FormViajeModi, FormInsumo, FormRuta,FormTarjeta
 from datetime import date
 from django.core.paginator import Paginator
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
@@ -333,18 +333,6 @@ def logout_usuario(request):
     logout(request)
     return redirect("http://127.0.0.1:8000/login/")
 
-def comparar_dni(unDni):
-    dato=Chofer.objects.filter(dni=unDni)
-    if dato.count()!= 0:
-        return False
-    return True
-
-def comparar_email(unEmail):
-    dato=User.objects.filter(email=unEmail)
-    if dato.count()!= 0:
-        return False
-    return True
-
 def chofer_new(request):
     exitoso=False
     dniUnico=True
@@ -355,6 +343,7 @@ def chofer_new(request):
             d=form.cleaned_data
             dniUnico= not Persona.objects.filter(dni=(d["dni"])).exists()
             mailUnico= not User.objects.filter(email=(d["email"])).exists()
+            print(mailUnico, dniUnico)
             if dniUnico and mailUnico:
                 user= User.objects.create(email=d['email'], password=d['password'], first_name=d['first_name'], last_name=d['last_name'], is_staff=False)
                 user.password=make_password(d["password"])
@@ -363,12 +352,35 @@ def chofer_new(request):
                 chofer= Chofer.objects.create(dni=int(d['dni']), telefono=d['telefono'], usuario=user)
                 chofer.save()
                 exitoso=True
+            else: 
+                p=Persona.objects.filter(dni=(d["dni"]), activo=False)
+                u=User.objects.filter(email=(d["email"]))
+                fercho=None
+                if p.count()!=0:
+                    fercho=Chofer.objects.get(persona_ptr_id=p[0].pk)
+                else:
+                    fercho=Chofer.objects.get(usuario_id=u[0].pk)
+                if not fercho.activo:
+                    fercho.usuario.email= d['email']
+                    fercho.usuario.password=make_password(d["password"])
+                    fercho.usuario.first_name=d['first_name']
+                    fercho.usuario.last_name= d['last_name']
+                    fercho.usuario.is_staff=False
+                    fercho.usuario.username=d['email']
+                    fercho.usuario.save()
+                    fercho.dni=d['dni']
+                    fercho.telefono=d['telefono']
+                    fercho.activo=True
+                    fercho.save()
+                    dniUnico=True
+                    mailUnico=True
+                    exitoso=True
     else:
         form=FormChofer()
     return render(request,'demo1/form/formulario_chofer.html',{"form":form,"exitoso": exitoso,'dniUnico':dniUnico,'mailUnico':mailUnico})
 
 def verficarChofer(idChofer):
-    dato=Combi.objects.filter(chofer=idChofer)
+    dato=Combi.objects.filter(chofer=idChofer.pk)
     if dato.count()!= 0:
         return False
     return True
@@ -380,6 +392,7 @@ def verificarPatente(unaPatente):
     return False
 
 def combi_new(request):
+    #falta verificar de forma correcta una patente ej: "ABC 123" o "AA 000 BB"
     valor=False
     exitoso=False
     patenteInvalido=False
@@ -391,8 +404,7 @@ def combi_new(request):
             p=False if (len(d['patente'])<6 or len(d['patente'])>7) else True
             patente=verificarPatente(d['patente'])
             if c and p and patente:
-                unChofer=Chofer.objects.get(id=d['chofer'])
-                combi=Combi.objects.create(chofer=unChofer, modelo=d['modelo'], asientos=d['cantAsientos'], patente=d['patente'], tipo=d['tipo'],activo=True)
+                combi=Combi.objects.create(chofer=d['chofer'], modelo=d['modelo'], asientos=d['cantAsientos'], patente=d['patente'], tipo=d['tipo'],activo=True)
                 combi.save()
                 exitoso=True
             if not c:
@@ -470,11 +482,9 @@ def insumo_new(request):
     return render(request, 'demo1/form/formulario_insumo.html', {'form': form, 'valor':valor, 'exitoso':exitoso})
 
 def verficarRuta(d):
-    rutas=Ruta.objects.all().values()
+    rutas=Ruta.objects.all()
     for r in rutas:
-        if str(r['combi_id'])==str(d['combi'])and str(r['origen_id'])==str(d['origen']) and str(r['destino_id'])==str(d['destino']) and str(r['distancia'])==str(d['distancia']) and r['hora']==d['hora']:
-            return False
-        if str(r['combi_id'])==str(d['combi']):
+        if r.combi==d['combi'] or r.origen==d['origen'] and r.destino==d['destino'] and r.distancia==d['distancia'] and r.hora==d['hora']:
             return False
     return True
 
@@ -486,10 +496,7 @@ def ruta_new(request):
         if form.is_valid():
             d=form.cleaned_data
             if verficarRuta(d): 
-                unOrigen=Lugar.objects.get(id=d['origen'])
-                unDestino=Lugar.objects.get(id=d['destino'])
-                unaCombi= Combi.objects.get(id=d['combi'])
-                ruta=Ruta.objects.create(combi=unaCombi, origen=unOrigen, destino=unDestino, distancia=d['distancia'], hora=d['hora'],activo=True)
+                ruta=Ruta.objects.create(combi=d['combi'], origen=d['origen'], destino=d['destino'], distancia=d['distancia'], hora=d['hora'],activo=True)
                 ruta.save()
                 exitoso=True
             else: 
@@ -526,7 +533,7 @@ def detalle_ruta(request, pk):
 def modificar_ruta(request,pk):
     ruta = Ruta.objects.get(pk=pk)
     if request.method=='POST':
-        form=FormRutaModi(request.POST)
+        form=FormRuta(request.POST)
         if form.is_valid():
             d=form.cleaned_data 
             unOrigen=d['origen']
@@ -540,7 +547,7 @@ def modificar_ruta(request,pk):
             ruta.save()   
     else:
         data = {'combi': ruta.combi,'origen': ruta.origen,'destino': ruta.destino,'hora': ruta.hora,'distancia': ruta.distancia}
-        form=FormRutaModi(data)
+        form=FormRuta(data)
     return render(request, 'demo1/modificar/formulario_modificar_ruta.html', {'form': form})
 
 def modificar_insumo(request,pk):
@@ -688,7 +695,6 @@ def modificar_chofer(request,pk):
                 mailUnico= not User.objects.exclude(pk=userpk).filter(email=(d["email"])).exists()
                 if dniUnico and mailUnico:
                     fercho.usuario.email= d['email']
-                    fercho.usuario.password= d['password']
                     fercho.usuario.password=make_password(d["password"])
                     fercho.usuario.first_name=d['first_name']
                     fercho.usuario.last_name= d['last_name']
@@ -738,7 +744,7 @@ def modificar_combi(request,pk):
     valor=False
     exitoso=False
     if request.method=='POST':
-        form=FormCombiModi(request.POST)
+        form=FormCombi(request.POST)
         if form.is_valid():
             d=form.cleaned_data
             combi.chofer= d['chofer']
@@ -750,6 +756,6 @@ def modificar_combi(request,pk):
             
     else:
         data= {'chofer':combi.chofer,'modelo':combi.modelo,'patente':combi.patente,'tipo':combi.tipo,'asientos':combi.asientos}
-        form=FormCombiModi(data)
+        form=FormCombi(data)
     return render(request, 'demo1/modificar/formulario_modificar_combi.html', {'form': form, 'valor': valor, 'exitoso':exitoso})
 

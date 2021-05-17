@@ -56,36 +56,14 @@ class FormChofer(forms.Form):
 
 
 class FormCombi(forms.Form):
-    def obtenerNombresDeChoferes():
-        choferes=Chofer.objects.filter().values()
-        lista=[]
-        for chofer in choferes:
-            if chofer['activo']:
-                user=User.objects.filter(id=chofer['usuario_id']).values()
-                tupla=( chofer['id'] , user[0]['first_name']+' '+user[0]['last_name'])
-                lista.append(tupla)
-        return lista
-
     TIPOS_COMBI = (
         ('C', 'Cama'),
         ('S', 'Semicama'),
     )
-    nombreDeChoferes=obtenerNombresDeChoferes()
-    chofer=forms.ChoiceField(widget=forms.Select(), choices=nombreDeChoferes)
+    chofer=forms.ModelChoiceField(queryset=Chofer.objects.filter(activo=True),label='Choferes',widget=forms.Select())
     modelo=forms.CharField(required=True,max_length=50,label="Modelo")
     patente=forms.CharField(required=True,max_length=9,label="Patente")
     cantAsientos= forms.IntegerField(required=True,label="Cantidad de asientos")
-    tipo=forms.ChoiceField(widget=forms.RadioSelect, choices=TIPOS_COMBI)
-
-class FormCombiModi(forms.Form):
-    TIPOS_COMBI = (
-        ('C', 'Cama'),
-        ('S', 'Semicama'),
-    )
-    chofer=forms.ModelChoiceField(queryset=Chofer.objects.filter(activo=True),label='choferes',widget=forms.Select())
-    modelo=forms.CharField(required=True,max_length=50,label="Modelo")
-    patente=forms.CharField(required=True,max_length=7,label="Patente")
-    asientos= forms.CharField(required=True,max_length=2,label="Cantidad de asientos")
     tipo=forms.ChoiceField(widget=forms.RadioSelect, choices=TIPOS_COMBI)
 
 def obtenerDatosDeInsumo():
@@ -117,8 +95,6 @@ class FormViaje(forms.Form):
     precio = forms.FloatField(required=True,label="Precio")
     asientos=forms.IntegerField(required=True,label="Cant. de Asientos Dis.", help_text='Debe ser menor o igual a la capacidad maxima de la combi (la capacidad maxima lo figura en la ruta seleccionada)')
 
-
-
 class FormInsumo(forms.Form):
     tipo_insumo= ( ('dulce', 'DULCE'), ('salado', 'SALADO') )
     nombre = forms.CharField(required=True,max_length=70,label="Nombre del Producto")
@@ -126,36 +102,11 @@ class FormInsumo(forms.Form):
     precio = forms.FloatField(required=True, label='Precio')
 
 class FormRuta(forms.Form):
-    def obtenerCombi():
-        combis= Combi.objects.filter(activo=True).values()
-        lista=[]
-        for combi in combis:
-            tupla=(combi['id'], 'Modelo: '+combi['modelo']+'; Patente: '+combi['patente'])
-            lista.append(tupla)
-        return lista
-
-    def obtenerLugar():
-        lugares= Lugar.objects.filter(activo=True).values()
-        lista=[]
-        for lugar in lugares:
-            tupla=(lugar['id'], 'Localidad: '+lugar['nombre_de_lugar']+'; Provincia: '+lugar['provincia'])
-            lista.append(tupla)
-        return lista
-
-    lugares=obtenerLugar()
-    combis=obtenerCombi()
-    combi =forms.ChoiceField(widget=forms.Select(), choices=combis)
-    origen = forms.ChoiceField(widget=forms.Select(), choices=lugares)
-    destino = forms.ChoiceField(widget=forms.Select(), choices=lugares)
+    combi =forms.ModelChoiceField(queryset=Combi.objects.filter(activo=True),label='Combis', widget=forms.Select())
+    origen = forms.ModelChoiceField(queryset=Lugar.objects.filter(activo=True),label='Lugares origen',widget=forms.Select())
+    destino = forms.ModelChoiceField(queryset=Lugar.objects.filter(activo=True),label='Lugares destino',widget=forms.Select())
     hora = forms.TimeField(required=True,label="Hora", widget=forms.TimeInput())
-    distancia = forms.IntegerField(required=True,label="Distancia", max_value=1000)
-
-class FormRutaModi(forms.Form):
-    combi =forms.ModelChoiceField(queryset=Combi.objects.filter(activo=True),label='combis', widget=forms.Select())
-    origen = forms.ModelChoiceField(queryset=Lugar.objects.filter(activo=True),label='Lugares',widget=forms.Select())
-    destino = forms.ModelChoiceField(queryset=Lugar.objects.filter(activo=True),label='Lugares',widget=forms.Select())
-    hora = forms.TimeField(required=True,label="Hora", widget=forms.TimeInput())
-    distancia = forms.IntegerField(required=True,label="Distancia", max_value=50)
+    distancia = forms.IntegerField(required=True,label="Distancia", max_value=100)
 
 class FormViajeModi(forms.Form):
     datosDeInsumos=obtenerDatosDeInsumo()
