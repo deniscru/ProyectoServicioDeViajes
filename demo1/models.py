@@ -45,7 +45,7 @@ class Lugar(models.Model):
     activo = models.BooleanField(default=True)
     
     def __str__(self):
-        return '%s %s' % (self.nombre_de_lugar, self.provincia)
+        return '%s %s' % ('Localidad: '+self.nombre_de_lugar,', Provincia'+self.provincia)
 
     def nombreYprovincia(self, unNombre, unaProvincia):
         self.nombre_de_lugar= unNombre
@@ -64,7 +64,7 @@ class Combi(models.Model):
     activo = models.BooleanField(default=True)
         
     def __str__(self):
-        return '%s %s' % (self.patente, self.chofer.usuario.first_name)
+        return '%s %s' % ('Modelo: '+self.modelo, ', Patente:'+self.patente)
 
 class Ruta(models.Model):
     combi = models.ForeignKey(Combi, on_delete=models.CASCADE)
