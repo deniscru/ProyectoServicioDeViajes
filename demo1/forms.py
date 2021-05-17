@@ -120,7 +120,7 @@ class FormViaje(forms.Form):
 
 
 class FormInsumo(forms.Form):
-    tipo_insumo= ( ('dulse', 'DULCE'), ('salado', 'SALADO') )
+    tipo_insumo= ( ('dulce', 'DULCE'), ('salado', 'SALADO') )
     nombre = forms.CharField(required=True,max_length=70,label="Nombre del Producto")
     tipo = forms.ChoiceField(widget=forms.RadioSelect, choices=tipo_insumo)
     precio = forms.FloatField(required=True, label='Precio')

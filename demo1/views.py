@@ -388,7 +388,7 @@ def combi_new(request):
         if form.is_valid():
             d=form.cleaned_data
             c=verficarChofer(d['chofer'])
-            p=False if len(d['patente'])<6 else True
+            p=False if (len(d['patente'])<6 or len(d['patente'])>7) else True
             patente=verificarPatente(d['patente'])
             if c and p and patente:
                 unChofer=Chofer.objects.get(id=d['chofer'])
@@ -708,17 +708,10 @@ def modificar_chofer(request,pk):
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         return render(request, 'demo1/listados/listado_chofer.html', {'page_obj':page_obj, 'cantidad':cantidad,"noModificado":noModificado})
-        
-       
-
-
-    
-
 
 def modificar_viaje(request,pk):
     viaje= Viaje.objects.get(pk=pk)
     valor=False
-    
     if request.method=='POST':
         form=FormViajeModi(request.POST)
         if form.is_valid():
