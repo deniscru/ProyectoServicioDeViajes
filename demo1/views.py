@@ -158,17 +158,12 @@ def obtenerOrigenesDestino():
     return lista
 
 def listado_ruta(request):
-    noSePuede=False
-    print (request)
-    d=0
-    if int(d)>0:
-        noSePuede=True
     rutas=obtenerOrigenesDestino()
     paginator= Paginator(rutas, 10)
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad, 'noSePuede':noSePuede})
+    return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad})
 
 def armarFilaViaje():
     viajes=Viaje.objects.filter(activo=True).values()
@@ -492,21 +487,25 @@ def verficarRuta(d):
     return True
 
 def ruta_new(request):
-    valor=False
-    exitoso=False
+    
+    desOriEquls=False
+    rutaRep = False
     if request.method=='POST':
         form=FormRuta(request.POST)
         if form.is_valid():
             d=form.cleaned_data
-            if verficarRuta(d): 
+            unOrigen=d['origen']
+            unDestino=d['destino']
+            desOriEquls= unOrigen.id == unDestino.id
+            rutaRep = Ruta.objects.filter(origen = unOrigen).filter(destino = unDestino).filter(hora = d['hora']).exists()
+            if not desOriEquls and not rutaRep:
                 ruta=Ruta.objects.create(combi=d['combi'], origen=d['origen'], destino=d['destino'], distancia=d['distancia'], hora=d['hora'],activo=True)
                 ruta.save()
-                exitoso=True
-            else: 
-                valor=True   
+                return redirect('principal')
+            return render(request, 'demo1/form/formulario_ruta.html', {'form': form, 'desOriEquls':desOriEquls, 'rutaRep':rutaRep})
     else:
         form=FormRuta()
-    return render(request, 'demo1/form/formulario_ruta.html', {'form': form, 'valor':valor, 'exitoso':exitoso})
+    return render(request, 'demo1/form/formulario_ruta.html', {'form': form, 'desOriEquls':desOriEquls, 'rutaRep':rutaRep})
 
 def detalle_pasajero(request, pk):
     pasajero = Pasajero.objects.filter(pk=pk)
@@ -534,25 +533,40 @@ def detalle_ruta(request, pk):
     return render(request, 'demo1/detalle/detalle_ruta.html', {'ruta': ruta})
 
 def modificar_ruta(request,pk):
-    ruta = Ruta.objects.get(pk=pk)
-    if request.method=='POST':
-        form=FormRuta(request.POST)
-        if form.is_valid():
-            d=form.cleaned_data 
-            unOrigen=d['origen']
-            unDestino=d['destino']
-            unaCombi= d['combi']
-            ruta.origen=unOrigen
-            ruta.destino=unDestino
-            ruta.combi=unaCombi
-            ruta.hora= d['hora']
-            ruta.distancia= d['distancia']
-            ruta.save()   
-    else:
+    noModificado=False
+    if verficarRuta2(pk):
+        ruta = Ruta.objects.get(pk=pk)
         data = {'combi': ruta.combi,'origen': ruta.origen,'destino': ruta.destino,'hora': ruta.hora,'distancia': ruta.distancia}
-        form=FormRuta(data)
-    return render(request, 'demo1/modificar/formulario_modificar_ruta.html', {'form': form})
-
+        desOriEquls=False
+        rutaRep=False
+        if request.method=='GET':
+            form=FormRuta(data)
+        else:
+            form=FormRuta(request.POST)
+            if form.is_valid():
+                d=form.cleaned_data 
+                unOrigen=d['origen']
+                unDestino=d['destino']
+                unaCombi= d['combi']
+                desOriEquls= unOrigen.id == unDestino.id
+                rutaRep = Ruta.objects.exclude(pk=pk).filter(origen = unOrigen).filter(destino = unDestino).filter(hora = d['hora']).exists()
+                if not desOriEquls and not rutaRep:
+                    ruta.origen=unOrigen
+                    ruta.destino=unDestino
+                    ruta.combi=unaCombi
+                    ruta.hora= d['hora']
+                    ruta.distancia= d['distancia']
+                    ruta.save()
+                    return redirect('listado_ruta')   
+        return render(request, 'demo1/modificar/formulario_modificar_ruta.html', {'form': form,'desOriEquls':desOriEquls,'rutaRep':rutaRep})
+    else:
+        noModificado=True
+        rutas=obtenerOrigenesDestino()
+        paginator= Paginator(rutas, 10)
+        cantidad=False if (paginator.count == 0) else True 
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad, 'noModificado':noModificado})
 
 def modificar_insumo(request,pk):
     noModificado=False

@@ -22,11 +22,7 @@
                     <td>
                         <a href="{% url 'eliminar_ruta' pk=i.pk%}">Eliminar</a></td>
                     <td>
-                        {%if i.sePuede %}
-                            <a href="{% url 'modificar_ruta' pk=i.pk%}">Modificar</a>
-                        {% else %}
-                            <a href="{% url 'listado_ruta' %}">Modificar</a>
-                        {% endif %}
+                        <a href="{% url 'modificar_ruta' pk=i.pk%}">Modificar</a>
                     </td>
                 </tr>
             {% endfor %}
@@ -36,10 +32,9 @@
     </tbody>
     </table>
     {% if exitosoE %}
-        <p>La ruta que desea eliminar esta en un viaje presente o futuro, no se realizo la eliminación</p>
-    {% endif %}
-    {% if noSePuede %}
-        <p>La ruta no se puede modificar debido a que corresponde a un viaje activo o futuro</p>
+        <h3>La ruta que desea eliminar esta en un viaje presente o futuro, no se realizo la eliminación</h3>
+    {% elif noModificado %}
+        <h3>La ruta no se puede modificar debido a que corresponde a un viaje activo o futuro</h3>
     {% endif %}
     </div>
     <div>

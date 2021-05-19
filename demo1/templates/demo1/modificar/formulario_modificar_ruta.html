@@ -12,6 +12,16 @@
                 <button type="submit" class="guardar chofer">Guardar</button>
             </form>
         </div>
+    </div>
+    </div>
+    <div class="card">
+        {% if desOriEquls %}
+        <h3> No se puede efectuar la modificacion porque el origen y el destino de la ruta son iguales  </h3>
+        {% elif rutaRep %}
+        <h3> No se puede efectuar la modificacion porque el origen, destino y hora de la ruta coinciden con otra ruta activa  </h3>
+        {% endif %}
+
+    </div>
         <div class="card">
             <h2><a href="{% url 'listado_ruta' %}"> Atras</a></h2>
         </div>
