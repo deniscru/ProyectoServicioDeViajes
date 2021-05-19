@@ -13,14 +13,14 @@
                 <button type="submit" class="guardar chofer">Guardar</button>
             </form>
         </div>
-        <div class="card">
+        <div>
             {% if not modiTodo %}
-                <div>
+                <div class="card">
                     <h3> La combi ya esta asignada a una ruta por lo que solo es posible modificar el chofer el tipo</h3>
                 </div>
             {% endif %}
             {% if choferRep %}
-                <div>
+                <div class="card">
                     <h3> No es posible asignar el chofer elegido porque el mismo ya fue asigando a otra combi</h3>
                 </div>
             {% endif %}

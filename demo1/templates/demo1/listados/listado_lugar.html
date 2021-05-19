@@ -20,11 +20,7 @@
                     <td> 
                         <a href="{% url 'eliminar_lugar' pk=lugar.pk%}">Eliminar</a></td>
                     <td>
-                        {% if lugar.valor %}
-                            <a href="{% url 'modificar_lugar' pk=lugar.pk%}">Modificar</a>
-                        {% else %}
-                            <a href="{% url 'listado_lugar'%}">Modificar</a>
-                        {% endif %}
+                        <a href="{% url 'modificar_lugar' pk=lugar.pk%}">Modificar</a>
                     </td>
                 </tr>
             {% endfor %}
@@ -44,7 +40,11 @@
 </div>
 {% if fallido %}
     <div>
-        <p>No fue posible borrar el lugar ya que se encuentra en una ruta</p>
+        <h3>No fue posible borrar el lugar ya que se encuentra en una ruta</h3>
+    </div>
+{% elif noModificado%}
+    <div>
+        <h3>No fue posible modificar el lugar ya que se encuentra en una ruta</h3>
     </div>
 {% endif %} 
 <div class="card"><h4><a href="{% url 'principal' %}">Atras</a></h4></div>

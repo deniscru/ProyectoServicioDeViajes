@@ -111,12 +111,14 @@ def listado_lugar(request):
     return render(request, 'demo1/listados/listado_lugar.html', {'page_obj':page_obj, 'cantidad':cantidad})
 
 def verificarInsumoEnViaje(pk):
+    hoy= datetime.date.today()
     viajes=Viaje.objects.filter(activo=True)
     for i in viajes:
-        insumos=i.insumos.values()
-        for j in insumos:
-            if j['id']==pk:
-                return False
+        if i.fecha >= hoy:
+            insumos=i.insumos.values()
+            for j in insumos:
+                if j['id']==pk:
+                    return False
     return True
 
 def obtenerInsumosLista():
@@ -551,20 +553,33 @@ def modificar_ruta(request,pk):
         form=FormRuta(data)
     return render(request, 'demo1/modificar/formulario_modificar_ruta.html', {'form': form})
 
+
 def modificar_insumo(request,pk):
-    insumo = Insumo.objects.get(pk=pk)
-    if request.method=='POST':
-        form=FormInsumo(request.POST)
-        if form.is_valid():
-            d=form.cleaned_data
-            insumo.tipo = d['tipo']
-            insumo.nombre = d['nombre']
-            insumo.precio = d['precio']
-            insumo.save() 
+    noModificado=False
+    if verificarInsumoEnViaje(pk):
+        insumo = Insumo.objects.get(pk=pk)
+        if request.method=='POST':
+            form=FormInsumo(request.POST)
+            if form.is_valid():
+                d=form.cleaned_data
+                insumo.tipo = d['tipo']
+                insumo.nombre = d['nombre']
+                insumo.precio = d['precio']
+                insumo.save()
+                return redirect('listado_insumo') 
+        else:
+            data = {'tipo': insumo.tipo,'nombre': insumo.nombre,'precio': insumo.precio}
+            form=FormInsumo(data)
+        return render(request, 'demo1/modificar/formulario_modificar_insumo.html', {'form': form})
     else:
-        data = {'tipo': insumo.tipo,'nombre': insumo.nombre,'precio': insumo.precio}
-        form=FormInsumo(data)
-    return render(request, 'demo1/modificar/formulario_modificar_insumo.html', {'form': form})
+        noModificado=True
+        insumos=obtenerInsumosLista()
+        paginator= Paginator(insumos, 10)
+        cantidad=False if (paginator.count == 0) else True 
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        return render(request, 'demo1/listados/listado_insumo.html',{'page_obj':page_obj, 'cantidad':cantidad, 'noModificado':noModificado})
+
 
 def detalle_lugar(request, pk):
     lugar = Lugar.objects.filter(pk=pk)
@@ -572,18 +587,28 @@ def detalle_lugar(request, pk):
 
 def modificar_lugar(request, pk):
     lugar = Lugar.objects.get(pk=pk)
-    if request.method == "POST":
-        form = FormLugar(request.POST)
-        if form.is_valid():
-            datos = form.cleaned_data
-            if datos['nombre']!='' and datos['provincia']!='':
-                lugar.nombreYprovincia(datos['nombre'],datos['provincia'])
-                lugar.save()
-                
+    noModificado=False
+    if obtenerValorUnLugar(lugar.id):
+        if request.method == "POST":
+            form = FormLugar(request.POST)
+            if form.is_valid():
+                datos = form.cleaned_data
+                if datos['nombre']!='' and datos['provincia']!='':
+                    lugar.nombreYprovincia(datos['nombre'],datos['provincia'])
+                    lugar.save()
+                    return redirect('listado_lugar')
+        else:
+            data = {'nombre': lugar.nombre_de_lugar,'provincia': lugar.provincia}
+            form = FormLugar(data)
+        return render(request, 'demo1/modificar/formulario_modificar_lugar.html', {'form': form})
     else:
-        data = {'nombre': lugar.nombre_de_lugar,'provincia': lugar.provincia}
-        form = FormLugar(data)
-    return render(request, 'demo1/modificar/formulario_modificar_lugar.html', {'form': form})
+        noModificado=True
+        lugares=obtenerListaDeLugares()
+        paginator= Paginator(lugares, 10)
+        cantidad=False if (paginator.count == 0) else True 
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        return render(request, 'demo1/listados/listado_lugar.html', {'page_obj':page_obj, 'cantidad':cantidad,'noModificado':noModificado})
 
 def eliminar_chofer(request, pk):
     chofer = Chofer.objects.filter(pk=pk)
@@ -602,19 +627,19 @@ def eliminar_chofer(request, pk):
     return render(request, 'demo1/listados/listado_chofer.html', {'page_obj':page_obj, 'cantidad':cantidad,"noEliminado":noEliminado})
 
 def eliminar_combi(request, pk):
-    noSePuede=False
-    if verificarSiCombiValido(pk):
+    noEliminado=False
+    if no_se_encuentra_en_ruta(pk):
         combi = Combi.objects.get(pk=pk)
         combi.activo = False
         combi.save()
     else:
-        noSePuede=True
+        noEliminado=True
     combis=filaDeCombi()
     paginator= Paginator(combis, 10)
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'demo1/listados/listado_combi.html', {'page_obj':page_obj, 'cantidad':cantidad, 'noSePuede':noSePuede})
+    return render(request, 'demo1/listados/listado_combi.html', {'page_obj':page_obj, 'cantidad':cantidad, 'noEliminado':noEliminado})
 
 def eliminar_viaje(request, pk):
     viaje = Viaje.objects.get(pk=pk)
@@ -756,6 +781,13 @@ def no_se_encuentra_en_ruta(pk):
             return False
     return True
 
+def se_encuentra_en_combi(pk):
+    queryset = Combi.objects.filter(activo=True).values_list('chofer_id',flat=True)
+    if pk in queryset:
+        return True
+    else:
+        return False
+
 def modificar_combi(request,pk):
     noModificado=False
     if(no_se_encuentra_en_viaje(pk)):
@@ -769,19 +801,18 @@ def modificar_combi(request,pk):
             form=FormCombi(request.POST)
             if form.is_valid():
                 d=form.cleaned_data
-                choferRep=True if (combi.chofer != d['chofer'] and no_se_encuentra_en_combi(d['chofer']) ) else False
+                choferRep=True if (se_encuentra_en_combi(d['chofer'].id)and ((d['chofer'].id) != combi.chofer.id)) else False
                 modiTodo=True if (no_se_encuentra_en_ruta(pk)) else False
-                if ((not choferRep) and modiTodo):
+                if (not choferRep):
                     combi.chofer= d['chofer']
                     combi.tipo=d['tipo']
-                    combi.modelo= d['modelo']
-                    combi.asientos= d['cantAsientos']
-                    combi.patente= d['patente']
-                    combi.save()
-                    return redirect('listado_combi')
-                elif ((not choferRep) and not modiTodo):
-                    combi.chofer= d['chofer']
-                    combi.tipo=d['tipo']
+                    if modiTodo:
+                        combi.modelo= d['modelo']
+                        combi.asientos= d['cantAsientos']
+                        combi.patente= d['patente']
+                    else:
+                        if combi.modelo != d['modelo'] or combi.asientos != d['cantAsientos'] or combi.patente != d['patente']:
+                            return render(request,'demo1/modificar/formulario_modificar_combi.html',{"form":form,'choferRep':choferRep,'modiTodo':modiTodo})
                     combi.save()
                     return redirect('listado_combi')
         return render(request,'demo1/modificar/formulario_modificar_combi.html',{"form":form,'choferRep':choferRep,'modiTodo':modiTodo})

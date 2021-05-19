@@ -22,11 +22,7 @@
                     <td>
                         <a href="{% url 'eliminar_insumo' pk=i.pk%}">Eliminar</a></td>
                     <td>
-                        {% if i.dato %}
-                            <a href="{% url 'modificar_insumo' pk=i.pk%}">Modificar</a>
-                        {% else %}
-                            <a href="">Modificar</a>
-                        {% endif%}
+                        <a href="{% url 'modificar_insumo' pk=i.pk%}">Modificar</a>
                     </td>
                 </tr>
             {% endfor %}
@@ -38,7 +34,11 @@
     </table>
     {% if noSeElimina %}
         <div>
-            <a>No se puede eliminar el insumo seleccionado por que esta en un viaje</a>
+            <h3>No se puede eliminar el insumo seleccionado porque se encuentra en un viaje en curso o pendiente</h3>
+        </div>
+    {% elif noModificado %}
+        <div>
+            <h3>No se puede modificar el insumo seleccionado porque se encuentra en un viaje en curso o pendiente </h3>
         </div>
         {% endif %}
     </div>
