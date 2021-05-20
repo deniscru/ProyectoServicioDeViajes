@@ -11,9 +11,15 @@
                 {{ form.as_p}}
                 <button type="submit" class="guardar chofer">Guardar</button>
             </form>
-            {% if valor %}
+            </div>
+            <div>
+            {% if not viajeValido %}
                 <div class="card">
-                    <p> La ruta con la fecha ingresada ya está reservado</p>
+                    <h3>La modificacion no se realizo porque la ruta con la fecha ingresada ya está reservado</h3>
+                </div>
+            {% elif not asientosValidos %}
+                <div class="card">
+                    <h3> La modificacion no se realizo porque la cantidad de asientos ingresada es mayor a la capacidad de la combi</h3>
                 </div>
             {% endif %}
         </div>

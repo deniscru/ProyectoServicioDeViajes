@@ -11,15 +11,20 @@
                 {{ form.as_p}}
                 <button type="submit" class="guardar chofer">Guardar</button>
             </form>
-            {% if valor %}
+            {% if desOriEquls %}
             <div>
-                <p>La Ruta ya se encuentra registrado o la combi ya tiene asignada la ruta</p>
+                <h3>No se puede crear la ruta porque el origen y el destino de la ruta son iguales</h3>
             </div>
-            {% endif %}
-            {% if exitoso %}
+           
+            {% elif exitoso %}
                 <div>
-                    <p> La carga se realizo con exito</p>
+                    <h3> La carga se realizo con exito</h3>
                 </div>
+            {% elif rutaRep %}
+                <div>
+                    <h3> No se puede crear la ruta porque el origen, destino y hora de la ruta coinciden con otra ruta activa</h3>
+                </div>
+
             {% endif %}
         </div>
         <div>

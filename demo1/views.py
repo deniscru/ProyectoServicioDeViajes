@@ -414,11 +414,10 @@ def combi_new(request):
     return render(request, 'demo1/form/formulario_combi.html', {'form': form, 'valor': valor, 'exitoso':exitoso, 'patenteInvalido':patenteInvalido})
 
 def verificarFechaYRuta(unaFecha, idRuta):
+    return not Viaje.objects.filter(activo=True).filter(fecha=unaFecha).filter(ruta=idRuta).exists()
     dato=Viaje.objects.filter(fecha=unaFecha, ruta=idRuta, activo=True).values()
     for i in dato:
-        if i['fecha']==unaFecha and str(i['ruta_id'])==str(idRuta):
-            return False
-        if str(i['ruta_id'])==str(idRuta):
+        if i['fecha']==unaFecha and i['ruta_id']==idRuta:
             return False
     return True
 
@@ -442,9 +441,9 @@ def viaje_new(request):
             v=verifivarAsientos(d)
             if a and v:
                 unaRuta=Ruta.objects.get(id=d['ruta'])  
-                unosInsumos= Insumo.objects.filter(id__in= d['insumo'])       
+                #unosInsumos= Insumo.objects.filter(id__in= d['insumo'])       
                 viaje=Viaje.objects.create(ruta=unaRuta, fecha=d['fecha'], precio=d['precio'], asientos= d['asientos'],activo=True)
-                viaje.insumos.set(unosInsumos)
+                #viaje.insumos.set(unosInsumos)
                 viaje.save()
                 exitoso=True
             if not a:
@@ -487,7 +486,7 @@ def verficarRuta(d):
     return True
 
 def ruta_new(request):
-    
+    exitoso=False
     desOriEquls=False
     rutaRep = False
     if request.method=='POST':
@@ -501,11 +500,11 @@ def ruta_new(request):
             if not desOriEquls and not rutaRep:
                 ruta=Ruta.objects.create(combi=d['combi'], origen=d['origen'], destino=d['destino'], distancia=d['distancia'], hora=d['hora'],activo=True)
                 ruta.save()
-                return redirect('principal')
-            return render(request, 'demo1/form/formulario_ruta.html', {'form': form, 'desOriEquls':desOriEquls, 'rutaRep':rutaRep})
+                exitoso=True
+            return render(request, 'demo1/form/formulario_ruta.html', {'form': form, 'desOriEquls':desOriEquls, 'rutaRep':rutaRep,'exitoso':exitoso})
     else:
         form=FormRuta()
-    return render(request, 'demo1/form/formulario_ruta.html', {'form': form, 'desOriEquls':desOriEquls, 'rutaRep':rutaRep})
+    return render(request, 'demo1/form/formulario_ruta.html', {'form': form, 'desOriEquls':desOriEquls, 'rutaRep':rutaRep,'exitoso':exitoso})
 
 def detalle_pasajero(request, pk):
     pasajero = Pasajero.objects.filter(pk=pk)
@@ -755,29 +754,42 @@ def modificar_chofer(request,pk):
         page_obj = paginator.get_page(page_number)
         return render(request, 'demo1/listados/listado_chofer.html', {'page_obj':page_obj, 'cantidad':cantidad,"noModificado":noModificado})
 
+def no_tieneViajesVendidos(pk):
+    return True 
+
 def modificar_viaje(request,pk):
     viaje= Viaje.objects.get(pk=pk)
-    valor=False
-    if request.method=='POST':
-        form=FormViajeModi(request.POST)
-        if form.is_valid():
-            d=form.cleaned_data  
-            if verificarFechaYRuta(d['fecha'], d['ruta']):
-                unosInsumos= Insumo.objects.filter(id__in= d['insumo'])       
-                viaje.insumos.set(unosInsumos)
-                viaje.ruta=d['ruta']
-                viaje.fecha=d['fecha']
-                viaje.precio= d['precio']
-                if viaje.ruta.combi.asientos >= d['asientos']:
+    asientosValidos=True
+    viajeValido=True
+    noModificado=False
+    if no_tieneViajesVendidos:
+        data= {'ruta':viaje.ruta,'fecha':viaje.fecha,'precio':viaje.precio,'asientos':viaje.asientos}
+        if request.method=='GET':
+            form=FormViajeModi(data)
+        else:
+            form=FormViajeModi(request.POST)
+            if form.is_valid():
+                d=form.cleaned_data
+                viajeValido=verificarFechaYRuta(d['fecha'], d['ruta'])
+                asientosValidos= viaje.ruta.combi.asientos >= d['asientos']
+                if viajeValido and asientosValidos:
+                    #unosInsumos= Insumo.objects.filter(id__in= d['insumo'])       
+                    #viaje.insumos.set(unosInsumos)
+                    viaje.ruta=d['ruta']
+                    viaje.fecha=d['fecha']
+                    viaje.precio= d['precio']
                     viaje.asientos=d['asientos']
-                viaje.save()
-                
-            else:
-                valor=True 
+                    viaje.save()
+                    return redirect('listado_viaje') 
+        return render(request, 'demo1/modificar/formulario_modificar_viaje.html', {'form': form, 'asientosValidos':asientosValidos,'viajeValido':viajeValido}) 
     else:
-        data= {'ruta':viaje.ruta,'fecha':viaje.fecha,'insumo':viaje.insumos,'precio':viaje.precio,'asientos':viaje.asientos}
-        form=FormViajeModi(data)
-    return render(request, 'demo1/modificar/formulario_modificar_viaje.html', {'form': form, 'valor':valor})
+        noModificado=True
+        viajes=armarFilaViaje()
+        paginator= Paginator(viajes, 10)
+        cantidad=False if (paginator.count == 0) else True 
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        return render(request, 'demo1/listados/listado_viaje.html', {'page_obj':page_obj, 'cantidad':cantidad,'noModificado':noModificado})
 
 def no_se_encuentra_en_viaje(pk):
     hoy= datetime.date.today()

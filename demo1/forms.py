@@ -87,9 +87,9 @@ class FormViaje(forms.Form):
         return lista
 
     datosDeRutas=obtenerDatosDeRutas()
-    datosDeInsumos=obtenerDatosDeInsumo()
+    #datosDeInsumos=obtenerDatosDeInsumo()
     ruta = forms.ChoiceField(choices=datosDeRutas, widget=forms.Select(), label='Rutas')
-    insumo = forms.MultipleChoiceField(choices=datosDeInsumos, help_text='Para selecionar mas de una opcion maten precionado la tecla "ctrl"')
+    #insumo = forms.MultipleChoiceField(choices=datosDeInsumos, help_text='Para selecionar mas de una opcion maten precionado la tecla "ctrl"')
     años=[2021,2022]
     fecha = forms.DateField(required=True,label='Fecha',widget=forms.SelectDateWidget(years=años))
     precio = forms.FloatField(required=True,label="Precio")
@@ -111,7 +111,7 @@ class FormRuta(forms.Form):
 class FormViajeModi(forms.Form):
     datosDeInsumos=obtenerDatosDeInsumo()
     ruta = forms.ModelChoiceField(queryset=Ruta.objects.filter(activo=True),label='Rutas', widget=forms.Select())
-    insumo = forms.MultipleChoiceField(choices=datosDeInsumos, help_text='Para selecionar mas de una opcion maten precionado la tecla "ctrl"')
+    #insumo = forms.MultipleChoiceField(choices=datosDeInsumos, help_text='Para selecionar mas de una opcion maten precionado la tecla "ctrl"')
     años=[2021,2022]
     fecha = forms.DateField(required=True,label='Fecha',widget=forms.SelectDateWidget(years=años))
     precio = forms.FloatField(required=True,label="Precio")
