@@ -415,11 +415,6 @@ def combi_new(request):
 
 def verificarFechaYRuta(unaFecha, idRuta):
     return not Viaje.objects.filter(activo=True).filter(fecha=unaFecha).filter(ruta=idRuta).exists()
-    dato=Viaje.objects.filter(fecha=unaFecha, ruta=idRuta, activo=True).values()
-    for i in dato:
-        if i['fecha']==unaFecha and i['ruta_id']==idRuta:
-            return False
-    return True
 
 def verifivarAsientos(d):
     ruta2=Ruta.objects.filter(id=d['ruta']).values()
@@ -657,7 +652,7 @@ def eliminar_combi(request, pk):
 def eliminar_viaje(request, pk):
     viaje = Viaje.objects.get(pk=pk)
     exitoso=True
-    if viaje.fecha<date.today():
+    if no_tieneViajesVendidos(pk):
         viaje.activo = False
         viaje.save()
         exitoso=False
@@ -755,14 +750,14 @@ def modificar_chofer(request,pk):
         return render(request, 'demo1/listados/listado_chofer.html', {'page_obj':page_obj, 'cantidad':cantidad,"noModificado":noModificado})
 
 def no_tieneViajesVendidos(pk):
-    return True 
+    return Viaje.objects.get(pk=pk).vendidos == 0 
 
 def modificar_viaje(request,pk):
     viaje= Viaje.objects.get(pk=pk)
     asientosValidos=True
     viajeValido=True
     noModificado=False
-    if no_tieneViajesVendidos:
+    if no_tieneViajesVendidos(pk):
         data= {'ruta':viaje.ruta,'fecha':viaje.fecha,'precio':viaje.precio,'asientos':viaje.asientos}
         if request.method=='GET':
             form=FormViajeModi(data)
@@ -781,7 +776,7 @@ def modificar_viaje(request,pk):
                     viaje.asientos=d['asientos']
                     viaje.save()
                     return redirect('listado_viaje') 
-        return render(request, 'demo1/modificar/formulario_modificar_viaje.html', {'form': form, 'asientosValidos':asientosValidos,'viajeValido':viajeValido}) 
+        return render(request, 'demo1/modificar/formulario_modificar_viaje.html', {'form': form, 'asientosValidos':asientosValidos,'viajeValido':viajeValido,'capacidad':str(viaje.ruta.combi.asientos)}) 
     else:
         noModificado=True
         viajes=armarFilaViaje()

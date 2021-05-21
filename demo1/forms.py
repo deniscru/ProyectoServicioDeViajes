@@ -115,6 +115,6 @@ class FormViajeModi(forms.Form):
     años=[2021,2022]
     fecha = forms.DateField(required=True,label='Fecha',widget=forms.SelectDateWidget(years=años))
     precio = forms.FloatField(required=True,label="Precio")
-    asientos=forms.IntegerField(required=True,label="Asientos", help_text='Si va a modificar la cantidad de asientos recuerde que no puede superar la capacidad maxima de la combi')
+    asientos=forms.IntegerField(required=True,label="Asientos")
 
 

@@ -2,7 +2,7 @@ from django.db import models
 
 class Persona(models.Model):
     usuario = models.ForeignKey('auth.User', on_delete=models.CASCADE)
-    dni = models.IntegerField(unique=True)
+    dni = models.IntegerField()
     telefono = models.BigIntegerField()
     activo = models.BooleanField(default=True)
         
@@ -21,7 +21,7 @@ class Pasajero(Persona):
     
 class Tarjeta(models.Model):
     pasajero = models.ForeignKey(Pasajero, on_delete=models.CASCADE)
-    numero = models.BigIntegerField(unique=True)
+    numero = models.BigIntegerField()
     fecha_de_vencimiento = models.DateField()
     codigo = models.IntegerField()
     activo = models.BooleanField(default=True)
@@ -79,17 +79,17 @@ class Ruta(models.Model):
 
 class Viaje(models.Model):
     ruta = models.ForeignKey(Ruta, on_delete=models.CASCADE)
-    insumos = models.ManyToManyField(Insumo)
+    insumos = models.ManyToManyField(Insumo,blank=True)
     fecha = models.DateField()
     precio = models.FloatField()
     asientos = models.IntegerField()
     activo = models.BooleanField(default=True)
-    
+    vendidos= models.IntegerField(default=0)
+
     def __str__(self):
         return '%s %s' % (str(self.ruta), str(self.fecha))
     
-    class Meta:
-        unique_together = ('ruta', 'fecha',)
+   
 
 
 
