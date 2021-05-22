@@ -10,6 +10,40 @@ from django.contrib.auth.hashers import make_password
 from django.db.models import Q
 import datetime
 
+
+def verificarLetra(string):
+	for l in string:
+		sigue=False
+		c=65
+		for i in range(25):
+			if ord(l.upper())==c:
+				sigue=True
+			c+=1
+		if not sigue:
+			return False
+	return True
+	
+def verificarNumero(num):
+	try: 
+		n=int(num)
+		return True
+	except:
+		return False
+		
+def verificarPatente(patente):
+	if len(patente)==6:
+		if verificarLetra(patente[0:3]) and verificarNumero(patente[3:6]):
+			return True
+		else:
+			return False
+	elif len(patente)==7:
+		if verificarLetra(patente[0:2]) and verificarNumero(patente[2:5]) and verificarLetra(patente[5:7]):
+			return True
+		else:
+			return False
+	else:
+		return False
+
 def principal(request):
     administrador = User.objects.filter(is_superuser=True)   
     return render(request, 'demo1/principal.html', {'administrador': administrador})
@@ -383,14 +417,13 @@ def verficarChofer(idChofer):
         return False
     return True
 
-def verificarPatente(unaPatente):
+def verificarPatenteEnCombis(unaPatente):
     combi=Combi.objects.filter(patente=unaPatente)
     if combi.count()==0:
         return True
     return False
 
 def combi_new(request):
-    #falta verificar de forma correcta una patente ej: "ABC 123" o "AA 000 BB"
     valor=False
     exitoso=False
     patenteInvalido=False
@@ -399,8 +432,8 @@ def combi_new(request):
         if form.is_valid():
             d=form.cleaned_data
             c=verficarChofer(d['chofer'])
-            p=False if (len(d['patente'])<6 or len(d['patente'])>7) else True
-            patente=verificarPatente(d['patente'])
+            p=verificarPatente(d['patente'])
+            patente=verificarPatenteEnCombis(d['patente'])
             if c and p and patente:
                 combi=Combi.objects.create(chofer=d['chofer'], modelo=d['modelo'], asientos=d['cantAsientos'], patente=d['patente'], tipo=d['tipo'],activo=True)
                 combi.save()
@@ -824,19 +857,20 @@ def modificar_combi(request,pk):
                 d=form.cleaned_data
                 choferRep=True if (se_encuentra_en_combi(d['chofer'].id)and ((d['chofer'].id) != combi.chofer.id)) else False
                 modiTodo=True if (no_se_encuentra_en_ruta(pk)) else False
+                validoPatente=[True if d['patente']==combi.patente else verificarPatente(d['patente']), verificarPatenteEnCombis(d['patente'])]
                 if (not choferRep):
                     combi.chofer= d['chofer']
                     combi.tipo=d['tipo']
-                    if modiTodo:
+                    if modiTodo and validoPatente[0] and validoPatente[1]:
                         combi.modelo= d['modelo']
                         combi.asientos= d['cantAsientos']
                         combi.patente= d['patente']
                     else:
                         if combi.modelo != d['modelo'] or combi.asientos != d['cantAsientos'] or combi.patente != d['patente']:
-                            return render(request,'demo1/modificar/formulario_modificar_combi.html',{"form":form,'choferRep':choferRep,'modiTodo':modiTodo})
+                            return render(request,'demo1/modificar/formulario_modificar_combi.html',{"form":form,'choferRep':choferRep,'modiTodo':modiTodo, 'p1':validoPatente[0], 'p2': validoPatente[1]})
                     combi.save()
                     return redirect('listado_combi')
-        return render(request,'demo1/modificar/formulario_modificar_combi.html',{"form":form,'choferRep':choferRep,'modiTodo':modiTodo})
+        return render(request,'demo1/modificar/formulario_modificar_combi.html',{"form":form,'choferRep':choferRep,'modiTodo':modiTodo, 'p1':True, 'p2':True})
     else:
         noModificado = True
         combis=filaDeCombi()

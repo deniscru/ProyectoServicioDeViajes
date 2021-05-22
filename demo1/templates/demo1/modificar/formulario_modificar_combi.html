@@ -16,12 +16,22 @@
         <div>
             {% if not modiTodo %}
                 <div class="card">
-                    <h3> La combi ya esta asignada a una ruta por lo que solo es posible modificar el chofer el tipo</h3>
+                    <h3> La combi esta asignada a una ruta por lo que solo es posible modificar del chofer el tipo</h3>
                 </div>
             {% endif %}
             {% if choferRep %}
                 <div class="card">
                     <h3> No es posible asignar el chofer elegido porque el mismo ya fue asigando a otra combi</h3>
+                </div>
+            {% endif %}
+            {% if not p1 %}
+                <div class="card">
+                    <h3>La Patente no es valido</h3>
+                </div>
+            {% endif %}
+            {% if not p2 %}
+                <div class="card">
+                    <h3>La Patente ya se encuentra registrado</h3>
                 </div>
             {% endif %}
         </div>
