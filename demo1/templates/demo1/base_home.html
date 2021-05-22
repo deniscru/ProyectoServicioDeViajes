@@ -10,7 +10,7 @@
         <div class="page-header">
             {% if user.is_authenticated %}
                 <h1>Bienvenido Pasajero al home de Combi19</h1>
-                <h2 class='card'>{{ user.get_username }}<a href="http://127.0.0.1:8000/logout/"> Cerrar Sesión </a></h2>
+                <h2 class='card'>{{ user.get_full_name }}<a href="http://127.0.0.1:8000/logout/"> Cerrar Sesión </a></h2>
             {% else %}
                 <h4>Error, No ha iniciado sesion</h4>
             {% endif %}

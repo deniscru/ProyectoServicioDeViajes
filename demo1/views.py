@@ -282,6 +282,7 @@ def calcular_edad(p):
 
 def pasajero_new(request):
     exitoso=False
+    fallido=False
     tipo=False
     edad=0
     dniUnico=True
@@ -296,7 +297,7 @@ def pasajero_new(request):
             if (edad>=18 and dniUnico and mailUnico):
                 if p["tipo"]=="BASICO":
                     usuario=User.objects.create(is_superuser=False,password=p["password"],email=p["email"],first_name=p["first_name"],last_name=p["last_name"])
-                    usuario.username=p["email"]
+                    usuario.username=usuario.id
                     usuario.password=make_password(p["password"])
                     usuario.save()
                     pasajero=Pasajero.objects.create(usuario=usuario,dni=int(p["dni"]),telefono=int(p["telefono"]),tipo=p["tipo"],fecha_de_nacimiento=p["fecha_de_nacimiento"])
@@ -307,14 +308,16 @@ def pasajero_new(request):
                     t=FormTarjeta()
                     t.change_pasajero(p)
                     return redirect("http://127.0.0.1:8000/registrar_tarjeta/")
+            else:
+                fallido=True
             
     else:
         form=FormPasajero()
-    return render(request,'demo1/form/formulario_usuario.html',{"form":form,"edad":edad,"exitoso":exitoso,"tipo":tipo,"dniUnico":dniUnico,"mailUnico":mailUnico}) 
+    return render(request,'demo1/form/formulario_usuario.html',{"form":form,"edad":edad,"exitoso":exitoso,"tipo":tipo,"dniUnico":dniUnico,"mailUnico":mailUnico,"fallido":fallido}) 
 
 def es_fallo_usuario(email):
     try:
-        User.objects.get(username=email)
+        User.objects.get(email=email)
         return False
     except:
         return True
@@ -327,6 +330,13 @@ def es_pasajero(user):
     except:
         return False
 
+def buscar_id_con_email(email):
+    try:
+        usuario=User.objects.get(email=email)
+        return usuario.id
+    except:
+        return -1
+
 def es_admin(user):
     return user.is_superuser or user.is_staff
 
@@ -338,7 +348,8 @@ def login_usuario(request):
         if form.is_valid():
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password')
-            user = authenticate(username=email,password=password)
+            id=buscar_id_con_email(email)
+            user = authenticate(username=id,password=password)
             if user is not None:
                 login(request, user)
                 if es_admin(user):
@@ -348,7 +359,7 @@ def login_usuario(request):
                 else:
                     return redirect("http://127.0.0.1:8000/home_usuario_chofer/")
             elif es_fallo_usuario(email):
-               fallo_usuario=True
+                fallo_usuario=True
             else:
                 fallo_password=True
     else:
