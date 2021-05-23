@@ -2,8 +2,8 @@ from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
 from django.contrib import messages
-from .forms import FormLugar, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje,FormViajeModi, FormInsumo, FormRuta,FormTarjeta
-from datetime import date
+from .forms import FormLugar, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormTarjeta, FormoBusquedaViaje
+from datetime import date, datetime
 from django.core.paginator import Paginator
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
 from django.contrib.auth.hashers import make_password
@@ -199,8 +199,7 @@ def listado_ruta(request):
     page_obj = paginator.get_page(page_number)
     return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad})
 
-def armarFilaViaje():
-    viajes=Viaje.objects.filter(activo=True).values()
+def armarFilaViaje(viajes=Viaje.objects.filter(activo=True).values()):
     lista=[]
     for v in viajes:
         r=Ruta.objects.filter(id=v['ruta_id']).values()
@@ -310,7 +309,6 @@ def pasajero_new(request):
                     return redirect("http://127.0.0.1:8000/registrar_tarjeta/")
             else:
                 fallido=True
-            
     else:
         form=FormPasajero()
     return render(request,'demo1/form/formulario_usuario.html',{"form":form,"edad":edad,"exitoso":exitoso,"tipo":tipo,"dniUnico":dniUnico,"mailUnico":mailUnico,"fallido":fallido}) 
@@ -322,6 +320,13 @@ def es_fallo_usuario(email):
     except:
         return True
 
+def buscar_id_con_email(email):
+    try:
+        usuario=User.objects.get(email=email)
+        return usuario.id
+    except:
+        return -1
+
 def es_pasajero(user):
     persona=Persona.objects.get(usuario_id=user.id)
     try:
@@ -329,13 +334,6 @@ def es_pasajero(user):
         return True
     except:
         return False
-
-def buscar_id_con_email(email):
-    try:
-        usuario=User.objects.get(email=email)
-        return usuario.id
-    except:
-        return -1
 
 def es_admin(user):
     return user.is_superuser or user.is_staff
@@ -390,7 +388,7 @@ def chofer_new(request):
             if dniUnico and mailUnico:
                 user= User.objects.create(email=d['email'], password=d['password'], first_name=d['first_name'], last_name=d['last_name'], is_staff=False)
                 user.password=make_password(d["password"])
-                user.username=d['email']
+                user.username=user.id
                 user.save()
                 chofer= Chofer.objects.create(dni=int(d['dni']), telefono=d['telefono'], usuario=user)
                 chofer.save()
@@ -457,13 +455,13 @@ def combi_new(request):
         form=FormCombi()
     return render(request, 'demo1/form/formulario_combi.html', {'form': form, 'valor': valor, 'exitoso':exitoso, 'patenteInvalido':patenteInvalido})
 
-def verificarFechaYRuta(unaFecha, idRuta):
-    return not Viaje.objects.filter(activo=True).filter(fecha=unaFecha).filter(ruta=idRuta).exists()
+def verificarFechaYRuta(unaFecha, ruta):
+    return not Viaje.objects.filter(activo=True).filter(fecha=unaFecha).filter(ruta=ruta.pk).exists()
 
 def verifivarAsientos(d):
-    ruta2=Ruta.objects.filter(id=d['ruta']).values()
-    unaCombi=Combi.objects.filter(id=ruta2[0]['combi_id']).values()
-    if d['asientos'] <=unaCombi[0]['asientos']:
+    ruta2=Ruta.objects.get(id=d['ruta'].pk)
+    unaCombi=Combi.objects.get(id=ruta2.combi.pk)
+    if d['asientos'] <=unaCombi.asientos:
         return True
     else:
         return False
@@ -479,7 +477,7 @@ def viaje_new(request):
             a=verificarFechaYRuta(d['fecha'], d['ruta'])
             v=verifivarAsientos(d)
             if a and v:
-                unaRuta=Ruta.objects.get(id=d['ruta'])  
+                unaRuta=Ruta.objects.get(id=d['ruta'].pk)  
                 #unosInsumos= Insumo.objects.filter(id__in= d['insumo'])       
                 viaje=Viaje.objects.create(ruta=unaRuta, fecha=d['fecha'], precio=d['precio'], asientos= d['asientos'],activo=True)
                 #viaje.insumos.set(unosInsumos)
@@ -532,10 +530,8 @@ def ruta_new(request):
         form=FormRuta(request.POST)
         if form.is_valid():
             d=form.cleaned_data
-            unOrigen=d['origen']
-            unDestino=d['destino']
-            desOriEquls= unOrigen.id == unDestino.id
-            rutaRep = Ruta.objects.filter(origen = unOrigen).filter(destino = unDestino).filter(hora = d['hora']).exists()
+            desOriEquls= d['origen'].pk == d['destino'].pk
+            rutaRep = Ruta.objects.filter(origen = d['origen'].pk).filter(destino = d['destino'].pk).filter(hora = d['hora']).exists()
             if not desOriEquls and not rutaRep:
                 ruta=Ruta.objects.create(combi=d['combi'], origen=d['origen'], destino=d['destino'], distancia=d['distancia'], hora=d['hora'],activo=True)
                 ruta.save()
@@ -804,9 +800,9 @@ def modificar_viaje(request,pk):
     if no_tieneViajesVendidos(pk):
         data= {'ruta':viaje.ruta,'fecha':viaje.fecha,'precio':viaje.precio,'asientos':viaje.asientos}
         if request.method=='GET':
-            form=FormViajeModi(data)
+            form=FormViaje(data)
         else:
-            form=FormViajeModi(request.POST)
+            form=FormViaje(request.POST)
             if form.is_valid():
                 d=form.cleaned_data
                 viajeValido=verificarFechaYRuta(d['fecha'], d['ruta'])
@@ -890,4 +886,61 @@ def modificar_combi(request,pk):
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         return render(request, 'demo1/listados/listado_combi.html', {'page_obj':page_obj, 'cantidad':cantidad, 'noModificado':noModificado})
+
+def armarFilaViaje2(viajes=Viaje.objects.filter(activo=True).values()):
+    lista=[]
+    for v in viajes:
+        r=Ruta.objects.filter(id=v['ruta_id']).values()
+        combi=Combi.objects.get(id=r[0]['combi_id'])
+        o=Lugar.objects.get(id=r[0]['origen_id'])
+        d=Lugar.objects.get(id=r[0]['destino_id'])
+        tipo= 'Cama' if combi.tipo=='C' else 'Semicama'
+        dic={'origen':o.nombre_de_lugar, 'destino':d.nombre_de_lugar,
+            'hora': r[0]['hora'], 'cant': v['asientos'], 'fecha':v['fecha'], 'precio':v['precio'], 'pk':v['id'], 'tipo':tipo}
+        lista.append(dic)
+    return lista 
+
+def buscarRuta(origen, destino):
+    rutas=Ruta.objects.all()
+    for i in rutas:
+        o=Lugar.objects.get(id=i.origen.pk)
+        d=Lugar.objects.get(id=i.destino.pk)
+        if o.nombre_de_lugar.upper()==origen.upper() and d.nombre_de_lugar.upper()== destino.upper():
+            return i
+    return None
+
+def buscarViajesEnLaBD(d):
+    ruta2=buscarRuta(d['origen'],d['destino'])
+    if ruta2 !=None:
+        viajes=Viaje.objects.filter(ruta=ruta2.pk).values()
+        lista=[]
+        for i in viajes:
+            if i['fecha'] >=date.today() and i['asientos']>0:
+                lista.append(i)
+        return lista
+    return None
+
+def buscarViajes(request):
+    #falta sacar lo viajes con hora ya pasadas
+    validarOriyDes=False
+    conViajes=None
+    page_obj=[]
+    fecha=False
+    if request.method=='POST':
+        form=FormoBusquedaViaje(request.POST)
+        if form.is_valid():
+            d=form.cleaned_data
+            validarOriyDes= d['origen'].upper()==d['destino'].upper()
+            fecha=d['fecha']<date.today()
+            if not validarOriyDes and not fecha:
+                resultadoDeViajes=buscarViajesEnLaBD(d)
+                if resultadoDeViajes!=None:
+                    conViajes=True
+                    page_obj=armarFilaViaje2(viajes=resultadoDeViajes)  
+                else:
+                    conViajes=False                
+    else:
+        form=FormoBusquedaViaje()
+    noHay=True if (conViajes!=None and not conViajes) else False
+    return render(request,"demo1/form/formulario_viaje_busquedas.html", {'page_obj':page_obj, 'form': form, 'conViajes':conViajes, 'validarOriyDes':validarOriyDes, 'noHay':noHay, 'fecha':fecha})
 
