@@ -11,10 +11,11 @@
             {% if user.is_authenticated %}
                 <div align= "right">
                     <h2><a href="http://127.0.0.1:8000/logout/"> Cerrar Sesión </a></h2>
+                    <h3 ><a href="{% url 'modificar_pasajero' pk=user.pk%}"> Editar Datos de Cuenta </a></h3>
                 </div>
                 <h1>Bienvenido Pasajero al home de Combi19</h1>
                 <h2 class='card'>{{ user.get_full_name }}</h2>
-                <h3 class='card'><a href="{% url 'modificar_pasajero' pk=user.pk%}"> Editar Datos de Cuenta </a></h3>
+                
             {% else %}
                 <h4>Error, No ha iniciado sesion</h4>
             {% endif %}
