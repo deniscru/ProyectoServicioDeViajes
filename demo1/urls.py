@@ -1,4 +1,5 @@
 from django.urls import path
+from django.conf.urls import url
 from . import views
 
 urlpatterns = [
@@ -43,7 +44,10 @@ urlpatterns = [
     path('usuario/listaRuta/eliminar/<int:pk>/', views.eliminar_ruta, name='eliminar_ruta'),
     path('login/',views.login_usuario,name='login'),
     path('registrar_tarjeta/',views.tarjeta_new,name="registrar_tarjeta"),
+    path('registrar_tarjeta_modificado/',views.tarjeta_new_modificado,name="registrar_tarjeta_modificado"),
     path('home_usuario/',views.home_usuario,name="home_usuario"),
+    path('home_usuario/modificar_pasajero/<int:pk>/',views.modificar_pasajero,name="modificar_pasajero"),
     path('home_usuario_chofer/',views.home_usuario_chofer,name="home_usuario_chofer"),
-    path('logout/',views.logout_usuario,name='logout')
+    path('logout/',views.logout_usuario,name='logout'),
+    path('change_password', views.change_password, name='change_password'),
 ]

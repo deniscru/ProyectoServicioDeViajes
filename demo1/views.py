@@ -1,14 +1,18 @@
+from django.db.models.fields import BLANK_CHOICE_DASH
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
 from django.contrib import messages
-from .forms import FormLugar, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje,FormViajeModi, FormInsumo, FormRuta,FormTarjeta
+from .forms import FormLugar, FormPasajero, FormLogin,FormPasajeroModi, FormChofer, FormCombi, FormViaje,FormViajeModi, FormInsumo, FormRuta,FormTarjeta
 from datetime import date
 from django.core.paginator import Paginator
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
 from django.contrib.auth.hashers import make_password
 from django.db.models import Q
 import datetime
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+
 
 def principal(request):
     administrador = User.objects.filter(is_superuser=True)   
@@ -239,12 +243,55 @@ def tarjeta_new(request):
         form=FormTarjeta()
     return render(request,'demo1/form/formulario_tarjeta.html',{"form":form,"exitoso":exitoso,"fv":fecha_vencimiento_no_es_valida}) 
 
+def tarjeta_new_modificado(request):
+    exitoso=False
+    fecha_vencimiento_no_es_valida=False
+    tarjetaRep=False
+    p=FormTarjeta.get_pasajero()
+    pasajero= buscar_pasajero_dni(p["dni"])
+    login(request, pasajero.usuario)
+    tiene= tiene_tarjeta(pasajero.pk)
+    if request.method=="POST":
+        form=FormTarjeta(request.POST)
+        if form.is_valid():
+            t=form.cleaned_data
+            if tiene:
+                tarj= obtener_tarjeta(pasajero.pk)
+                tarjetaRep= tarjetaRepetidaModificado(tarj.pk,t["numero"])
+            else:
+                tarjetaRep= tarjetaRepetida(t["numero"])
+            if fecha_vencimiento_es_valida(t["fecha_de_vencimiento"]):
+                if not tarjetaRep:
+                    if tiene and tarj.numero == int(t["numero"]):
+                        tarjeta=tarj
+                    else:
+                        tarjeta=Tarjeta.objects.create(pasajero=pasajero,numero=t["numero"],fecha_de_vencimiento=t["fecha_de_vencimiento"],codigo=t["codigo"],activo=True)
+                    pasajero.tipo=p["tipo"]
+                    pasajero.save()
+                    tarjeta.save()
+                    exitoso=True
+            else:
+                fecha_vencimiento_no_es_valida=True
+    else:
+        if tiene:
+            tarj= obtener_tarjeta(pasajero.pk)
+            data={'numero':tarj.numero,'codigo':tarj.codigo,'fecha_de_vencimiento':tarj.fecha_de_vencimiento}
+            form=FormTarjeta(data)
+        else:
+            form=FormTarjeta()
+    return render(request,'demo1/form/formulario_tarjeta_modificado.html',{"form":form,"exitoso":exitoso,"fv":fecha_vencimiento_no_es_valida,'tarjetaRep':tarjetaRep,'user':pasajero.usuario})
+
 def calcular_edad(p):
     hoy=date.today()
     edad=hoy.year - p["fecha_de_nacimiento"].year
     edad-=((hoy.month,hoy.day)<(p["fecha_de_nacimiento"].month,p["fecha_de_nacimiento"].day))
     return edad
 
+def calcular_edad2(fechaNac):
+    hoy=date.today()
+    edad=hoy.year - fechaNac.year
+    edad-=((hoy.month,hoy.day)<(fechaNac.month,fechaNac.day))
+    return edad
 
 def pasajero_new(request):
     exitoso=False
@@ -277,6 +324,119 @@ def pasajero_new(request):
     else:
         form=FormPasajero()
     return render(request,'demo1/form/formulario_usuario.html',{"form":form,"edad":edad,"exitoso":exitoso,"tipo":tipo,"dniUnico":dniUnico,"mailUnico":mailUnico}) 
+
+def buscar_pasajero(pk):
+    queryset=Pasajero.objects.filter(activo=True)
+    for pasajero in queryset:
+        if pasajero.usuario.id == pk:
+            return pasajero
+
+def buscar_pasajero_dni(dni):
+    queryset=Pasajero.objects.filter(activo=True)
+    for pasajero in queryset:
+        if pasajero.dni == int(dni):
+            return pasajero
+
+def tiene_tarjeta(pk):
+    queryset=Tarjeta.objects.filter(activo=True)
+    for tarjeta in queryset:
+        if tarjeta.pasajero.id == pk:
+            return True
+    return False
+
+def obtener_tarjeta(pk):
+    queryset=Tarjeta.objects.filter(activo=True)
+    for tarjeta in queryset:
+        if tarjeta.pasajero.id == pk:
+            return tarjeta
+    
+
+def modificar_pasajero(request,pk):
+    pasajero= buscar_pasajero(pk)
+    exitoso=False
+    tipo=False
+    pasajeropk=pasajero.pk
+    edad=calcular_edad2(pasajero.fecha_de_nacimiento)
+    dniUnico=True
+    mailUnico=True
+    if pasajero.tipo=="BASICO":
+        if request.method=="GET":
+            data= {'username':pasajero.usuario.username,'email':pasajero.usuario.email,'password':'usar contraseña actual','first_name':pasajero.usuario.first_name,'last_name':pasajero.usuario.last_name,'dni':pasajero.dni,'telefono':pasajero.telefono,'tipo':pasajero.tipo,'fecha_de_nacimiento':pasajero.fecha_de_nacimiento}
+            form=FormPasajero(data)
+        else:
+            form=FormPasajero(request.POST)
+            if form.is_valid():
+                p=form.cleaned_data
+                edad=calcular_edad(p)
+                dniUnico= not Persona.objects.exclude(pk=pasajeropk).filter(dni=(p["dni"])).exists()
+                mailUnico= not User.objects.exclude(pk=pk).filter(email=(p["email"])).exists()
+                if (edad>=18 and dniUnico and mailUnico):
+                    #pasajero.usuario.password=make_password(p["password"])
+                    pasajero.usuario.email=p["email"]
+                    pasajero.usuario.first_name=p["first_name"]
+                    pasajero.usuario.last_name=p["last_name"]
+                    pasajero.usuario.username=p["email"]
+                    pasajero.usuario.save()
+                    pasajero.dni=int(p["dni"])
+                    pasajero.telefono=int(p["telefono"])
+                    pasajero.fecha_de_nacimiento=p["fecha_de_nacimiento"]
+                    pasajero.save()
+                    tipo=True
+                    exitoso=True
+                    if p["tipo"]=="GOLD":
+                        t=FormTarjeta()
+                        t.change_pasajero(p)
+                        return redirect("http://127.0.0.1:8000/registrar_tarjeta_modificado/")
+            
+        return render(request,'demo1/modificar/formulario_modificar_pasajero.html',{"form":form,"edad":edad,"exitoso":exitoso,"dniUnico":dniUnico,"mailUnico":mailUnico})
+    else:
+        
+        tarjetaRep=False
+        vencNoValida=False
+        tarjeta= obtener_tarjeta(pasajeropk)
+        data= {'username':pasajero.usuario.username,'email':pasajero.usuario.email,'password':'usar contraseña actual','first_name':pasajero.usuario.first_name,'last_name':pasajero.usuario.last_name,'dni':pasajero.dni,'telefono':pasajero.telefono,'tipo':pasajero.tipo,'fecha_de_nacimiento':pasajero.fecha_de_nacimiento,'numero':tarjeta.numero,'fecha_de_vencimiento':tarjeta.fecha_de_vencimiento,'codigo':tarjeta.codigo}
+        if request.method=="GET":
+            form=FormPasajeroModi(data)
+        else:
+            form=FormPasajeroModi(request.POST)
+            if form.is_valid():
+                p=form.cleaned_data
+                edad=calcular_edad(p)
+                dniUnico= not Persona.objects.exclude(pk=pasajeropk).filter(dni=(p["dni"])).exists()
+                mailUnico= not User.objects.exclude(pk=pk).filter(email=(p["email"])).exists()
+                if (edad>=18 and dniUnico and mailUnico):
+                   
+                        if not tarjetaRepetidaModificado(tarjeta.pk,p["numero"]):
+                            if fecha_vencimiento_es_valida(p["fecha_de_vencimiento"]):
+                                #pasajero.usuario.password=make_password(p["password"])
+                                pasajero.usuario.email=p["email"]
+                                pasajero.usuario.first_name=p["first_name"]
+                                pasajero.usuario.last_name=p["last_name"]
+                                pasajero.usuario.username=p["email"]
+                                pasajero.usuario.save()
+                                pasajero.dni=int(p["dni"])
+                                pasajero.telefono=int(p["telefono"])
+                                pasajero.tipo=p["tipo"]
+                                pasajero.fecha_de_nacimiento=p["fecha_de_nacimiento"]
+                                pasajero.save()
+                                exitoso=True
+                                tarjeta.numero = p["numero"]
+                                tarjeta.codigo = p["codigo"]
+                                tarjeta.fecha_de_vencimiento = p["fecha_de_vencimiento"]
+                                tarjeta.save()
+                            else:
+                                vencNoValida=True
+                        else:
+                            tarjetaRep=True
+        return render(request,'demo1/modificar/formulario_modificar_pasajero.html',{"form":form,"tarjetaRep":tarjetaRep,"vencNoValida":vencNoValida,"edad":edad,"exitoso":exitoso,"dniUnico":dniUnico,"mailUnico":mailUnico}) 
+
+
+def tarjetaRepetidaModificado(pk,numero):
+    return Tarjeta.objects.exclude(pk=pk).filter(activo=True).filter(numero=numero).exists()
+
+def tarjetaRepetida(numero):
+    return Tarjeta.objects.filter(activo=True).filter(numero=numero).exists()
+
 
 def es_fallo_usuario(email):
     try:
@@ -846,3 +1006,18 @@ def modificar_combi(request,pk):
         page_obj = paginator.get_page(page_number)
         return render(request, 'demo1/listados/listado_combi.html', {'page_obj':page_obj, 'cantidad':cantidad, 'noModificado':noModificado})
 
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important!
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('change_password')
+        else:
+            messages.error(request, 'Please correct the error below.')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'demo1/change_password.html', {
+        'form': form
+    })

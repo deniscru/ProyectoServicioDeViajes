@@ -1,0 +1,30 @@
+{% extends 'demo1/base_tarjeta.html' %}
+
+{% block content %}
+    <p>Para ser Usuario Gold debe completar los datos de la Tarjeta de Credito</p>
+    <form method="POST" class="post-form">
+        {% csrf_token %}
+        {{ form.as_p}}
+        <button type="submit" class="guardar tarjeta">Registrar tarjeta</button>
+    </form>
+    
+    {% if exitoso %}
+        <p>La carga se realizo con exito</p>
+    {% endif %}
+    {% if fv %}
+        <div>
+            <p>Fecha de vencimiento inválida</p>
+        </div>
+    {% elif tarjetaRep %}
+        <div>
+            <p>La tarjeta ingresada esta repetida</p>
+        </div>    
+    {% endif %}
+    <div >
+        <h2><a href="{% url 'modificar_pasajero' pk=user.pk%}">Atras</a></h2>
+    </div>
+    <div >
+        <h2><a href="{% url 'home_usuario'%}">Home</a></h2>
+    </div> 
+    
+{% endblock %}

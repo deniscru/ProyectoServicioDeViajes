@@ -13,7 +13,7 @@ class FormPasajero(forms.Form):
     años=[]
     for i in range(1915,año):
         años.append(i)
-    tipos=[("GOLD","GOLD"),("BASICO","BÁSICO")]
+    tipos=[("GOLD","Quiero ser Usuario GOLD"),("BASICO","Soy Usuario BÁSICO")]
     email=forms.EmailField(required=True)
     dni=forms.CharField(required=True,label="Dni",max_length=8,min_length=8)
     first_name=forms.CharField(required=True,max_length=30,label="Nombre")
@@ -22,6 +22,27 @@ class FormPasajero(forms.Form):
     telefono=forms.CharField(required=True,label="Teléfono",max_length=15)
     fecha_de_nacimiento = forms.DateField(required=True,label='Fecha Nacimiento',widget=forms.SelectDateWidget(years=años))
     tipo =forms.ChoiceField(widget=forms.RadioSelect, choices=tipos)
+
+class FormPasajeroModi(forms.Form):
+    año=int(date.today().year)
+    años=[]
+    for i in range(1915,año):
+        años.append(i)
+    años1=[]
+    for i in range(año,(año+10)):
+        años1.append(i)
+    tipos=[("GOLD","Soy usuario GOLD"),("BASICO","Quiero ser Usuario BÁSICO")]
+    email=forms.EmailField(required=True)
+    dni=forms.CharField(required=True,label="Dni",max_length=8,min_length=8)
+    first_name=forms.CharField(required=True,max_length=30,label="Nombre")
+    last_name=forms.CharField(required=True,max_length=30,label="Apellido")
+    password = forms.CharField(required=True,label="Contraseña",min_length=6)
+    telefono=forms.CharField(required=True,label="Teléfono",max_length=15)
+    fecha_de_nacimiento = forms.DateField(required=True,label='Fecha Nacimiento',widget=forms.SelectDateWidget(years=años))
+    tipo =forms.ChoiceField(widget=forms.RadioSelect, choices=tipos)
+    numero=forms.CharField(max_length=18,min_length=14,label="Número Tarjeta")
+    fecha_de_vencimiento=forms.DateField(label="Fecha Vencimiento",widget=forms.SelectDateWidget(years=años1))
+    codigo=forms.CharField(label="Código seguridad",min_length=3,max_length=4)
 
 class FormTarjeta(forms.Form):
     pasajero=None

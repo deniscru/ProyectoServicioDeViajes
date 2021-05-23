@@ -14,9 +14,9 @@ class Chofer(Persona):
 
 class Pasajero(Persona):
     TIPOS_PLANES = (
-        ('B', 'Basic'),
-        ('G', 'Gold'),)
-    tipo = models.CharField(max_length=1, choices=TIPOS_PLANES)
+        ('BASICO', 'BASICO'),
+        ('GOLD', 'GOLD'),)
+    tipo = models.CharField(max_length=6, choices=TIPOS_PLANES)
     fecha_de_nacimiento = models.DateField()
     
 class Tarjeta(models.Model):

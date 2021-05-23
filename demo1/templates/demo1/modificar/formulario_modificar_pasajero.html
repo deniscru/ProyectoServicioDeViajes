@@ -1,0 +1,50 @@
+{% extends 'demo1/base_registrar.html' %}
+
+{% block content %}
+<div class = 'card'>
+    <form method="POST" class="post-form" id="usuarioForm">
+        {% csrf_token %}
+        {{ form.as_p}}<h4><a href="{% url 'change_password' %}">Cambiar Contraseña</a></h4>
+        <button type="submit" class="guardar usuario">Registrar</button>
+        
+    </form>
+</div>
+
+<div class = 'card'>
+    {% if exitoso %}
+        <div>
+            <h3>La modificacion se realizo exitosamente</h3>
+        </div>
+    {% elif not mailUnico and not dniUnico %}
+                <div>
+                    <h3>No se han modificado los datos correctamente porque en mail y el dni ya existen</h3>
+                </div>
+    {% elif not mailUnico %}
+                <div>
+                    <h3>No se han modificado los datos correctamente porque en mail ya existe</h3>
+                </div>
+    {% elif not dniUnico %}
+                <div>
+                    <h3> No se han modificado los datos correctamente ya que el dni ya existe </h3>
+                </div>
+    {% elif vencNoValida %}
+                <div>
+                    <h3> No se han modificado los datos correctamente porque el vencimiento de la tarjeta no es valida</h3>
+                </div>
+    {% elif tarjetaRep %}
+                <div>
+                    <h3> No se han modificado los datos correctamente porque el numero de tarjeta esta repetida </h3>
+                </div>
+    
+    {% elif edad < 18 %}
+                <div>
+                    <h3> No se han modificado los datos correctamente porque la edad no puede ser menor a 18 </h3>
+                </div>
+                
+    {% endif %}
+</div>
+    <div class ='card'>
+        <h2><a href="{% url 'home_usuario' %}"> Atras</a></h2>
+    </div>    
+
+{% endblock %}
