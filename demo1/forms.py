@@ -116,5 +116,6 @@ class FormoBusquedaViaje(forms.Form):
     fecha = forms.DateField(required=True,label='Fecha',widget=forms.SelectDateWidget(years=años))
 
 class FormComentario(forms.Form):
-    viaje=forms.ModelChoiceField(queryset=Viaje.objects.filter(activo=True),label='Viaje',widget=forms.Select())
+    fecha=date.today()
+    viaje=forms.ModelChoiceField(queryset=Viaje.objects.filter(activo=True,fecha__lte=fecha),label='Viaje',widget=forms.Select())
     texto=forms.CharField(required=True,widget=forms.Textarea(attrs={"rows":5, "cols":100}),label="Comentario",max_length=500)
