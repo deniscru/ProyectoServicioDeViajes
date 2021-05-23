@@ -2,7 +2,6 @@ from django.db.models.fields import BLANK_CHOICE_DASH
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
-from django.contrib import messages
 from .forms import FormLugar,FormPasajeroModi, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormTarjeta, FormoBusquedaViaje
 from datetime import date, datetime
 from django.core.paginator import Paginator
@@ -10,8 +9,7 @@ from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje
 from django.contrib.auth.hashers import make_password
 from django.db.models import Q
 import datetime
-from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.forms import PasswordChangeForm
+from .views2 import change_password
 
 
 
@@ -262,7 +260,7 @@ def tarjeta_new(request):
             t=form.cleaned_data
             if fecha_vencimiento_es_valida(t["fecha_de_vencimiento"]):
                 usuario=User.objects.create(is_superuser=False,password=p["password"],email=p["email"],first_name=p["first_name"],last_name=p["last_name"])
-                usuario.username=p["email"]
+                usuario.username=usuario.id
                 usuario.password=make_password(p["password"])
                 usuario.save()
                 pasajero=Pasajero.objects.create(usuario=usuario,dni=int(p["dni"]),telefono=int(p["telefono"]),tipo=p["tipo"],fecha_de_nacimiento=p["fecha_de_nacimiento"])
@@ -410,7 +408,7 @@ def modificar_pasajero(request,pk):
                     pasajero.usuario.email=p["email"]
                     pasajero.usuario.first_name=p["first_name"]
                     pasajero.usuario.last_name=p["last_name"]
-                    pasajero.usuario.username=p["email"]
+                    pasajero.usuario.username=pasajero.usuario.id
                     pasajero.usuario.save()
                     pasajero.dni=int(p["dni"])
                     pasajero.telefono=int(p["telefono"])
@@ -447,7 +445,7 @@ def modificar_pasajero(request,pk):
                                 pasajero.usuario.email=p["email"]
                                 pasajero.usuario.first_name=p["first_name"]
                                 pasajero.usuario.last_name=p["last_name"]
-                                pasajero.usuario.username=p["email"]
+                                pasajero.usuario.username=pasajero.usuario.id
                                 pasajero.usuario.save()
                                 pasajero.dni=int(p["dni"])
                                 pasajero.telefono=int(p["telefono"])
@@ -567,7 +565,7 @@ def chofer_new(request):
                     fercho.usuario.first_name=d['first_name']
                     fercho.usuario.last_name= d['last_name']
                     fercho.usuario.is_staff=False
-                    fercho.usuario.username=d['email']
+                    fercho.usuario.username=fercho.usuario.id
                     fercho.usuario.save()
                     fercho.dni=d['dni']
                     fercho.telefono=d['telefono']
@@ -933,7 +931,7 @@ def modificar_chofer(request,pk):
                     fercho.usuario.first_name=d['first_name']
                     fercho.usuario.last_name= d['last_name']
                     fercho.usuario.is_staff=False
-                    fercho.usuario.username=d['email']
+                    fercho.usuario.username=fercho.usuario.id
                     fercho.usuario.save()
                     fercho.dni=d['dni']
                     fercho.telefono=d['telefono']
@@ -1047,21 +1045,7 @@ def modificar_combi(request,pk):
         page_obj = paginator.get_page(page_number)
         return render(request, 'demo1/listados/listado_combi.html', {'page_obj':page_obj, 'cantidad':cantidad, 'noModificado':noModificado})
 
-def change_password(request):
-    if request.method == 'POST':
-        form = PasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)  # Important!
-            messages.success(request, 'Your password was successfully updated!')
-            return redirect('change_password')
-        else:
-            messages.error(request, 'Please correct the error below.')
-    else:
-        form = PasswordChangeForm(request.user)
-    return render(request, 'demo1/change_password.html', {
-        'form': form
-    })
+
 def armarFilaViaje2(viajes=Viaje.objects.filter(activo=True).values()):
     lista=[]
     for v in viajes:
