@@ -8,7 +8,7 @@
     </head>
     <body>
         <div class="page-header">
-        {% if user.is_authenticated %}
+        {% if user.is_authenticated and user.is_superuser %}
                 <h1>Menú administrativo de Combi19</h1>
         </div>
             <div class="card"><h4><a href="http://127.0.0.1:8000/logout/">Cerrar sesion administrador</a> </h4> </div>

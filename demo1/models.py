@@ -88,6 +88,13 @@ class Viaje(models.Model):
 
     def __str__(self):
         return '%s %s' % (str(self.ruta), str(self.fecha))
+
+class Comentario(models.Model):
+    texto=models.TextField(editable=True)
+    pasajero=models.ForeignKey(Pasajero, on_delete=models.CASCADE)
+    viaje=models.ForeignKey(Viaje, on_delete=models.CASCADE)
+    activo=models.BooleanField(default=True)
+
     
    
 

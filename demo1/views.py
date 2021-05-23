@@ -2,10 +2,10 @@ from django.db.models.fields import BLANK_CHOICE_DASH
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
-from .forms import FormLugar,FormPasajeroModi, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormTarjeta, FormoBusquedaViaje
+from .forms import FormLugar,FormPasajeroModi, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormTarjeta, FormoBusquedaViaje ,FormComentario
 from datetime import date, datetime
 from django.core.paginator import Paginator
-from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
+from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona,Comentario
 from django.contrib.auth.hashers import make_password
 from django.db.models import Q
 import datetime
@@ -698,6 +698,30 @@ def ruta_new(request):
     else:
         form=FormRuta()
     return render(request, 'demo1/form/formulario_ruta.html', {'form': form, 'desOriEquls':desOriEquls, 'rutaRep':rutaRep,'exitoso':exitoso})
+
+def buscar_pasajero(id_u):
+    persona=Persona.objects.get(usuario_id=id_u)
+    try:
+        pasajero=Pasajero.objects.get(persona_ptr_id=persona.id)
+        return pasajero
+    except:
+        return None
+
+
+def comentario_new(request):
+    exitoso=False
+    if request.method=="POST":
+        form=FormComentario(request.POST)
+        if form.is_valid():
+            c=form.cleaned_data
+            pasajero=buscar_pasajero(request.user.id)
+            comentario=Comentario.objects.create(texto=c["texto"],pasajero=pasajero,viaje=c["viaje"])
+            comentario.save()
+            exitoso=True
+    else:
+        form=FormComentario()
+    return render(request,'demo1/form/formulario_comentario.html',{'form':form,'exitoso':exitoso})
+
 
 def detalle_pasajero(request, pk):
     pasajero = Pasajero.objects.filter(pk=pk)

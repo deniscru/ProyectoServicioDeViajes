@@ -1,0 +1,17 @@
+{% extends 'demo1/base_registrar.html' %}
+
+{% block content %}
+    <form method="POST" class="post-form" id="usuarioForm">
+        {% csrf_token %}
+        {{ form.as_p}}
+        <button type="submit" class="guardar comentario">Comentar</button>
+        <div>
+            <h2><a href="{% url 'home_usuario' %}"> Salir</a></h2>
+        </div>
+    </form>
+    {% if exitoso %}
+        <div>
+            <meta http-equiv="refresh" content="0; URL=http://127.0.0.1:8000/home_usuario/" />
+        </div>
+    {% endif %}
+{% endblock %}

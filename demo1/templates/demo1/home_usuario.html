@@ -1,6 +1,9 @@
 {% extends 'demo1/base_home.html' %}
-{% block content %}
-   <div align="right">
-      <h2><a href="{% url 'buscar_viajes' %}" >Buscar Viajes</a></h2>
-   </div>
-{% endblock %}
+   {% block content %}
+   {% if user.is_authenticated %}
+      <div align="right">
+         <h2><a href="{% url 'buscar_viajes' %}" >Buscar Viajes</a></h2>
+         <h2><a href="{% url 'crear_comentario' %}">Crear Comentario</a></h2>
+      </div>
+   {% endif %}
+   {% endblock %}

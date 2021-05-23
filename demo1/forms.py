@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.forms import widgets
-from .models import Lugar, Pasajero, Chofer, Ruta, Insumo, Tarjeta, Combi, Persona
+from .models import Lugar, Pasajero, Chofer, Ruta, Insumo, Tarjeta, Combi, Persona, Viaje
 from datetime import date
 
 class FormLugar(forms.Form):
@@ -114,3 +114,7 @@ class FormoBusquedaViaje(forms.Form):
     destino = forms.CharField(required=True,max_length=70,label="Destino")
     años=[2021,2022]
     fecha = forms.DateField(required=True,label='Fecha',widget=forms.SelectDateWidget(years=años))
+
+class FormComentario(forms.Form):
+    viaje=forms.ModelChoiceField(queryset=Viaje.objects.filter(activo=True),label='Viaje',widget=forms.Select())
+    texto=forms.CharField(required=True,widget=forms.Textarea(attrs={"rows":5, "cols":100}),label="Comentario",max_length=500)
