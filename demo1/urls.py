@@ -50,4 +50,5 @@ urlpatterns = [
     path('home_usuario_chofer/',views.home_usuario_chofer,name="home_usuario_chofer"),
     path('logout/',views.logout_usuario,name='logout'),
     path('change_password', views.change_password, name='change_password'),
+    path('home_usuario/buscar_viaje',views.buscarViajes,name="buscar_viajes"),
 ]

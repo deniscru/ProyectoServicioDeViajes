@@ -1,0 +1,81 @@
+{% extends 'demo1/base_form_busqueda_viaje.html' %}
+{% block formu %}
+<div class="page-header">
+    <h1>Busqueda de Viajes</h1>
+</div>
+<div>
+    <div class="formu container">
+        {% if not conViajes %}
+        <div>
+            <p>En el Origen y Destino ingrese una localidad</p>
+        </div>
+        <div>
+            <form method="POST" class="post-form">
+                {% csrf_token %}
+                {{ form.as_p}}
+                <button type="submit" class="buscar chofer">Buscar</button>
+            </form>
+            {% if validarOriyDes%}
+                <div>
+                    <p>El origen y destino deben ser distinto</p>
+                </div>
+            {% endif%}
+        </div>
+        {% endif%}
+        <div>
+            {% if conViajes %}
+            <div>
+                <h3>Resultados de la busqueda: </h3>
+            </div>
+            <table class="tablalista" width=100% border="1">
+                <tbody>
+                    <tr>
+                        <td align="center">Origen</td>
+                        <td align="center">Destino</td>
+                        <td align="center" >Fecha</td>
+                        <td align="center" >Precio</td>
+                        <td align="center">Hora</td>
+                        <td align="center" >Asientos Disp.</td>
+                        <td align="center">Comodidad</td>
+                        <td align="center" >Opcion</td>
+                    </tr>
+                    {% for v in page_obj %}
+                        <tr>
+                            <td>{{ v.origen }}</td>
+                            <td>{{ v.destino }}</td>
+                            <td>{{ v.fecha }}</td>
+                            <td>{{ v.precio }}</td>
+                            <td>{{ v.hora }}</td>
+                            <td>{{ v.cant }}</td>
+                            <td>{{ v.tipo }}</td>
+                            <td>
+                                <a href="">Comprar</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+            </tbody>
+            </table>
+            {% endif %}
+            {% if noHay %}
+            <div>
+                <p>No hay resultados de la busqueda</p>
+            </div>
+            {% endif %}
+            {% if fecha %}
+            <div>
+                <p>La fecha ingresada no es valido (no se permiten fechas ya pasadas)</p>
+            </div>
+            {% endif %}
+        </div>
+        {% if not conViajes%}
+        <div>
+            <h2><a href="{% url 'home_usuario' %}"> salir</a></h2>
+        </div>
+        {% else%}
+        <div>
+            <h2><a href="{% url 'buscar_viajes' %}"> atras</a></h2>
+        </div>
+        {%endif%}
+    </div>
+</div>
+{% endblock %}

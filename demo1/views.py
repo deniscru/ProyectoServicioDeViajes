@@ -3,8 +3,9 @@ from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
 from django.contrib import messages
-from .forms import FormLugar, FormPasajero, FormLogin,FormPasajeroModi, FormChofer, FormCombi, FormViaje,FormViajeModi, FormInsumo, FormRuta,FormTarjeta
-from datetime import date
+from .forms import FormPasajeroModi, FormViajeModi, 
+from .forms import FormLugar, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormTarjeta, FormoBusquedaViaje
+from datetime import date, datetime
 from django.core.paginator import Paginator
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
 from django.contrib.auth.hashers import make_password
@@ -13,6 +14,40 @@ import datetime
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 
+
+
+def verificarLetra(string):
+	for l in string:
+		sigue=False
+		c=65
+		for i in range(25):
+			if ord(l.upper())==c:
+				sigue=True
+			c+=1
+		if not sigue:
+			return False
+	return True
+	
+def verificarNumero(num):
+	try: 
+		n=int(num)
+		return True
+	except:
+		return False
+		
+def verificarPatente(patente):
+	if len(patente)==6:
+		if verificarLetra(patente[0:3]) and verificarNumero(patente[3:6]):
+			return True
+		else:
+			return False
+	elif len(patente)==7:
+		if verificarLetra(patente[0:2]) and verificarNumero(patente[2:5]) and verificarLetra(patente[5:7]):
+			return True
+		else:
+			return False
+	else:
+		return False
 
 def principal(request):
     administrador = User.objects.filter(is_superuser=True)   
@@ -169,8 +204,7 @@ def listado_ruta(request):
     page_obj = paginator.get_page(page_number)
     return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad})
 
-def armarFilaViaje():
-    viajes=Viaje.objects.filter(activo=True).values()
+def armarFilaViaje(viajes=Viaje.objects.filter(activo=True).values()):
     lista=[]
     for v in viajes:
         r=Ruta.objects.filter(id=v['ruta_id']).values()
@@ -295,6 +329,7 @@ def calcular_edad2(fechaNac):
 
 def pasajero_new(request):
     exitoso=False
+    fallido=False
     tipo=False
     edad=0
     dniUnico=True
@@ -309,7 +344,7 @@ def pasajero_new(request):
             if (edad>=18 and dniUnico and mailUnico):
                 if p["tipo"]=="BASICO":
                     usuario=User.objects.create(is_superuser=False,password=p["password"],email=p["email"],first_name=p["first_name"],last_name=p["last_name"])
-                    usuario.username=p["email"]
+                    usuario.username=usuario.id
                     usuario.password=make_password(p["password"])
                     usuario.save()
                     pasajero=Pasajero.objects.create(usuario=usuario,dni=int(p["dni"]),telefono=int(p["telefono"]),tipo=p["tipo"],fecha_de_nacimiento=p["fecha_de_nacimiento"])
@@ -320,10 +355,11 @@ def pasajero_new(request):
                     t=FormTarjeta()
                     t.change_pasajero(p)
                     return redirect("http://127.0.0.1:8000/registrar_tarjeta/")
-            
+            else:
+                fallido=True
     else:
         form=FormPasajero()
-    return render(request,'demo1/form/formulario_usuario.html',{"form":form,"edad":edad,"exitoso":exitoso,"tipo":tipo,"dniUnico":dniUnico,"mailUnico":mailUnico}) 
+    return render(request,'demo1/form/formulario_usuario.html',{"form":form,"edad":edad,"exitoso":exitoso,"tipo":tipo,"dniUnico":dniUnico,"mailUnico":mailUnico,"fallido":fallido}) 
 
 def buscar_pasajero(pk):
     queryset=Pasajero.objects.filter(activo=True)
@@ -440,10 +476,17 @@ def tarjetaRepetida(numero):
 
 def es_fallo_usuario(email):
     try:
-        User.objects.get(username=email)
+        User.objects.get(email=email)
         return False
     except:
         return True
+
+def buscar_id_con_email(email):
+    try:
+        usuario=User.objects.get(email=email)
+        return usuario.id
+    except:
+        return -1
 
 def es_pasajero(user):
     persona=Persona.objects.get(usuario_id=user.id)
@@ -464,7 +507,8 @@ def login_usuario(request):
         if form.is_valid():
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password')
-            user = authenticate(username=email,password=password)
+            id=buscar_id_con_email(email)
+            user = authenticate(username=id,password=password)
             if user is not None:
                 login(request, user)
                 if es_admin(user):
@@ -474,7 +518,7 @@ def login_usuario(request):
                 else:
                     return redirect("http://127.0.0.1:8000/home_usuario_chofer/")
             elif es_fallo_usuario(email):
-               fallo_usuario=True
+                fallo_usuario=True
             else:
                 fallo_password=True
     else:
@@ -505,7 +549,7 @@ def chofer_new(request):
             if dniUnico and mailUnico:
                 user= User.objects.create(email=d['email'], password=d['password'], first_name=d['first_name'], last_name=d['last_name'], is_staff=False)
                 user.password=make_password(d["password"])
-                user.username=d['email']
+                user.username=user.id
                 user.save()
                 chofer= Chofer.objects.create(dni=int(d['dni']), telefono=d['telefono'], usuario=user)
                 chofer.save()
@@ -543,14 +587,13 @@ def verficarChofer(idChofer):
         return False
     return True
 
-def verificarPatente(unaPatente):
+def verificarPatenteEnCombis(unaPatente):
     combi=Combi.objects.filter(patente=unaPatente)
     if combi.count()==0:
         return True
     return False
 
 def combi_new(request):
-    #falta verificar de forma correcta una patente ej: "ABC 123" o "AA 000 BB"
     valor=False
     exitoso=False
     patenteInvalido=False
@@ -559,8 +602,8 @@ def combi_new(request):
         if form.is_valid():
             d=form.cleaned_data
             c=verficarChofer(d['chofer'])
-            p=False if (len(d['patente'])<6 or len(d['patente'])>7) else True
-            patente=verificarPatente(d['patente'])
+            p=verificarPatente(d['patente'])
+            patente=verificarPatenteEnCombis(d['patente'])
             if c and p and patente:
                 combi=Combi.objects.create(chofer=d['chofer'], modelo=d['modelo'], asientos=d['cantAsientos'], patente=d['patente'], tipo=d['tipo'],activo=True)
                 combi.save()
@@ -573,13 +616,13 @@ def combi_new(request):
         form=FormCombi()
     return render(request, 'demo1/form/formulario_combi.html', {'form': form, 'valor': valor, 'exitoso':exitoso, 'patenteInvalido':patenteInvalido})
 
-def verificarFechaYRuta(unaFecha, idRuta):
-    return not Viaje.objects.filter(activo=True).filter(fecha=unaFecha).filter(ruta=idRuta).exists()
+def verificarFechaYRuta(unaFecha, ruta):
+    return not Viaje.objects.filter(activo=True).filter(fecha=unaFecha).filter(ruta=ruta.pk).exists()
 
 def verifivarAsientos(d):
-    ruta2=Ruta.objects.filter(id=d['ruta']).values()
-    unaCombi=Combi.objects.filter(id=ruta2[0]['combi_id']).values()
-    if d['asientos'] <=unaCombi[0]['asientos']:
+    ruta2=Ruta.objects.get(id=d['ruta'].pk)
+    unaCombi=Combi.objects.get(id=ruta2.combi.pk)
+    if d['asientos'] <=unaCombi.asientos:
         return True
     else:
         return False
@@ -595,7 +638,7 @@ def viaje_new(request):
             a=verificarFechaYRuta(d['fecha'], d['ruta'])
             v=verifivarAsientos(d)
             if a and v:
-                unaRuta=Ruta.objects.get(id=d['ruta'])  
+                unaRuta=Ruta.objects.get(id=d['ruta'].pk)  
                 #unosInsumos= Insumo.objects.filter(id__in= d['insumo'])       
                 viaje=Viaje.objects.create(ruta=unaRuta, fecha=d['fecha'], precio=d['precio'], asientos= d['asientos'],activo=True)
                 #viaje.insumos.set(unosInsumos)
@@ -648,10 +691,8 @@ def ruta_new(request):
         form=FormRuta(request.POST)
         if form.is_valid():
             d=form.cleaned_data
-            unOrigen=d['origen']
-            unDestino=d['destino']
-            desOriEquls= unOrigen.id == unDestino.id
-            rutaRep = Ruta.objects.filter(origen = unOrigen).filter(destino = unDestino).filter(hora = d['hora']).exists()
+            desOriEquls= d['origen'].pk == d['destino'].pk
+            rutaRep = Ruta.objects.filter(origen = d['origen'].pk).filter(destino = d['destino'].pk).filter(hora = d['hora']).exists()
             if not desOriEquls and not rutaRep:
                 ruta=Ruta.objects.create(combi=d['combi'], origen=d['origen'], destino=d['destino'], distancia=d['distancia'], hora=d['hora'],activo=True)
                 ruta.save()
@@ -920,9 +961,9 @@ def modificar_viaje(request,pk):
     if no_tieneViajesVendidos(pk):
         data= {'ruta':viaje.ruta,'fecha':viaje.fecha,'precio':viaje.precio,'asientos':viaje.asientos}
         if request.method=='GET':
-            form=FormViajeModi(data)
+            form=FormViaje(data)
         else:
-            form=FormViajeModi(request.POST)
+            form=FormViaje(request.POST)
             if form.is_valid():
                 d=form.cleaned_data
                 viajeValido=verificarFechaYRuta(d['fecha'], d['ruta'])
@@ -984,19 +1025,20 @@ def modificar_combi(request,pk):
                 d=form.cleaned_data
                 choferRep=True if (se_encuentra_en_combi(d['chofer'].id)and ((d['chofer'].id) != combi.chofer.id)) else False
                 modiTodo=True if (no_se_encuentra_en_ruta(pk)) else False
+                validoPatente=[True if d['patente']==combi.patente else verificarPatente(d['patente']), verificarPatenteEnCombis(d['patente'])]
                 if (not choferRep):
                     combi.chofer= d['chofer']
                     combi.tipo=d['tipo']
-                    if modiTodo:
+                    if modiTodo and validoPatente[0] and validoPatente[1]:
                         combi.modelo= d['modelo']
                         combi.asientos= d['cantAsientos']
                         combi.patente= d['patente']
                     else:
                         if combi.modelo != d['modelo'] or combi.asientos != d['cantAsientos'] or combi.patente != d['patente']:
-                            return render(request,'demo1/modificar/formulario_modificar_combi.html',{"form":form,'choferRep':choferRep,'modiTodo':modiTodo})
+                            return render(request,'demo1/modificar/formulario_modificar_combi.html',{"form":form,'choferRep':choferRep,'modiTodo':modiTodo, 'p1':validoPatente[0], 'p2': validoPatente[1]})
                     combi.save()
                     return redirect('listado_combi')
-        return render(request,'demo1/modificar/formulario_modificar_combi.html',{"form":form,'choferRep':choferRep,'modiTodo':modiTodo})
+        return render(request,'demo1/modificar/formulario_modificar_combi.html',{"form":form,'choferRep':choferRep,'modiTodo':modiTodo, 'p1':True, 'p2':True})
     else:
         noModificado = True
         combis=filaDeCombi()
@@ -1021,3 +1063,60 @@ def change_password(request):
     return render(request, 'demo1/change_password.html', {
         'form': form
     })
+def armarFilaViaje2(viajes=Viaje.objects.filter(activo=True).values()):
+    lista=[]
+    for v in viajes:
+        r=Ruta.objects.filter(id=v['ruta_id']).values()
+        combi=Combi.objects.get(id=r[0]['combi_id'])
+        o=Lugar.objects.get(id=r[0]['origen_id'])
+        d=Lugar.objects.get(id=r[0]['destino_id'])
+        tipo= 'Cama' if combi.tipo=='C' else 'Semicama'
+        dic={'origen':o.nombre_de_lugar, 'destino':d.nombre_de_lugar,
+            'hora': r[0]['hora'], 'cant': v['asientos'], 'fecha':v['fecha'], 'precio':v['precio'], 'pk':v['id'], 'tipo':tipo}
+        lista.append(dic)
+    return lista 
+
+def buscarRuta(origen, destino):
+    rutas=Ruta.objects.all()
+    for i in rutas:
+        o=Lugar.objects.get(id=i.origen.pk)
+        d=Lugar.objects.get(id=i.destino.pk)
+        if o.nombre_de_lugar.upper()==origen.upper() and d.nombre_de_lugar.upper()== destino.upper():
+            return i
+    return None
+
+def buscarViajesEnLaBD(d):
+    ruta2=buscarRuta(d['origen'],d['destino'])
+    if ruta2 !=None:
+        viajes=Viaje.objects.filter(ruta=ruta2.pk).values()
+        lista=[]
+        for i in viajes:
+            if i['fecha'] >=date.today() and i['asientos']>0:
+                lista.append(i)
+        return lista
+    return None
+
+def buscarViajes(request):
+    #falta sacar lo viajes con hora ya pasadas
+    validarOriyDes=False
+    conViajes=None
+    page_obj=[]
+    fecha=False
+    if request.method=='POST':
+        form=FormoBusquedaViaje(request.POST)
+        if form.is_valid():
+            d=form.cleaned_data
+            validarOriyDes= d['origen'].upper()==d['destino'].upper()
+            fecha=d['fecha']<date.today()
+            if not validarOriyDes and not fecha:
+                resultadoDeViajes=buscarViajesEnLaBD(d)
+                if resultadoDeViajes!=None:
+                    conViajes=True
+                    page_obj=armarFilaViaje2(viajes=resultadoDeViajes)  
+                else:
+                    conViajes=False                
+    else:
+        form=FormoBusquedaViaje()
+    noHay=True if (conViajes!=None and not conViajes) else False
+    return render(request,"demo1/form/formulario_viaje_busquedas.html", {'page_obj':page_obj, 'form': form, 'conViajes':conViajes, 'validarOriyDes':validarOriyDes, 'noHay':noHay, 'fecha':fecha})
+

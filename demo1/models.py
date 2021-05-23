@@ -45,7 +45,7 @@ class Lugar(models.Model):
     activo = models.BooleanField(default=True)
     
     def __str__(self):
-        return '%s %s' % ('Localidad: '+self.nombre_de_lugar,', Provincia'+self.provincia)
+        return '%s %s' % ('Localidad: '+self.nombre_de_lugar,', Provincia: '+self.provincia)
 
     def nombreYprovincia(self, unNombre, unaProvincia):
         self.nombre_de_lugar= unNombre
@@ -75,7 +75,7 @@ class Ruta(models.Model):
     activo = models.BooleanField(default=True)
 
     def __str__(self):
-        return '%s %s %s' % (self.origen.nombre_de_lugar, self.destino.nombre_de_lugar, str(self.hora))
+        return '%s %s %s %s' % ('Origen: '+self.origen.nombre_de_lugar,', Destino: '+self.destino.nombre_de_lugar, ', Hora: '+str(self.hora), ', Cant. de asientos de la combi:'+str(self.combi.asientos))
 
 class Viaje(models.Model):
     ruta = models.ForeignKey(Ruta, on_delete=models.CASCADE)

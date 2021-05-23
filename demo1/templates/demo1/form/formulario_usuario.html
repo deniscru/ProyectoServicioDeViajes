@@ -19,23 +19,23 @@
             <meta http-equiv="refresh" content="0; URL=http://127.0.0.1:8000/registrar/tarjeta" />
         </div>
         {% endif %}
-    {% elif edad < 18 %}
-                <div>
-                    <h3> No ha podido registrarse correctamente ya que debe ser mayor a 18 años</h3>
-                </div>
-    {% elif not mailUnico and not dniUnico %}
-                <div>
-                    <h3>No se ha podido registrar correctamente porque en mail y el dni ya existen</h3>
-                </div>
-    {% elif not mailUnico %}
-                <div>
-                    <h3>No se ha podido registrar correctamente porque en mail ya existe</h3>
-                </div>
-    {% elif not dniUnico %}
-                <div>
-                    <h3> No ha podido registrarse correctamente ya que el dni ya existe </h3>
-                </div>
-    {% endif %}
-        
-    
+    {% elif fallido %}
+        {% if edad < 18 %}
+            <div>
+                <p> No ha podido registrarse correctamente ya que debe ser mayor a 18 años</p>
+            </div>
+        {% elif not mailUnico and not dniUnico %}
+            <div>
+                <h3>No se ha podido registrar correctamente porque el email y el dni ya existen</h3>
+            </div>
+        {% elif not mailUnico %}
+            <div>
+                <h3>No se ha podido registrar correctamente porque el email ya existe</h3>
+            </div>
+        {% elif not dniUnico %}
+            <div>
+                <h3> No ha podido registrarse correctamente ya que el dni ya existe </h3>
+            </div>
+        {% endif %}
+    {% endif %} 
 {% endblock %}
