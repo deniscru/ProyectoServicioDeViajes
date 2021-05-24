@@ -1067,42 +1067,49 @@ def modificar_combi(request,pk):
         page_obj = paginator.get_page(page_number)
         return render(request, 'demo1/listados/listado_combi.html', {'page_obj':page_obj, 'cantidad':cantidad, 'noModificado':noModificado})
 
-
-def armarFilaViaje2(viajes=Viaje.objects.filter(activo=True).values()):
+def armarFilaViaje2(viajes):
     lista=[]
     for v in viajes:
-        r=Ruta.objects.filter(id=v['ruta_id']).values()
-        combi=Combi.objects.get(id=r[0]['combi_id'])
-        o=Lugar.objects.get(id=r[0]['origen_id'])
-        d=Lugar.objects.get(id=r[0]['destino_id'])
+        r=Ruta.objects.get(id=v.ruta.pk)
+        combi=Combi.objects.get(id=r.combi.pk)
+        o=Lugar.objects.get(id=r.origen.pk)
+        d=Lugar.objects.get(id=r.destino.pk)
         tipo= 'Cama' if combi.tipo=='C' else 'Semicama'
         dic={'origen':o.nombre_de_lugar, 'destino':d.nombre_de_lugar,
-            'hora': r[0]['hora'], 'cant': v['asientos'], 'fecha':v['fecha'], 'precio':v['precio'], 'pk':v['id'], 'tipo':tipo}
+            'hora': r.hora, 'cant': v.asientos, 'fecha':v.fecha, 'precio':v.precio, 'pk':v.pk, 'tipo':tipo}
         lista.append(dic)
     return lista 
 
-def buscarRuta(origen, destino):
-    rutas=Ruta.objects.all()
-    for i in rutas:
-        o=Lugar.objects.get(id=i.origen.pk)
-        d=Lugar.objects.get(id=i.destino.pk)
-        if o.nombre_de_lugar.upper()==origen.upper() and d.nombre_de_lugar.upper()== destino.upper():
-            return i
-    return None
+def validarRutaEnviaje(ruta, da):
+    o=Lugar.objects.get(id=ruta.origen.pk)
+    d=Lugar.objects.get(id=ruta.destino.pk)
+    if o.nombre_de_lugar.upper()==da['origen'].upper() and d.nombre_de_lugar.upper()== da['destino'].upper():
+            return True
+    return False
+
+def buscarViajesPorRuta(d):
+    viajes=Viaje.objects.filter(activo=True)
+    lista=[]
+    for i in viajes:
+        if validarRutaEnviaje(i.ruta, d):
+            lista.append(i)
+    return lista
 
 def buscarViajesEnLaBD(d):
-    ruta2=buscarRuta(d['origen'],d['destino'])
-    if ruta2 !=None:
-        viajes=Viaje.objects.filter(ruta=ruta2.pk).values()
+    viajes=buscarViajesPorRuta(d)
+    if len(viajes)!=0:
         lista=[]
         for i in viajes:
-            if i['fecha'] >=date.today() and i['asientos']>0:
-                lista.append(i)
+            if i.fecha >=date.today() and i.asientos>0:
+                if i.fecha==date.today():
+                    if i.ruta.hora.hour >= datetime.now().hour:
+                        lista.append(i)
+                else:
+                    lista.append(i)
         return lista
     return None
 
 def buscarViajes(request):
-    #falta sacar lo viajes con hora ya pasadas
     validarOriyDes=False
     conViajes=None
     page_obj=[]
