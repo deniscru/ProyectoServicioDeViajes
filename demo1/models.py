@@ -95,6 +95,22 @@ class Comentario(models.Model):
     viaje=models.ForeignKey(Viaje, on_delete=models.CASCADE)
     activo=models.BooleanField(default=True)
 
+class Pasaje(models.Model):
+    TIPOS_ESTADOS = (
+        ('PENDIENTE', 'PENDIENTE'),
+        ('CANCELADO', 'CANCELADO'),
+        ('ENCURSO', 'ENCURSO'),
+        ('RECHAZADO', 'RECHAZADO'),
+        ('PASADO', 'PASADO'),)
+    estado = models.CharField(max_length=9, choices=TIPOS_ESTADOS)
+    activo=models.BooleanField(default=True)
+    pasajero=models.ForeignKey(Pasajero, on_delete=models.CASCADE)
+    viaje=models.ForeignKey(Viaje, on_delete=models.CASCADE)
+    cantidad = models.IntegerField()
+    insumos = models.ManyToManyField(Insumo,blank=True)
+    costoTotal = models.FloatField()
+    costoDevuelto = models.FloatField()
+
     
    
 

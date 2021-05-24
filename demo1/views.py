@@ -2,7 +2,7 @@ from django.db.models.fields import BLANK_CHOICE_DASH
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
-from .forms import FormLugar,FormPasajeroModi, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormTarjeta, FormoBusquedaViaje ,FormComentario
+from .forms import FormLugar,FormPasajeroModi, FormPasajeroModi2,FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormTarjeta, FormoBusquedaViaje ,FormComentario
 from datetime import date, datetime
 from django.core.paginator import Paginator
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona,Comentario
@@ -394,17 +394,16 @@ def modificar_pasajero(request,pk):
     mailUnico=True
     if pasajero.tipo=="BASICO":
         if request.method=="GET":
-            data= {'username':pasajero.usuario.username,'email':pasajero.usuario.email,'password':'usar contraseña actual','first_name':pasajero.usuario.first_name,'last_name':pasajero.usuario.last_name,'dni':pasajero.dni,'telefono':pasajero.telefono,'tipo':pasajero.tipo,'fecha_de_nacimiento':pasajero.fecha_de_nacimiento}
-            form=FormPasajero(data)
+            data= {'username':pasajero.usuario.username,'email':pasajero.usuario.email,'first_name':pasajero.usuario.first_name,'last_name':pasajero.usuario.last_name,'dni':pasajero.dni,'telefono':pasajero.telefono,'tipo':pasajero.tipo,'fecha_de_nacimiento':pasajero.fecha_de_nacimiento}
+            form=FormPasajeroModi2(data)
         else:
-            form=FormPasajero(request.POST)
+            form=FormPasajeroModi2(request.POST)
             if form.is_valid():
                 p=form.cleaned_data
                 edad=calcular_edad(p)
                 dniUnico= not Persona.objects.exclude(pk=pasajeropk).filter(dni=(p["dni"])).exists()
                 mailUnico= not User.objects.exclude(pk=pk).filter(email=(p["email"])).exists()
                 if (edad>=18 and dniUnico and mailUnico):
-                    #pasajero.usuario.password=make_password(p["password"])
                     pasajero.usuario.email=p["email"]
                     pasajero.usuario.first_name=p["first_name"]
                     pasajero.usuario.last_name=p["last_name"]
@@ -421,13 +420,13 @@ def modificar_pasajero(request,pk):
                         t.change_pasajero(p)
                         return redirect("http://127.0.0.1:8000/registrar_tarjeta_modificado/")
             
-        return render(request,'demo1/modificar/formulario_modificar_pasajero.html',{"form":form,"edad":edad,"exitoso":exitoso,"dniUnico":dniUnico,"mailUnico":mailUnico})
+        return render(request,'demo1/modificar/formulario_modificar_pasajero.html',{"form":form,'pk':pk,"edad":edad,"exitoso":exitoso,"dniUnico":dniUnico,"mailUnico":mailUnico})
     else:
         
         tarjetaRep=False
         vencNoValida=False
         tarjeta= obtener_tarjeta(pasajeropk)
-        data= {'username':pasajero.usuario.username,'email':pasajero.usuario.email,'password':'usar contraseña actual','first_name':pasajero.usuario.first_name,'last_name':pasajero.usuario.last_name,'dni':pasajero.dni,'telefono':pasajero.telefono,'tipo':pasajero.tipo,'fecha_de_nacimiento':pasajero.fecha_de_nacimiento,'numero':tarjeta.numero,'fecha_de_vencimiento':tarjeta.fecha_de_vencimiento,'codigo':tarjeta.codigo}
+        data= {'username':pasajero.usuario.username,'email':pasajero.usuario.email,'first_name':pasajero.usuario.first_name,'last_name':pasajero.usuario.last_name,'dni':pasajero.dni,'telefono':pasajero.telefono,'tipo':pasajero.tipo,'fecha_de_nacimiento':pasajero.fecha_de_nacimiento,'numero':tarjeta.numero,'fecha_de_vencimiento':tarjeta.fecha_de_vencimiento,'codigo':tarjeta.codigo}
         if request.method=="GET":
             form=FormPasajeroModi(data)
         else:
@@ -441,7 +440,6 @@ def modificar_pasajero(request,pk):
                    
                         if not tarjetaRepetidaModificado(tarjeta.pk,p["numero"]):
                             if fecha_vencimiento_es_valida(p["fecha_de_vencimiento"]):
-                                #pasajero.usuario.password=make_password(p["password"])
                                 pasajero.usuario.email=p["email"]
                                 pasajero.usuario.first_name=p["first_name"]
                                 pasajero.usuario.last_name=p["last_name"]
@@ -461,7 +459,7 @@ def modificar_pasajero(request,pk):
                                 vencNoValida=True
                         else:
                             tarjetaRep=True
-        return render(request,'demo1/modificar/formulario_modificar_pasajero.html',{"form":form,"tarjetaRep":tarjetaRep,"vencNoValida":vencNoValida,"edad":edad,"exitoso":exitoso,"dniUnico":dniUnico,"mailUnico":mailUnico}) 
+        return render(request,'demo1/modificar/formulario_modificar_pasajero.html',{"form":form,'pk':pk,"tarjetaRep":tarjetaRep,"vencNoValida":vencNoValida,"edad":edad,"exitoso":exitoso,"dniUnico":dniUnico,"mailUnico":mailUnico}) 
 
 
 def tarjetaRepetidaModificado(pk,numero):

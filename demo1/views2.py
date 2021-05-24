@@ -3,7 +3,7 @@ from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
 from django.contrib import messages
-from .forms import FormLugar,FormPasajeroModi, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormTarjeta, FormoBusquedaViaje
+from .forms import FormLugar, FormCambiarContraseña,FormPasajeroModi, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormTarjeta, FormoBusquedaViaje
 from datetime import date, datetime
 from django.core.paginator import Paginator
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
@@ -13,15 +13,17 @@ import datetime
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 
-def change_password(request):
+def change_password(request,pk):
     exito=False
+    user=User.objects.get(pk=pk)
     if request.method == 'POST':
-        form = PasswordChangeForm(request.user, request.POST)
+        form = FormCambiarContraseña(request.POST)
         if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)  
+            c=form.cleaned_data
+            user.password=make_password(c['password'])
+            user.save()
             exito=True
-        return render(request, 'demo1/change_password.html', {'form': form,'exito':exito})
+        return render(request, 'demo1/change_password.html', {'form': form,'exito':exito,'user':user})
     else:
-        form = PasswordChangeForm(request.user)
-    return render(request, 'demo1/change_password.html', {'form': form,'exito':exito})
+        form = FormCambiarContraseña()
+    return render(request, 'demo1/change_password.html', {'form': form,'exito':exito,'user':user})

@@ -49,7 +49,7 @@ urlpatterns = [
     path('home_usuario/modificar_pasajero/<int:pk>/',views.modificar_pasajero,name="modificar_pasajero"),
     path('home_usuario_chofer/',views.home_usuario_chofer,name="home_usuario_chofer"),
     path('logout/',views.logout_usuario,name='logout'),
-    path('change_password', views.change_password, name='change_password'),
+    path('change_password/<int:pk>', views.change_password, name='change_password'),
     path('home_usuario/buscar_viaje',views.buscarViajes,name="buscar_viajes"),
     path('home_usuario/crear_comentario/',views.comentario_new,name="crear_comentario")
 ]
