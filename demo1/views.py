@@ -9,7 +9,7 @@ from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje
 from django.contrib.auth.hashers import make_password
 from django.db.models import Q
 import datetime
-from .views2 import change_password
+from .views2 import change_password, consultarPasajesUserPendi, consultarPasajesUserCance
 
 
 

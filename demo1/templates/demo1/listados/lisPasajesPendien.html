@@ -1,0 +1,36 @@
+{% extends 'demo1/base_consulta.html' %}
+
+{% block content %}
+<div class="card">
+    <h2>Listado</h2>  
+</div>
+    <div class="card">
+    {% if valor %}
+    <table class="tablalista" width=100% border="1">
+        <tbody>
+            <tr>
+                <td align="center">Origen</td>
+                <td align="center">Destino</td>
+                <td align="center">Fecha de Viaje</td>
+                <td align="center">Costo Total</td>
+                <td align="center">Opción</td>
+            </tr>
+            {% for i in lista %}
+            <tr>
+                <td >{{i.origen}}</td>
+                <td >{{i.destino}}</td>
+                <td >{{i.fecha}}</td>
+                <td >{{i.costoTotal}}</td>
+                <td ><a href="">Cancelar</a></td>
+            </tr>    
+            {% endfor%}
+    </tbody>
+    </table>
+    {%else%}
+    <div>
+        <p>No posee ningun pasaje en Pendientes</p>
+    </div>
+    {%endif%}
+    </div>
+<div class="card"><h4><a href="{% url 'home_usuario' %}">Atras</a></h4></div>
+{% endblock %}

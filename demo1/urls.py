@@ -51,5 +51,7 @@ urlpatterns = [
     path('logout/',views.logout_usuario,name='logout'),
     path('change_password/<int:pk>', views.change_password, name='change_password'),
     path('home_usuario/buscar_viaje',views.buscarViajes,name="buscar_viajes"),
-    path('home_usuario/crear_comentario/',views.comentario_new,name="crear_comentario")
+    path('home_usuario/crear_comentario/',views.comentario_new,name="crear_comentario"),
+    path('home_usuario/crear_comentario/consultarPasajes1/<int:pk>',views.consultarPasajesUserPendi,name="consultar_pasaje_user_p"),
+    path('home_usuario/crear_comentario/consultarPasajes2/<int:pk>',views.consultarPasajesUserCance,name="consultar_pasaje_user_c")
 ]
