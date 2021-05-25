@@ -38,6 +38,13 @@ class Insumo(models.Model):
     def __str__(self):
         return '%s %s' % (self.nombre, self.tipo)
 
+class CantInsumo(models.Model):
+    insumo = models.ForeignKey(Insumo, on_delete=models.CASCADE)
+    cantidad = models.IntegerField()
+    activo = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return '%s %s' % (self.insumo.nombre, self.cantidad)
 
 class Lugar(models.Model):
     nombre_de_lugar = models.CharField(max_length=50)
@@ -79,7 +86,7 @@ class Ruta(models.Model):
 
 class Viaje(models.Model):
     ruta = models.ForeignKey(Ruta, on_delete=models.CASCADE)
-    insumos = models.ManyToManyField(Insumo,blank=True)
+    cantInsumos = models.ManyToManyField(CantInsumo,blank=True)
     fecha = models.DateField()
     precio = models.FloatField()
     asientos = models.IntegerField()
@@ -107,7 +114,7 @@ class Pasaje(models.Model):
     pasajero=models.ForeignKey(Pasajero, on_delete=models.CASCADE)
     viaje=models.ForeignKey(Viaje, on_delete=models.CASCADE)
     cantidad = models.IntegerField()
-    insumos = models.ManyToManyField(Insumo,blank=True)
+    cantInsumos = models.ManyToManyField(CantInsumo,blank=True)
     costoTotal = models.FloatField()
     costoDevuelto = models.FloatField()
 

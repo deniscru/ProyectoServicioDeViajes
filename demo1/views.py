@@ -634,9 +634,7 @@ def viaje_new(request):
             v=verifivarAsientos(d)
             if a and v:
                 unaRuta=Ruta.objects.get(id=d['ruta'].pk)  
-                #unosInsumos= Insumo.objects.filter(id__in= d['insumo'])       
                 viaje=Viaje.objects.create(ruta=unaRuta, fecha=d['fecha'], precio=d['precio'], asientos= d['asientos'],activo=True)
-                #viaje.insumos.set(unosInsumos)
                 viaje.save()
                 exitoso=True
             if not a:
@@ -988,8 +986,6 @@ def modificar_viaje(request,pk):
                 viajeValido=verificarFechaYRuta(d['fecha'], d['ruta'])
                 asientosValidos= viaje.ruta.combi.asientos >= d['asientos']
                 if viajeValido and asientosValidos:
-                    #unosInsumos= Insumo.objects.filter(id__in= d['insumo'])       
-                    #viaje.insumos.set(unosInsumos)
                     viaje.ruta=d['ruta']
                     viaje.fecha=d['fecha']
                     viaje.precio= d['precio']

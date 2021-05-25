@@ -1,0 +1,65 @@
+{% load static %}
+<html>
+    <head >
+        <title>Comprar Pasaje</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="{% static 'css/demo1.css' %}">
+    </head>
+    <body>
+        <div class="page-header">
+            <h1><a></a>Comprar Pasaje</a></h1>
+        </div>
+        <div>
+            <div class = 'card'>
+                <form method="POST" class="post-form" id="usuarioForm">
+                    {% csrf_token %}
+                    {{ form.as_p}}
+                    <button type="button">
+                        <a href="{% url 'sumar_al_pasaje' pk=viaje.pk %}">Sumar al pasaje</a>
+                    </button>
+                    
+                    <button type="submit" class="guardar usuario">Comprar</button>
+                    
+                </form>
+            </div>
+            
+            <div class = 'card'>
+                {% if not hayPasajes %}
+                    <div>
+                        <h3>No hay suficientes pasajes para vender</h3>
+                    </div>
+                
+                {% endif %}
+                </div>
+                <div class = 'card'>
+                {% if hayPasajesSelec %}
+                    <div>
+                        <h3>Ha seleccionado comprar {{pasaje.cantidad}} pasaje </h3>
+                    </div>
+                
+                {% endif %}
+                </div>
+                <div class = 'card'>
+                {% if hayInsumosSelec %}
+                    <ul>
+                    {% for key, value in cantInsumos.items %} 
+                      <h3>Ha seleccionado comprar {{key}}. Cantidad: {{value}}</h3>
+                    {% endfor %}
+                    </ul>
+                   {% endif %}
+                   {% if compro %}
+                </div>
+                   <div class = 'card'>
+                    <h3>Lleva gastado {{pasaje.precio}} </h3>
+                </div>
+                {% endif %}
+                
+            </div>
+                <div class ='card'>
+                    <h2><a href="{% url 'buscar_viajes' %}"> Atras</a></h2>
+                </div>     
+        </div>
+    </body>
+</html>
+

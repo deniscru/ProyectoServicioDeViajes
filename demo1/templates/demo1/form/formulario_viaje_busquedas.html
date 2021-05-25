@@ -49,7 +49,7 @@
                             <td>{{ v.cant }}</td>
                             <td>{{ v.tipo }}</td>
                             <td>
-                                <a href="">Comprar</a>
+                                <a href="{% url 'comprar_pasaje' pk=v.pk %}">Comprar Pasaje</a>
                             </td>
                         </tr>
                     {% endfor %}
