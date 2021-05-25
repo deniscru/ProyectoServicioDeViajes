@@ -74,3 +74,7 @@ h1, h2, h3, h4 {
 .menu li:hover .submenu{
     display: block;
 }
+
+.lista {
+    color: #c00707;
+}

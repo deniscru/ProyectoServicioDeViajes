@@ -1,26 +1,27 @@
 {% extends 'demo1/base_home.html' %}
    {% block content %}
    {% if user.is_authenticated %}
-      <div align="right">
-         <h2><a href="{% url 'buscar_viajes' %}" >Buscar Viajes</a></h2>
-         <h2><a href="{% url 'crear_comentario' %}">Crear Comentario</a></h2>
-      </div>
-      <div>
-         <ul style="list-style: none;">
-            <li><p>Consultar Pasajes</p></li>
-            <li><a href="{% url 'consultar_pasaje_user_p' pk=user.pk %}">Pendientes</a></li>
-            <li><a href="{% url 'consultar_pasaje_user_c' pk=user.pk %}">Carcelados</a></li>
+   <div class="lista" >
+      <!--<ul style="list-style: none;">
+         <li><p>Consultar Pasajes</p></li>
+         <li><a href="{% url 'consultar_pasaje_user_p' pk=user.pk %}">Pendientes</a></li>
+         <li><a href="{% url 'consultar_pasaje_user_c' pk=user.pk %}">Carcelados</a></li>
+      </ul>-->
+      <nav class="navegacion">
+         <ul class="menu" >
+            <li><a href="{% url 'buscar_viajes' %}">Buscar viajes</a></li>
+            <li><a href="#">Consultar Pasajes</a>
+               <ul class="submenu">
+                  <li><a href="{% url 'consultar_pasaje_user_p' pk=user.pk %}">Pendientes</a></li>
+                  <li><a href="{% url 'consultar_pasaje_user_c' pk=user.pk %}">Cancelados</a></li>
+               </ul>
+            </li>
          </ul>
-         <!--<nav class="menuCSS3" style="width: 250px;margin: 50px; background: aqua;">
-            <ul class="menu" style="list-style: none;" >
-               <li style="position: relative; display: inline-block; " ><a href="#" style="display: block; padding: 15px 20px; color: #353535; text-decoration: none; font-family: 'Courier New';" for="submenu">Cunsultar Pasajes</a>
-                  <ul class="submenu" style="list-style: none; position: absolute; width: 120%;" >
-                     <li style="position: relative; background: #333333;"><a href="#" style="display: block; padding: 15px; color: aqua; text-decoration: none;">Pendientes</a></li>
-                     <li style="position: relative; background: #333333;"><a href="#" style="display: block; padding: 15px; color: aqua; text-decoration: none;">Carcelados</a></li>
-                  </ul>
-               </li>
-            </ul>
-         </nav>-->
-      </div>
+      </nav>
+   </div>
+   <div align="right">
+      <h2><a href="{% url 'crear_comentario' %}">Crear Comentario</a></h2>
+   </div>
+      
    {% endif %}
    {% endblock %}
