@@ -8,10 +8,7 @@ from django.core.paginator import Paginator
 from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona,Comentario
 from django.contrib.auth.hashers import make_password
 from django.db.models import Q
-import datetime
-from .views2 import change_password
-
-
+from .views2 import change_password, consultarPasajesUserPendi, consultarPasajesUserCance
 
 def verificarLetra(string):
 	for l in string:
@@ -1093,8 +1090,8 @@ def buscarViajesPorRuta(d):
 
 def buscarViajesEnLaBD(d):
     viajes=buscarViajesPorRuta(d)
+    lista=[]
     if len(viajes)!=0:
-        lista=[]
         for i in viajes:
             if i.fecha >=date.today() and i.asientos>0:
                 if i.fecha==date.today():
@@ -1102,8 +1099,7 @@ def buscarViajesEnLaBD(d):
                         lista.append(i)
                 else:
                     lista.append(i)
-        return lista
-    return None
+    return lista
 
 def buscarViajes(request):
     validarOriyDes=False
@@ -1118,7 +1114,7 @@ def buscarViajes(request):
             fecha=d['fecha']<date.today()
             if not validarOriyDes and not fecha:
                 resultadoDeViajes=buscarViajesEnLaBD(d)
-                if resultadoDeViajes!=None:
+                if len(resultadoDeViajes)!=0:
                     conViajes=True
                     page_obj=armarFilaViaje2(viajes=resultadoDeViajes)  
                 else:

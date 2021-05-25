@@ -1,21 +1,21 @@
 {% load static %}
+<!DOCTYPE html>
 <html>
     <head >
+        <meta charset="UTF-8">
         <title>Home</title>
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
-        <link rel="stylesheet" href="{% static 'css/demo1.css' %}">
+        <link rel="stylesheet" href="{% static '/css/demo2.css' %}">
     </head>
     <body>
-        <div class="page-header">
+        <div class="page-header" align="center">
             {% if user.is_authenticated %}
                 <div align= "right">
                     <h2><a href="http://127.0.0.1:8000/logout/"> Cerrar Sesión </a></h2>
                     <h3 ><a href="{% url 'modificar_pasajero' pk=user.pk%}"> Editar Datos de Cuenta </a></h3>
                 </div>
-                <h1>Bienvenido Pasajero al home de Combi19</h1>
-                <h2 class='card'>{{ user.get_full_name }}</h2>
-                
+                <h1>Bienvenido {{ user.get_full_name}} al home de Combi19</h1>              
             {% else %}
                 <h4>Error, No ha iniciado sesion</h4>
             {% endif %}
