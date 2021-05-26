@@ -1,0 +1,24 @@
+{% load static %}
+<html>
+    <head >
+        <title>Crear Comentario</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="{% static 'css/demo1.css' %}">
+    </head>
+    <body>
+        <div class="page-header">
+            <h1><a></a>Crear Comentario</a></h1>
+        </div>
+        <div>
+            <div class="content container">
+                <div class="row">
+                    <div class="col-md-8">
+                        {% block content %}
+                        {% endblock %}
+                    </div>
+                </div>
+            </div>  
+        </div>
+    </body>
+</html>

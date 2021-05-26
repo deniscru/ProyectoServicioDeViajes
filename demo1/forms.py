@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.forms import widgets
-from .models import Lugar, Pasajero, Chofer, Ruta, Insumo, Tarjeta, Combi, Persona, Viaje
+from .models import Lugar, Pasajero, Chofer, Ruta, Insumo, Tarjeta, Combi, Persona, Viaje , Pasaje
 from datetime import date
 
 class FormLugar(forms.Form):
@@ -130,9 +130,16 @@ class FormoBusquedaViaje(forms.Form):
     años=[2021,2022]
     fecha = forms.DateField(required=True,label='Fecha',widget=forms.SelectDateWidget(years=años))
 
-class FormComentario(forms.Form):
-    fecha=date.today()
-    viaje=forms.ModelChoiceField(queryset=Viaje.objects.filter(activo=True,fecha__lte=fecha),label='Viaje',widget=forms.Select())
+class FormComentario(forms.Form): 
+    archivo=open("demo1/pasajero_Actual.txt","rt")
+    id=archivo.read()
+    archivo.close()
+    pasajes=Pasaje.objects.filter(estado="PASADO",pasajero_id=id)
+    id_viajes=[]
+    for i in pasajes:
+        id_viajes.append(i.viaje_id)
+    viajes=Viaje.objects.filter(id__in=id_viajes)
+    viaje=forms.ModelChoiceField(queryset=viajes,label='Viaje',widget=forms.Select())
     texto=forms.CharField(required=True,widget=forms.Textarea(attrs={"rows":5, "cols":100}),label="Comentario",max_length=500)
 
 class FormPasaje(forms.Form):

@@ -521,6 +521,9 @@ def login_usuario(request):
     return render(request, "demo1/login.html", {"form":form,"falloU":fallo_usuario,"falloP":fallo_password})
 
 def home_usuario(request):
+    archivo=open("demo1/pasajero_Actual.txt","wt")
+    archivo.write(str(request.user.id))
+    archivo.close()
     return render(request,"demo1/home_usuario.html")
 
 def home_usuario_chofer(request):
