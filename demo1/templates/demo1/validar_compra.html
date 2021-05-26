@@ -1,9 +1,59 @@
-        {% if ok %}
-                    <div>
-                        <h3>La compra se realizo con exito</h3>
-                    </div>
-                    {% else %}
-                    <div>
-                        <h3>{{error}}</h3>
-                    </div>
-                {% endif %}
+{% load static %}
+<html>
+    <head >
+        <title>Comprar Pasaje</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="{% static 'css/demo1.css' %}">
+    </head>
+    <body>
+        <div class="page-header">
+            {% if gold %}
+            <h1><a></a>Comprar Pasaje Usuario Gold</a></h1>
+            {% else %}
+            <h1><a></a>Comprar Pasaje</a></h1>
+            {% endif %}
+        </div>
+        <div >
+            {% if ok %}
+            <div class ='card'>
+                <h4>La compra del pasaje fue realizada con exito <h4></div>
+                    <div class ='card'>
+                <h4>Pasajero: {{nombre}}  {{apellido}}<h4></div>
+                    <div class ='card'>
+                <h4>Costo: $ {{costo}} <h4></div>
+                    <div class ='card'>
+                <h4>Origen: {{origen}}<h4></div>
+                    <div class ='card'>
+                <h4>Destino: {{destino}}<h4></div>
+                    <div class ='card'>
+                <h4>Fecha: {{fecha}}<h4></div>
+                    <div class ='card'>
+                <h4>Hora: {{hora}}<h4></div>
+                    <div class ='card'>
+                <h4>Cantidad de asientos: {{asientos}}<h4></div>
+                   
+                    {% for key, value in insumos.items %}
+                    <div class ='card'> <h4>{{ key }} : {{ value }}</h4> </div>
+                    {% endfor %}
+
+
+            {% else %}
+            <h2> {{error}}<h2>
+            {% endif %}
+
+        </div>
+        <div class ='card'>
+            <h2><a href="{% url 'inicializar_pasaje' pk=pk %}">Atras</a></h2>
+
+        </div>
+                <div class ='card'>
+                    <h2><a href="{% url 'buscar_viajes' %}"> Buscar Viaje</a></h2>
+
+                </div>
+                <div class ='card'>
+                    <h2><a href="{% url 'home_usuario' %}"> Home</a></h2>
+                </div>      
+        </div>
+    </body>
+</html>

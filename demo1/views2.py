@@ -97,6 +97,7 @@ def sumar_al_pasaje(request,pk):
                 pasaje['numero']=p['numero']
                 pasaje['codigo']=p['codigo']
                 pasaje['fecha_de_vencimiento']=p['fecha_de_vencimiento']
+                
                 FormPasaje().change_pasaje(pasaje)
 
     else:
@@ -150,6 +151,7 @@ def cargar_datos_de_tarjeta(request,pk):
                 pasaje['numero']=p['numero']
                 pasaje['codigo']=p['codigo']
                 pasaje['fecha_de_vencimiento']=p['fecha_de_vencimiento']
+                
                 FormPasaje().change_pasaje(pasaje)
                     
 
@@ -165,6 +167,10 @@ def validar_compra(request):
     pasaj=None
     error=''
     pasaje=FormPasaje().get_pasaje()
+    if pasaje['pasajero'].tipo == 'GOLD':
+        gold=True
+    else:
+        gold=False
     if tarjetaRepetida(pasaje['numero']):
         tarj=Tarjeta.objects.get(numero=(pasaje['numero']))
         if tarj.pasajero.pk == pasaje['pasajero'].pk:
@@ -206,7 +212,9 @@ def validar_compra(request):
         p={}
         FormPasaje().change_cantInsumos(c)
         FormPasaje().change_pasaje(p)
-    return render(request, 'demo1/validar_compra.html', {'ok': ok,'error':error,'pasaje':pasaje,'pasaj':pasaj})
+    #return render(request, 'demo1/validar_compra.html', {'gold':gold,'ok': ok,'error':error,'pasaje':pasaje,'pk':pasaje['viaje'].id,'nombre':pasaje['pasajero'].usuario.first_name,'apellido':pasaje['pasajero'].usuario.last_name,'costo':pasaje['precio','origen':pasaje['viaje'].ruta.origen.nombre_de_lugar,'destino':pasaje['viaje'].ruta.destino.nombre_de_lugar,'fecha':pasaje['viaje'].fecha,'hora':pasaje['viaje'].ruta.hora,'asientos':pasaje['viaje'].ruta.hora,'insumos':pasaje['cantInsumos']]})
+    return render(request, 'demo1/validar_compra.html', {'gold':gold,'ok': ok,'error':error,'pasaje':pasaje,'pk':pasaje['viaje'].id,'nombre':pasaje['pasajero'].usuario.first_name,'apellido':pasaje['pasajero'].usuario.last_name,'costo':pasaje['precio'],'origen':pasaje['viaje'].ruta.origen.nombre_de_lugar,'destino':pasaje['viaje'].ruta.destino.nombre_de_lugar,'fecha':pasaje['viaje'].fecha,'hora':pasaje['viaje'].ruta.hora,'asientos':pasaje['viaje'].ruta.hora,'insumos':pasaje['cantInsumos']})
+
 
 def sumar_insumos(viaje,cantInsumos):
     if cantInsumos != {}:

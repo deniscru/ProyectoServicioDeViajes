@@ -32,7 +32,7 @@
                     {% endif %}
                 </form>
              </div>
-             {% if compro %}
+             {% if compro and hayPasajes%}
             <div class = 'card'>
             <button type="button">
                 <a href="{% url 'validar_compra' %}">Comprar</a>
