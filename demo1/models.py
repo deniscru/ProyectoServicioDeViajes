@@ -116,7 +116,10 @@ class Pasaje(models.Model):
     cantidad = models.IntegerField()
     cantInsumos = models.ManyToManyField(CantInsumo,blank=True)
     costoTotal = models.FloatField()
-    costoDevuelto = models.FloatField()
+    costoDevuelto = models.FloatField(default=0)
+
+    def __str__(self):
+        return '%s %s' % (str(self.pasajero), str(self.viaje))
 
     
    

@@ -137,6 +137,7 @@ class FormComentario(forms.Form):
 
 class FormPasaje(forms.Form):
     cantInsumos=None
+    pasaje=None
     año=int(date.today().year)
     años=[]
     for i in range(año,(año+10)):
@@ -144,14 +145,22 @@ class FormPasaje(forms.Form):
     cantidad=forms.IntegerField(required=True,label="Cantidad de Pasajes",initial=1)
     numero=forms.CharField(required=True,max_length=18,min_length=14,label="Número Tarjeta")
     fecha_de_vencimiento=forms.DateField(required=True,label="Fecha Vencimiento",widget=forms.SelectDateWidget(years=años))
-    codigo=forms.CharField(required=True,label="Código seguridad",min_length=3,max_length=4)
+    codigo=forms.IntegerField(required=False,label="Codigo de Seguridad",min_value=100, max_value=999)
     insumos=forms.ModelChoiceField(queryset=Insumo.objects.filter(activo=True),required=False,label='Insumos',widget=forms.Select())
     cantInsumo = forms.IntegerField(required=False,label="Cantidad",min_value=0)
 
     @classmethod
     def change_cantInsumos(self,i):
         self.cantInsumos=i
+
+    @classmethod
+    def change_pasaje(self,i):
+        self.pasaje=i
     
+    @classmethod
+    def get_pasaje(self):
+        return self.pasaje
+
     @classmethod
     def get_cantInsumos(self):
         return self.cantInsumos

@@ -8,7 +8,11 @@
     </head>
     <body>
         <div class="page-header">
+            {% if gold %}
+            <h1><a></a>Comprar Pasaje Usuario Gold</a></h1>
+            {% else %}
             <h1><a></a>Comprar Pasaje</a></h1>
+            {% endif %}
         </div>
         <div>
             <div class = 'card'>
@@ -16,14 +20,25 @@
                     {% csrf_token %}
                     {{ form.as_p}}
                     <button type="button">
-                        <a href="{% url 'sumar_al_pasaje' pk=viaje.pk %}">Sumar al pasaje</a>
+                        <a href="{% url 'inicializar_pasaje' pk=viaje.pk %}">Borrar compra</a>
                     </button>
                     
-                    <button type="submit" class="guardar usuario">Comprar</button>
-                    
+                    <button type="submit" class="guardar usuario">Confirmar seleccion</button>
+                    {% if gold %}
+                    <button type="button">
+                        <a href="{% url 'cargar_datos_de_tarjeta' pk=viaje.pk %}">Usar los datos de mi tarjeta</a>
+                    </button>
+
+                    {% endif %}
                 </form>
-            </div>
-            
+             </div>
+             {% if compro %}
+            <div class = 'card'>
+            <button type="button">
+                <a href="{% url 'validar_compra' %}">Comprar</a>
+            </button>
+        </div>
+        {% endif %}
             <div class = 'card'>
                 {% if not hayPasajes %}
                     <div>
@@ -35,7 +50,7 @@
                 <div class = 'card'>
                 {% if hayPasajesSelec %}
                     <div>
-                        <h3>Ha seleccionado comprar {{pasaje.cantidad}} pasaje </h3>
+                        <h4>Ha seleccionado comprar {{pasaje.cantidad}} pasaje </h4>
                     </div>
                 
                 {% endif %}
@@ -44,17 +59,26 @@
                 {% if hayInsumosSelec %}
                     <ul>
                     {% for key, value in cantInsumos.items %} 
-                      <h3>Ha seleccionado comprar {{key}}. Cantidad: {{value}}</h3>
+                      <h4>Ha seleccionado comprar {{key}}. Cantidad: {{value}}</h4>
                     {% endfor %}
                     </ul>
                    {% endif %}
                    {% if compro %}
                 </div>
                    <div class = 'card'>
-                    <h3>Lleva gastado {{pasaje.precio}} </h3>
+                    <h3>Lleva gastado $ {{pasaje.precio}} </h3>
+                </div>
+                {% else %}
+                <div class = 'card'>
+                    <h3>Debe confirmar los datos antes de poder comprar su pasaje </h3>
+                </div>
+
+                {% endif %}
+                {% if gold and compro%}
+                <div class = 'card'>
+                <h3>Por ser Usuario gold obtuvo un descuento de $ {{descuento}} </h3>
                 </div>
                 {% endif %}
-                
             </div>
                 <div class ='card'>
                     <h2><a href="{% url 'buscar_viajes' %}"> Atras</a></h2>

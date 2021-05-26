@@ -452,6 +452,9 @@ def modificar_pasajero(request,pk):
                                 tarjeta.codigo = p["codigo"]
                                 tarjeta.fecha_de_vencimiento = p["fecha_de_vencimiento"]
                                 tarjeta.save()
+                                if p["tipo"]=="BASICO":
+                                    return redirect('modificar_pasajero',pk)
+
                             else:
                                 vencNoValida=True
                         else:
