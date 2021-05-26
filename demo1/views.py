@@ -1099,7 +1099,7 @@ def buscarViajesEnLaBD(d):
     lista=[]
     if len(viajes)!=0:
         for i in viajes:
-            if i.fecha >=date.today() and i.asientos>0:
+            if i.fecha >=date.today() and i.fecha>=d['fecha'] and i.asientos>0:
                 if i.fecha==date.today():
                     if i.ruta.hora.hour >= datetime.now().hour:
                         lista.append(i)
