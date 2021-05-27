@@ -522,7 +522,7 @@ def login_usuario(request):
 
 def home_usuario(request):
     archivo=open("demo1/pasajero_Actual.txt","wt")
-    archivo.write(str(request.user.id))
+    archivo.write(str(buscar_pasajero(request.user.id).id))
     archivo.close()
     return render(request,"demo1/home_usuario.html")
 

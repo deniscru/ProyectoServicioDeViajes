@@ -130,15 +130,12 @@ class FormoBusquedaViaje(forms.Form):
     años=[2021,2022]
     fecha = forms.DateField(required=True,label='Fecha',widget=forms.SelectDateWidget(years=años))
 
-class FormComentario(forms.Form): 
+class FormComentario(forms.Form):
+    
     archivo=open("demo1/pasajero_Actual.txt","rt")
     id=archivo.read()
     archivo.close()
-    pasajes=Pasaje.objects.filter(estado="PASADO",pasajero_id=id)
-    id_viajes=[]
-    for i in pasajes:
-        id_viajes.append(i.viaje_id)
-    viajes=Viaje.objects.filter(id__in=id_viajes)
+    viajes=(Viaje.objects.filter(pk__in=(list(set(Pasaje.objects.filter(estado="PASADO",pasajero_id=id).values_list('viaje', flat=True))))))
     viaje=forms.ModelChoiceField(queryset=viajes,label='Viaje',widget=forms.Select())
     texto=forms.CharField(required=True,widget=forms.Textarea(attrs={"rows":5, "cols":100}),label="Comentario",max_length=500)
 
