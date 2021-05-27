@@ -265,7 +265,8 @@ def obtener_tarjeta(pk):
             return tarjeta
 
 def armarInfo(pk, estado2):
-    resul=Pasaje.objects.filter(activo=True, pasajero=pk, estado=estado2)
+    pasajero=Persona.objects.get(usuario=pk)
+    resul=Pasaje.objects.filter(activo=True, pasajero=pasajero.pk, estado=estado2)
     lista=[]
     for p in resul:
         dic={'origen': p.viaje.ruta.origen.nombre_de_lugar, 'destino': p.viaje.ruta.destino.nombre_de_lugar,

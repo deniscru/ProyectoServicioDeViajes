@@ -5,7 +5,7 @@ from django.contrib.auth import login,logout,authenticate
 from .forms import FormLugar,FormPasajeroModi, FormPasajeroModi2,FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormTarjeta, FormoBusquedaViaje ,FormComentario
 from datetime import date, datetime
 from django.core.paginator import Paginator
-from .models import Chofer, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona,Comentario
+from .models import Chofer, Pasaje, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona,Comentario
 from django.contrib.auth.hashers import make_password
 from django.db.models import Q
 from .views2 import change_password, consultarPasajesUserPendi, consultarPasajesUserCance
@@ -144,49 +144,38 @@ def listado_lugar(request):
     return render(request, 'demo1/listados/listado_lugar.html', {'page_obj':page_obj, 'cantidad':cantidad})
 
 def verificarInsumoEnViaje(pk):
-    hoy= datetime.date.today()
-    viajes=Viaje.objects.filter(activo=True)
-    for i in viajes:
-        if i.fecha >= hoy:
-            insumos=i.insumos.values()
-            for j in insumos:
-                if j['id']==pk:
+    hoy= date.today()
+    pasajes=Pasaje.objects.filter(activo=True)
+    for i in pasajes:
+        if i.viaje.fecha >= hoy and i.cantInsumos.count()!=0:
+            for j in i.cantInsumos:
+                if j.insumo==pk:
                     return False
     return True
 
-def obtenerInsumosLista():
-    insumos=Insumo.objects.filter(activo=True).values()
-    lista=[]
-    for i in insumos:
-        dato=verificarInsumoEnViaje(i['id'])
-        dic={'nombre':i['nombre'], 'tipo':i['tipo'], 'precio':i['precio'], 'dato':dato , 'pk':i['id']}
-        lista.append(dic)
-    return lista
-
 def listado_insumo(request):
-    insumos=obtenerInsumosLista()
+    insumos=Insumo.objects.filter(activo=True)
     paginator= Paginator(insumos, 10)
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'demo1/listados/listado_insumo.html',{'page_obj':page_obj, 'cantidad':cantidad, 'noSeElimina':False})
+    return render(request, 'demo1/listados/listado_insumo.html',{'page_obj':page_obj, 'cantidad':cantidad, 'noSeElimina':False, 'noModificado':False})
 
 def verficarRuta2(pk):
-        viajes=Viaje.objects.filter(activo=True).values()
-        ruta = Ruta.objects.filter(pk=pk).values()
+        viajes=Viaje.objects.filter(activo=True)
+        ruta = Ruta.objects.get(pk=pk)
         for v in viajes:
-            if ruta[0]['id']==v['ruta_id'] and v['fecha']>=date.today():
+            if ruta.id==v.ruta.id and v.fecha>=date.today():
                 return False
         return True
 
 def obtenerOrigenesDestino():
-    rutas=Ruta.objects.filter(activo=True).values()
+    rutas=Ruta.objects.filter(activo=True)
     lista=[]
     for r in rutas:
-        h=verficarRuta2(int(r['id']))
-        o=Lugar.objects.filter(id=r['origen_id']).values()
-        d=Lugar.objects.filter(id=r['destino_id']).values()
-        dic={'origen': o[0]['nombre_de_lugar']+', '+o[0]['provincia'], 'destino': d[0]['nombre_de_lugar']+', '+d[0]['provincia'], 'hora':r['hora'], 'pk':r['id'], 'sePuede':h }
+        o=Lugar.objects.get(id=r.origen.id)
+        d=Lugar.objects.get(id=r.destino.id)
+        dic={'origen': o.nombre_de_lugar+', '+o.provincia, 'destino': d.nombre_de_lugar+', '+d.provincia, 'hora':r.hora, 'pk':r.id }
         lista.append(dic)
     return lista
 
@@ -198,8 +187,9 @@ def listado_ruta(request):
     page_obj = paginator.get_page(page_number)
     return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad})
 
-def armarFilaViaje(viajes=Viaje.objects.filter(activo=True).values()):
+def armarFilaViaje():
     lista=[]
+    viajes=Viaje.objects.filter(activo=True).values()
     for v in viajes:
         r=Ruta.objects.filter(id=v['ruta_id']).values()
         combi=Combi.objects.filter(id=r[0]['combi_id']).values()
@@ -635,6 +625,7 @@ def viaje_new(request):
             d=form.cleaned_data  
             a=verificarFechaYRuta(d['fecha'], d['ruta'])
             v=verifivarAsientos(d)
+            print(a, v)
             if a and v:
                 unaRuta=Ruta.objects.get(id=d['ruta'].pk)  
                 viaje=Viaje.objects.create(ruta=unaRuta, fecha=d['fecha'], precio=d['precio'], asientos= d['asientos'],activo=True)
@@ -672,12 +663,12 @@ def insumo_new(request):
         form=FormInsumo()
     return render(request, 'demo1/form/formulario_insumo.html', {'form': form, 'valor':valor, 'exitoso':exitoso})
 
-def verficarRuta(d):
-    rutas=Ruta.objects.all()
-    for r in rutas:
-        if r.combi==d['combi'] or r.origen==d['origen'] and r.destino==d['destino'] and r.distancia==d['distancia'] and r.hora==d['hora']:
-            return False
-    return True
+def verificarHoraYRuta(d):
+    dato=Ruta.objects.filter(origen = d['origen'].pk, destino= d['destino'].pk)
+    if dato.count() !=0:
+        if dato[0].hora.hour==d['hora'].hour:
+            return True
+    return False
 
 def ruta_new(request):
     exitoso=False
@@ -688,7 +679,7 @@ def ruta_new(request):
         if form.is_valid():
             d=form.cleaned_data
             desOriEquls= d['origen'].pk == d['destino'].pk
-            rutaRep = Ruta.objects.filter(origen = d['origen'].pk).filter(destino = d['destino'].pk).filter(hora = d['hora']).exists()
+            rutaRep = verificarHoraYRuta(d)
             if not desOriEquls and not rutaRep:
                 ruta=Ruta.objects.create(combi=d['combi'], origen=d['origen'], destino=d['destino'], distancia=d['distancia'], hora=d['hora'],activo=True)
                 ruta.save()
@@ -764,7 +755,7 @@ def modificar_ruta(request,pk):
                 unDestino=d['destino']
                 unaCombi= d['combi']
                 desOriEquls= unOrigen.id == unDestino.id
-                rutaRep = Ruta.objects.exclude(pk=pk).filter(origen = unOrigen).filter(destino = unDestino).filter(hora = d['hora']).exists()
+                rutaRep = verificarHoraYRuta(d)
                 if not desOriEquls and not rutaRep:
                     ruta.origen=unOrigen
                     ruta.destino=unDestino
@@ -802,7 +793,7 @@ def modificar_insumo(request,pk):
         return render(request, 'demo1/modificar/formulario_modificar_insumo.html', {'form': form})
     else:
         noModificado=True
-        insumos=obtenerInsumosLista()
+        insumos=Insumo.objects.filter(activo=True)
         paginator= Paginator(insumos, 10)
         cantidad=False if (paginator.count == 0) else True 
         page_number = request.GET.get('page')
@@ -873,6 +864,7 @@ def eliminar_combi(request, pk):
 def eliminar_viaje(request, pk):
     viaje = Viaje.objects.get(pk=pk)
     exitoso=True
+    print(no_tieneViajesVendidos(pk))
     if no_tieneViajesVendidos(pk):
         viaje.activo = False
         viaje.save()
@@ -1006,7 +998,7 @@ def modificar_viaje(request,pk):
         return render(request, 'demo1/listados/listado_viaje.html', {'page_obj':page_obj, 'cantidad':cantidad,'noModificado':noModificado})
 
 def no_se_encuentra_en_viaje(pk):
-    hoy= datetime.date.today()
+    hoy= date.today()
     todosLosViaje=Viaje.objects.filter(activo=True)
     for viaje in todosLosViaje:
         if viaje.fecha >= hoy:
