@@ -16,7 +16,7 @@
         </div>
         {% else %}
         <div>
-            <meta http-equiv="refresh" content="0; URL=http://127.0.0.1:8000/registrar/tarjeta" />
+            <meta http-equiv="refresh" content="0; {% url 'registrar_tarjeta' pk=pk %}" />
         </div>
         {% endif %}
     {% elif fallido %}

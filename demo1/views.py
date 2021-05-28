@@ -1,3 +1,4 @@
+from io import IncrementalNewlineDecoder
 from django.db.models.fields import BLANK_CHOICE_DASH
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
@@ -9,6 +10,10 @@ from .models import Chofer, Pasaje, Pasajero, Tarjeta, Insumo, Lugar, Combi, Rut
 from django.contrib.auth.hashers import make_password
 from django.db.models import Q
 from .views2 import change_password, consultarPasajesUserPendi, consultarPasajesUserCance
+
+
+dicPasajeros1 = {0:0}
+
 
 def verificarLetra(string):
 	for l in string:
@@ -237,13 +242,13 @@ def fecha_vencimiento_es_valida(fecha_de_vencimiento):
     hoy=date.today()
     return fecha_de_vencimiento > hoy
 
-def tarjeta_new(request):
+def tarjeta_new(request,pk):
     exitoso=False
     fecha_vencimiento_no_es_valida=False
     if request.method=="POST":
         form=FormTarjeta(request.POST)
         if form.is_valid():
-            p=FormTarjeta.get_pasajero()
+            p=dicPasajeros1[pk]
             t=form.cleaned_data
             if fecha_vencimiento_es_valida(t["fecha_de_vencimiento"]):
                 usuario=User.objects.create(is_superuser=False,password=p["password"],email=p["email"],first_name=p["first_name"],last_name=p["last_name"])
@@ -255,6 +260,7 @@ def tarjeta_new(request):
                 tarjeta=Tarjeta.objects.create(pasajero=Pasajero.objects.last(),numero=t["numero"],fecha_de_vencimiento=t["fecha_de_vencimiento"],codigo=t["codigo"],activo=True)
                 tarjeta.save()
                 exitoso=True
+                del dicPasajeros1[pk]
             else:
                 fecha_vencimiento_no_es_valida=True
     else:
@@ -312,6 +318,7 @@ def calcular_edad2(fechaNac):
     return edad
 
 def pasajero_new(request):
+    dicPasajeros1[0] += 1
     exitoso=False
     fallido=False
     tipo=False
@@ -336,14 +343,13 @@ def pasajero_new(request):
                     tipo=True
                     exitoso=True
                 else:
-                    t=FormTarjeta()
-                    t.change_pasajero(p)
-                    return redirect("http://127.0.0.1:8000/registrar_tarjeta/")
+                    dicPasajeros1[dicPasajeros1[0]]=p
+                    return redirect('registrar_tarjeta',dicPasajeros1[0])
             else:
                 fallido=True
     else:
         form=FormPasajero()
-    return render(request,'demo1/form/formulario_usuario.html',{"form":form,"edad":edad,"exitoso":exitoso,"tipo":tipo,"dniUnico":dniUnico,"mailUnico":mailUnico,"fallido":fallido}) 
+    return render(request,'demo1/form/formulario_usuario.html',{"form":form,"edad":edad,"exitoso":exitoso,"tipo":tipo,"dniUnico":dniUnico,"mailUnico":mailUnico,"fallido":fallido,'pk':dicPasajeros1[0]}) 
 
 def buscar_pasajero(pk):
     queryset=Pasajero.objects.filter(activo=True)
@@ -511,9 +517,9 @@ def login_usuario(request):
     return render(request, "demo1/login.html", {"form":form,"falloU":fallo_usuario,"falloP":fallo_password})
 
 def home_usuario(request):
-    archivo=open("demo1/pasajero_Actual.txt","wt")
-    archivo.write(str(buscar_pasajero(request.user.id).id))
-    archivo.close()
+    #archivo=open("demo1/pasajero_Actual.txt","wt")
+    #archivo.write(str(buscar_pasajero(request.user.id).id))
+    #archivo.close()
     return render(request,"demo1/home_usuario.html")
 
 def home_usuario_chofer(request):
@@ -709,7 +715,8 @@ def comentario_new(request):
             comentario.save()
             exitoso=True
     else:
-        form=FormComentario()
+        
+        form=FormComentario(initial={},pk= buscar_pasajero(request.user.id).id)
     return render(request,'demo1/form/formulario_comentario.html',{'form':form,'exitoso':exitoso})
 
 

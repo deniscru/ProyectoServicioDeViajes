@@ -4,6 +4,7 @@ from django.forms import widgets
 from .models import Lugar, Pasajero, Chofer, Ruta, Insumo, Tarjeta, Combi, Persona, Viaje , Pasaje
 from datetime import date
 
+
 class FormLugar(forms.Form):
     nombre = forms.CharField(label='Nombre', max_length=50, required=True)
     provincia= forms.CharField(label='Provincia', max_length=50, required=True)
@@ -61,7 +62,6 @@ class FormPasajeroModi(forms.Form):
     codigo=forms.CharField(label="Código seguridad",min_length=3,max_length=4)
 
 class FormTarjeta(forms.Form):
-    pasajero=None
     año=int(date.today().year)
     años=[]
     for i in range(año,(año+10)):
@@ -69,15 +69,6 @@ class FormTarjeta(forms.Form):
     numero=forms.CharField(required=True,max_length=18,min_length=14,label="Número Tarjeta")
     fecha_de_vencimiento=forms.DateField(required=True,label="Fecha Vencimiento",widget=forms.SelectDateWidget(years=años))
     codigo=forms.CharField(required=True,label="Código seguridad",min_length=3,max_length=4)
-
-    @classmethod
-    def change_pasajero(self,p):
-        self.pasajero=p
-    
-    @classmethod
-    def get_pasajero(self):
-        return self.pasajero
-
 
 class FormLogin(forms.Form):
     email=forms.CharField(required=True,label="Email")
@@ -131,17 +122,13 @@ class FormoBusquedaViaje(forms.Form):
     fecha = forms.DateField(required=True,label='Fecha',widget=forms.SelectDateWidget(years=años))
 
 class FormComentario(forms.Form):
-    
-    archivo=open("demo1/pasajero_Actual.txt","rt")
-    id=archivo.read()
-    archivo.close()
-    viajes=(Viaje.objects.filter(pk__in=(list(set(Pasaje.objects.filter(estado="PASADO",pasajero_id=id).values_list('viaje', flat=True))))))
-    viaje=forms.ModelChoiceField(queryset=viajes,label='Viaje',widget=forms.Select())
-    texto=forms.CharField(required=True,widget=forms.Textarea(attrs={"rows":5, "cols":100}),label="Comentario",max_length=500)
+    def __init__(self, *args, **kwargs):
+        pk = kwargs.pop('pk')
+        super().__init__( *args, **kwargs)
+        self.fields['viaje']=forms.ModelChoiceField(queryset=(Viaje.objects.filter(pk__in=(list(set(Pasaje.objects.filter(estado="PASADO",pasajero_id=pk).values_list('viaje', flat=True)))))),label='Viaje',widget=forms.Select())
+        self.fields['texto']=forms.CharField(required=True,widget=forms.Textarea(attrs={"rows":5, "cols":100}),label="Comentario",max_length=500)
 
 class FormPasaje(forms.Form):
-    cantInsumos=None
-    pasaje=None
     año=int(date.today().year)
     años=[]
     for i in range(año,(año+10)):
@@ -153,18 +140,3 @@ class FormPasaje(forms.Form):
     insumos=forms.ModelChoiceField(queryset=Insumo.objects.filter(activo=True),required=False,label='Insumos',widget=forms.Select())
     cantInsumo = forms.IntegerField(required=False,label="Cantidad",min_value=0)
 
-    @classmethod
-    def change_cantInsumos(self,i):
-        self.cantInsumos=i
-
-    @classmethod
-    def change_pasaje(self,i):
-        self.pasaje=i
-    
-    @classmethod
-    def get_pasaje(self):
-        return self.pasaje
-
-    @classmethod
-    def get_cantInsumos(self):
-        return self.cantInsumos
