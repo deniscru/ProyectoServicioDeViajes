@@ -73,12 +73,15 @@ def obtenerChoferes():
         lista.append(dic)
     return lista
 
-def listado_chofer(request):
-    choferes= obtenerChoferes() 
-    paginator= Paginator(choferes, 10)
+def listadoDePaginacion(lista, request):
+    paginator= Paginator(lista, 10)
     cantidad=False if (paginator.count == 0) else True 
     page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    return (paginator.get_page(page_number), cantidad)
+
+def listado_chofer(request):
+    choferes= obtenerChoferes() 
+    page_obj,cantidad = listadoDePaginacion(choferes, request)
     return render(request, 'demo1/listados/listado_chofer.html', {'page_obj':page_obj, 'cantidad':cantidad})
 
 def listado_persona(request):
@@ -114,10 +117,7 @@ def filaDeCombi():
 
 def listado_combi(request):
     combis=filaDeCombi()
-    paginator= Paginator(combis, 10)
-    cantidad=False if (paginator.count == 0) else True 
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj,cantidad = listadoDePaginacion(combis, request)
     return render(request, 'demo1/listados/listado_combi.html', {'page_obj':page_obj, 'cantidad':cantidad, 'noSePuede':False})
 
 def listado_tarjeta(request):
@@ -142,10 +142,7 @@ def obtenerListaDeLugares():
 
 def listado_lugar(request):
     lugares=obtenerListaDeLugares()
-    paginator= Paginator(lugares, 10)
-    cantidad=False if (paginator.count == 0) else True 
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj,cantidad = listadoDePaginacion(lugares, request)
     return render(request, 'demo1/listados/listado_lugar.html', {'page_obj':page_obj, 'cantidad':cantidad})
 
 def verificarInsumoEnViaje(pk):
@@ -160,10 +157,7 @@ def verificarInsumoEnViaje(pk):
 
 def listado_insumo(request):
     insumos=Insumo.objects.filter(activo=True)
-    paginator= Paginator(insumos, 10)
-    cantidad=False if (paginator.count == 0) else True 
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj,cantidad = listadoDePaginacion(insumos, request)
     return render(request, 'demo1/listados/listado_insumo.html',{'page_obj':page_obj, 'cantidad':cantidad, 'noSeElimina':False, 'noModificado':False})
 
 def verficarRuta2(pk):
@@ -186,10 +180,7 @@ def obtenerOrigenesDestino():
 
 def listado_ruta(request):
     rutas=obtenerOrigenesDestino()
-    paginator= Paginator(rutas, 10)
-    cantidad=False if (paginator.count == 0) else True 
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj,cantidad = listadoDePaginacion(rutas, request)
     return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad})
 
 def armarFilaViaje():
@@ -207,10 +198,7 @@ def armarFilaViaje():
 
 def listado_viaje(request):
     viajes=armarFilaViaje()
-    paginator= Paginator(viajes, 10)
-    cantidad=False if (paginator.count == 0) else True 
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj,cantidad = listadoDePaginacion(viajes, request)
     return render(request, 'demo1/listados/listado_viaje.html', {'page_obj':page_obj, 'cantidad':cantidad})
 
 def compararLugar(d):
@@ -539,7 +527,6 @@ def chofer_new(request):
             d=form.cleaned_data
             dniUnico= not Persona.objects.filter(dni=(d["dni"])).exists()
             mailUnico= not User.objects.filter(email=(d["email"])).exists()
-            print(mailUnico, dniUnico)
             if dniUnico and mailUnico:
                 user= User.objects.create(email=d['email'], password=d['password'], first_name=d['first_name'], last_name=d['last_name'], is_staff=False)
                 user.password=make_password(d["password"])
@@ -576,13 +563,13 @@ def chofer_new(request):
     return render(request,'demo1/form/formulario_chofer.html',{"form":form,"exitoso": exitoso,'dniUnico':dniUnico,'mailUnico':mailUnico})
 
 def verficarChofer(idChofer):
-    dato=Combi.objects.filter(chofer=idChofer.pk)
+    dato=Combi.objects.filter(chofer=idChofer.pk, activo=True)
     if dato.count()!= 0:
         return False
     return True
 
 def verificarPatenteEnCombis(unaPatente):
-    combi=Combi.objects.filter(patente=unaPatente)
+    combi=Combi.objects.filter(patente=unaPatente, activo=True)
     if combi.count()==0:
         return True
     return False
@@ -616,10 +603,8 @@ def verificarFechaYRuta(unaFecha, ruta):
 def verifivarAsientos(d):
     ruta2=Ruta.objects.get(id=d['ruta'].pk)
     unaCombi=Combi.objects.get(id=ruta2.combi.pk)
-    if d['asientos'] <=unaCombi.asientos:
-        return True
-    else:
-        return False
+    dato= True if d['asientos'] <=unaCombi.asientos else False
+    return dato
 
 def viaje_new(request):
     valor=False
@@ -703,7 +688,6 @@ def buscar_pasajero(id_u):
     except:
         return None
 
-
 def comentario_new(request):
     exitoso=False
     if request.method=="POST":
@@ -714,11 +698,9 @@ def comentario_new(request):
             comentario=Comentario.objects.create(texto=c["texto"],pasajero=pasajero,viaje=c["viaje"])
             comentario.save()
             exitoso=True
-    else:
-        
+    else:        
         form=FormComentario(initial={},pk= buscar_pasajero(request.user.id).id)
     return render(request,'demo1/form/formulario_comentario.html',{'form':form,'exitoso':exitoso})
-
 
 def detalle_pasajero(request, pk):
     pasajero = Pasajero.objects.filter(pk=pk)
@@ -775,10 +757,7 @@ def modificar_ruta(request,pk):
     else:
         noModificado=True
         rutas=obtenerOrigenesDestino()
-        paginator= Paginator(rutas, 10)
-        cantidad=False if (paginator.count == 0) else True 
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
+        page_obj,cantidad = listadoDePaginacion(rutas, request)
         return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad, 'noModificado':noModificado})
 
 def modificar_insumo(request,pk):
@@ -801,10 +780,7 @@ def modificar_insumo(request,pk):
     else:
         noModificado=True
         insumos=Insumo.objects.filter(activo=True)
-        paginator= Paginator(insumos, 10)
-        cantidad=False if (paginator.count == 0) else True 
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
+        page_obj,cantidad = listadoDePaginacion(insumos, request)
         return render(request, 'demo1/listados/listado_insumo.html',{'page_obj':page_obj, 'cantidad':cantidad, 'noModificado':noModificado})
 
 
@@ -831,10 +807,7 @@ def modificar_lugar(request, pk):
     else:
         noModificado=True
         lugares=obtenerListaDeLugares()
-        paginator= Paginator(lugares, 10)
-        cantidad=False if (paginator.count == 0) else True 
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
+        page_obj,cantidad = listadoDePaginacion(lugares, request)
         return render(request, 'demo1/listados/listado_lugar.html', {'page_obj':page_obj, 'cantidad':cantidad,'noModificado':noModificado})
 
 def eliminar_chofer(request, pk):
@@ -847,10 +820,7 @@ def eliminar_chofer(request, pk):
     else:
         noEliminado=True
     user= obtenerChoferes() 
-    paginator= Paginator(user, 10)
-    cantidad=False if (paginator.count == 0) else True 
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj,cantidad = listadoDePaginacion(user, request)
     return render(request, 'demo1/listados/listado_chofer.html', {'page_obj':page_obj, 'cantidad':cantidad,"noEliminado":noEliminado})
 
 def eliminar_combi(request, pk):
@@ -862,25 +832,18 @@ def eliminar_combi(request, pk):
     else:
         noEliminado=True
     combis=filaDeCombi()
-    paginator= Paginator(combis, 10)
-    cantidad=False if (paginator.count == 0) else True 
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj,cantidad = listadoDePaginacion(combis, request)
     return render(request, 'demo1/listados/listado_combi.html', {'page_obj':page_obj, 'cantidad':cantidad, 'noEliminado':noEliminado})
 
 def eliminar_viaje(request, pk):
     viaje = Viaje.objects.get(pk=pk)
     exitoso=True
-    print(no_tieneViajesVendidos(pk))
     if no_tieneViajesVendidos(pk):
         viaje.activo = False
         viaje.save()
         exitoso=False
     viajes=armarFilaViaje()
-    paginator= Paginator(viajes, 10)
-    cantidad=False if (paginator.count == 0) else True 
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj,cantidad = listadoDePaginacion(viajes, request)
     return render(request, 'demo1/listados/listado_viaje.html', {'page_obj':page_obj, 'cantidad':cantidad, 'exitoso':exitoso})
 
 def eliminar_ruta(request, pk):
@@ -891,10 +854,7 @@ def eliminar_ruta(request, pk):
         ruta.save()
         exitosoE=False
     rutas=obtenerOrigenesDestino()
-    paginator= Paginator(rutas, 10)
-    cantidad=False if (paginator.count == 0) else True 
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)  
+    page_obj,cantidad = listadoDePaginacion(rutas, request) 
     return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad, 'exitosoE':exitosoE})
 
 def eliminar_insumo(request, pk):
@@ -906,10 +866,7 @@ def eliminar_insumo(request, pk):
     else:
         noSeElimina=True
     insumos=Insumo.objects.filter(activo=True)
-    paginator= Paginator(insumos, 10)
-    cantidad=False if (paginator.count == 0) else True 
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj,cantidad = listadoDePaginacion(insumos, request)
     return render(request, 'demo1/listados/listado_insumo.html',{'page_obj':page_obj, 'cantidad':cantidad, 'noSeElimina':noSeElimina})
 
 def eliminar_lugar(request, pk):
@@ -921,10 +878,7 @@ def eliminar_lugar(request, pk):
     else:
         fallido=True
     lugares=Lugar.objects.filter(activo=True)
-    paginator= Paginator(lugares, 10)
-    cantidad=False if (paginator.count == 0) else True 
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj,cantidad = listadoDePaginacion(lugares, request)
     return render(request, 'demo1/listados/listado_lugar.html', {'page_obj':page_obj, 'cantidad':cantidad,"fallido":fallido})
    
 def detalle_tarjeta(request, pk):
@@ -963,10 +917,7 @@ def modificar_chofer(request,pk):
     else:
         noModificado = True
         user= obtenerChoferes() 
-        paginator= Paginator(user, 10)
-        cantidad=False if (paginator.count == 0) else True 
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
+        page_obj,cantidad = listadoDePaginacion(user, request)
         return render(request, 'demo1/listados/listado_chofer.html', {'page_obj':page_obj, 'cantidad':cantidad,"noModificado":noModificado})
 
 def no_tieneViajesVendidos(pk):
@@ -998,10 +949,7 @@ def modificar_viaje(request,pk):
     else:
         noModificado=True
         viajes=armarFilaViaje()
-        paginator= Paginator(viajes, 10)
-        cantidad=False if (paginator.count == 0) else True 
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
+        page_obj,cantidad = listadoDePaginacion(viajes, request)
         return render(request, 'demo1/listados/listado_viaje.html', {'page_obj':page_obj, 'cantidad':cantidad,'noModificado':noModificado})
 
 def no_se_encuentra_en_viaje(pk):
@@ -1059,10 +1007,7 @@ def modificar_combi(request,pk):
     else:
         noModificado = True
         combis=filaDeCombi()
-        paginator= Paginator(combis, 10)
-        cantidad=False if (paginator.count == 0) else True 
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
+        page_obj,cantidad = listadoDePaginacion(combis, request)
         return render(request, 'demo1/listados/listado_combi.html', {'page_obj':page_obj, 'cantidad':cantidad, 'noModificado':noModificado})
 
 def armarFilaViaje2(viajes):
