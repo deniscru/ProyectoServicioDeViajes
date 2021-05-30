@@ -3,12 +3,12 @@ from django.db.models.fields import BLANK_CHOICE_DASH
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
-from .forms import FormLugar,FormPasajeroModi, FormPasajeroModi2,FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormTarjeta, FormoBusquedaViaje ,FormComentario
-from datetime import date, datetime
+from .forms import FormCancelarViaje, FormLugar,FormPasajeroModi, FormPasajeroModi2,FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormTarjeta, FormoBusquedaViaje ,FormComentario
+from datetime import date, datetime,timedelta
 from django.core.paginator import Paginator
 from .models import Chofer, Pasaje, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona,Comentario
 from django.contrib.auth.hashers import make_password
-from django.db.models import Q
+from django.db.models import Q,F
 from .views2 import change_password, consultarPasajesUserPendi, consultarPasajesUserCance
 
 
@@ -701,6 +701,48 @@ def comentario_new(request):
     else:        
         form=FormComentario(initial={},pk= buscar_pasajero(request.user.id).id)
     return render(request,'demo1/form/formulario_comentario.html',{'form':form,'exitoso':exitoso})
+
+def es_pendiente(viaje,id_pasajero):
+    try:
+        Pasaje.objects.get(viaje_id=viaje.id,estado="PENDIENTE",pasajero_id=id_pasajero)
+        return True
+    except:
+        return False
+
+def es_antes_48(viaje):
+    fecha_viaje=viaje.fecha
+    ruta=Ruta.objects.get(id=viaje.ruta_id)
+    hora_ruta=ruta.hora
+    hora_dia_actual=datetime.now()
+    hora_dia_actual=datetime(hora_dia_actual.year,hora_dia_actual.month,hora_dia_actual.day,hora_dia_actual.hour,hora_dia_actual.minute)
+    hora_dia_viaje=datetime(fecha_viaje.year,fecha_viaje.month,fecha_viaje.day,hora_ruta.hour,hora_ruta.minute)
+    diferencia=hora_dia_viaje - hora_dia_actual
+    return diferencia>=timedelta(hours=48)
+
+def cambiar_a_cancelado(viaje,id_pasajero):
+    Pasaje.objects.filter(viaje_id=viaje.id,estado="PENDIENTE",pasajero_id=id_pasajero).update(estado="CANCELADO")
+    Viaje.objects.filter(id=viaje.id).update(asientos=F("asientos")+1)
+
+def cancelar_viaje(request):
+    exitoso=False
+    exitoso_2=False
+    fallido=False
+    if request.method=="POST":
+        form=FormCancelarViaje(request.POST,pk=buscar_pasajero(request.user.id).id)
+        if form.is_valid():
+            c=form.cleaned_data
+            if es_pendiente(c["viaje"],buscar_pasajero(request.user.id).id):
+                cambiar_a_cancelado(c["viaje"],buscar_pasajero(request.user.id).id)
+                if es_antes_48(c["viaje"]):
+                    exitoso=True
+                else:
+                    exitoso_2=True
+            else:
+                fallido=True
+    else:
+        form=FormCancelarViaje(initial={},pk=buscar_pasajero(request.user.id).id)
+    return render(request,'demo1/form/formulario_cancelar.html',{'form':form,'exitoso':exitoso,"exitoso_2":exitoso_2,"fallido":fallido})
+
 
 def detalle_pasajero(request, pk):
     pasajero = Pasajero.objects.filter(pk=pk)

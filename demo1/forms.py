@@ -140,3 +140,9 @@ class FormPasaje(forms.Form):
     insumos=forms.ModelChoiceField(queryset=Insumo.objects.filter(activo=True),required=False,label='Insumos',widget=forms.Select())
     cantInsumo = forms.IntegerField(required=False,label="Cantidad",min_value=0)
 
+class FormCancelarViaje(forms.Form):
+    def __init__(self,*args,**kwargs):
+        pk=kwargs.pop('pk')
+        super().__init__(*args,**kwargs)
+        self.fields['viaje']=forms.ModelChoiceField(queryset=(Viaje.objects.filter(pk__in=(list(set(Pasaje.objects.filter(pasajero_id=pk).values_list('viaje',flat=True)))))),label='Viaje',widget=forms.Select())
+

@@ -1,0 +1,29 @@
+{% extends 'demo1/base_cancelar.html' %}
+
+{% block content %}
+    <form method="POST" class="post-form" id="usuarioForm">
+        {% csrf_token %}
+        {{ form.as_p}}
+        <button type="submit" class="cancelar viaje">Cancelar</button>
+        <div>
+            <h2><a href="{% url 'home_usuario' %}"> Salir</a></h2>
+        </div>
+    </form>
+    {% if exitoso %}
+        <div>
+           <p>Se ha cancelado correctamente y se le ha reembolsado el 100%</p>
+        </div>
+    {% else %}
+        {% if exitoso_2 %}
+            <div>
+                <p>Se ha cancelado correctamente y se le ha reembolsado el 50% ya que faltan menos de 48 horas para que se realice el viaje</p>
+            </div>
+        {% else %}
+            {% if fallido %}
+                <div>
+                    <p>No se ha podido cancelar el viaje ya que el viaje fue cancelado o se encuentra en curso</p>
+                </div>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+{% endblock %}
