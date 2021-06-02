@@ -13,6 +13,7 @@ from .views2 import change_password, consultarPasajesUserPendi, consultarPasajes
 
 
 dicPasajeros1 = {0:0}
+dicPasajeros2 = {0:0}
 
 
 def verificarLetra(string):
@@ -248,18 +249,18 @@ def tarjeta_new(request,pk):
                 tarjeta=Tarjeta.objects.create(pasajero=Pasajero.objects.last(),numero=t["numero"],fecha_de_vencimiento=t["fecha_de_vencimiento"],codigo=t["codigo"],activo=True)
                 tarjeta.save()
                 exitoso=True
-                del dicPasajeros1[pk]
+                #del dicPasajeros1[pk]
             else:
                 fecha_vencimiento_no_es_valida=True
     else:
         form=FormTarjeta()
     return render(request,'demo1/form/formulario_tarjeta.html',{"form":form,"exitoso":exitoso,"fv":fecha_vencimiento_no_es_valida}) 
 
-def tarjeta_new_modificado(request):
+def tarjeta_new_modificado(request,pk):
     exitoso=False
     fecha_vencimiento_no_es_valida=False
     tarjetaRep=False
-    p=FormTarjeta.get_pasajero()
+    p=dicPasajeros2[pk]
     pasajero= buscar_pasajero_dni(p["dni"])
     login(request, pasajero.usuario)
     tiene= tiene_tarjeta(pasajero.pk)
@@ -282,6 +283,7 @@ def tarjeta_new_modificado(request):
                     pasajero.save()
                     tarjeta.save()
                     exitoso=True
+                    #del dicPasajeros2[pk]
             else:
                 fecha_vencimiento_no_es_valida=True
     else:
@@ -366,6 +368,7 @@ def obtener_tarjeta(pk):
     
 
 def modificar_pasajero(request,pk):
+    dicPasajeros2[0] += 1
     pasajero= buscar_pasajero(pk)
     exitoso=False
     tipo=False
@@ -397,11 +400,10 @@ def modificar_pasajero(request,pk):
                     tipo=True
                     exitoso=True
                     if p["tipo"]=="GOLD":
-                        t=FormTarjeta()
-                        t.change_pasajero(p)
-                        return redirect("http://127.0.0.1:8000/registrar_tarjeta_modificado/")
+                        dicPasajeros2[dicPasajeros2[0]]=p
+                        return redirect('registrar_tarjeta_modificado',dicPasajeros2[0])
             
-        return render(request,'demo1/modificar/formulario_modificar_pasajero.html',{"form":form,'pk':pk,"edad":edad,"exitoso":exitoso,"dniUnico":dniUnico,"mailUnico":mailUnico})
+        return render(request,'demo1/modificar/formulario_modificar_pasajero.html',{"form":form,'pk':dicPasajeros2[0],"edad":edad,"exitoso":exitoso,"dniUnico":dniUnico,"mailUnico":mailUnico})
     else:
         
         tarjetaRep=False

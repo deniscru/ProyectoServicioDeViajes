@@ -8,6 +8,25 @@ h3 p {
     font-family: 'Lobster';
     padding: 20px 20px 20px 40px;
 }
+.preloader a {
+    width: 70px;
+    height: 70px;
+    border: 10px solid #eee;
+    border-top: 10px solid rgb(235, 16, 16);
+    border-radius: 50%;
+    animation-name: girar;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+  }
+  @keyframes girar {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
 h4 {
     color: #02105e;}
 .page-header h1, .page-header h1 a, .page-header h1 a:visited, .page-header h1 a:active {
@@ -60,6 +79,7 @@ h1, h2, h3, h4 {
     display: flex;
     align-items: center;
     justify-content: center;
+    
 }
 
 .card form {

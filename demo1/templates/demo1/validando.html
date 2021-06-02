@@ -1,0 +1,19 @@
+{% load static %}
+<html>
+    <head >
+        <title>Comprar Pasaje</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="{% static 'css/demo1.css' %}">
+        
+    </head>
+    <body><div class ='card'>
+        <h2>Validando el pago<h2></div>
+            
+                
+            
+          <script>setTimeout(function() { window.location.replace("{% url 'validar_compra' %}"); }, 4000);  </script>
+        
+           
+    </body>
+</html>

@@ -11,6 +11,7 @@ from django.contrib.auth.hashers import make_password
 from django.db.models import Q
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
+from django.views.generic import TemplateView,View
 
 dicPasajeros={}
 
@@ -37,14 +38,11 @@ def buscar_pasajero(pk):
         if pasajero.usuario.id == pk:
             return pasajero
 
-def inicializar_pasaje(request,pk):
-    cantInsumos={}
-    pasaje={}
-    dicPasajeros[buscar_pasajero(request.user.pk).id]=[{},{}]
-    #FormPasaje().change_cantInsumos(cantInsumos)
-    #FormPasaje().change_pasaje(pasaje)
-    return redirect('sumar_al_pasaje',pk)
-
+class InicializarPasaje(TemplateView):
+    template_name = 'sumar_al_pasaje'
+    def get(self,request,pk,*args,**kwargs):
+        dicPasajeros[buscar_pasajero(request.user.pk).id]=[{},{}]
+        return redirect(self.template_name,pk)
 
 def obtener_tarjeta(pk):
     queryset=Tarjeta.objects.filter(activo=True)
@@ -57,7 +55,6 @@ def sumar_al_pasaje(request,pk):
     descuento=0
     compro=False
     cantInsumos=dicPasajeros[buscar_pasajero(request.user.pk).id][1]
-    #cantInsumos=FormPasaje().get_cantInsumos()
     pasaje={}
     pasajero = buscar_pasajero(request.user.pk)
     if pasajero.tipo=='GOLD':
@@ -90,7 +87,6 @@ def sumar_al_pasaje(request,pk):
                     hayInsumosSelec=True
                     for key in cantInsumos:
                         pasaje['precio']=pasaje['precio'] + (Insumo.objects.filter(nombre=key)[0].precio * cantInsumos[key])
-                    #FormPasaje().change_cantInsumos(cantInsumos)
                     dicPasajeros[buscar_pasajero(request.user.pk).id][1]=cantInsumos
                 if gold:
                     descuento=round((pasaje['precio'] * 0.1),2)
@@ -102,18 +98,17 @@ def sumar_al_pasaje(request,pk):
                 pasaje['codigo']=p['codigo']
                 pasaje['fecha_de_vencimiento']=p['fecha_de_vencimiento']
                 dicPasajeros[buscar_pasajero(request.user.pk).id][0]=pasaje
-                #FormPasaje().change_pasaje(pasaje)
-
+                
     else:
         form = FormPasaje()
     return render(request, 'demo1/sumar_al_pasaje.html', {'form': form,'hayPasajes':hayPasajes,'viaje':viaje,'cantInsumos':cantInsumos,'pasaje':pasaje,'hayPasajesSelec':hayPasajesSelec,'hayInsumosSelec':hayInsumosSelec,'compro':compro,'gold':gold,'descuento':descuento})
+
 
 def cargar_datos_de_tarjeta(request,pk):
     gold=False
     compro=False
     descuento=0
     cantInsumos=dicPasajeros[buscar_pasajero(request.user.pk).id][1]
-    #cantInsumos=FormPasaje().get_cantInsumos()
     pasaje={}
     pasajero = buscar_pasajero(request.user.pk)
     if pasajero.tipo=='GOLD':
@@ -146,7 +141,6 @@ def cargar_datos_de_tarjeta(request,pk):
                     hayInsumosSelec=True
                     for key in cantInsumos:
                         pasaje['precio']=pasaje['precio'] + (Insumo.objects.filter(nombre=key)[0].precio * cantInsumos[key])
-                    #FormPasaje().change_cantInsumos(cantInsumos)
                     dicPasajeros[buscar_pasajero(request.user.pk).id][1]=cantInsumos
                 if gold:
                     descuento=round((pasaje['precio'] * 0.1),2)
@@ -158,7 +152,7 @@ def cargar_datos_de_tarjeta(request,pk):
                 pasaje['codigo']=p['codigo']
                 pasaje['fecha_de_vencimiento']=p['fecha_de_vencimiento']
                 dicPasajeros[buscar_pasajero(request.user.pk).id][0]=pasaje
-                #FormPasaje().change_pasaje(pasaje)
+         
                     
 
     else:
@@ -166,6 +160,9 @@ def cargar_datos_de_tarjeta(request,pk):
         data={'cantidad':'1','numero':tarj.numero,'fecha_de_vencimiento':tarj.fecha_de_vencimiento,'codigo':tarj.codigo}
         form = FormPasaje(data)
     return render(request, 'demo1/sumar_al_pasaje.html', {'form': form,'hayPasajes':hayPasajes,'viaje':viaje,'cantInsumos':cantInsumos,'pasaje':pasaje,'hayPasajesSelec':hayPasajesSelec,'hayInsumosSelec':hayInsumosSelec,'compro':compro,'gold':gold,'descuento':descuento})
+
+def validando(request):
+    return render(request, 'demo1/validando.html')
 
 
 def validar_compra(request):
@@ -286,7 +283,7 @@ def armarInfo(pk, estado2):
 
 def consultarPasajesUserPendi(request, pk):
     lista=armarInfo(pk, "PENDIENTE")
-    return render(request, 'demo1/listados/lisPasajespendien.html', {'lista':lista, 'valor': True if len(lista)!=0 else False})  
+    return render(request, 'demo1/listados/lisPasajesPendien.html', {'lista':lista, 'valor': True if len(lista)!=0 else False})  
 
 def consultarPasajesUserCance(request, pk):
     lista=armarInfo(pk, "CANCELADO")
