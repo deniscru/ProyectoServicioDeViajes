@@ -275,8 +275,11 @@ def tarjeta_new_modificado(request,pk):
                 tarjetaRep= tarjetaRepetida(t["numero"])
             if fecha_vencimiento_es_valida(t["fecha_de_vencimiento"]):
                 if not tarjetaRep:
-                    if tiene and tarj.numero == int(t["numero"]):
+                    if tiene:
                         tarjeta=tarj
+                        tarjeta.numero=t['numero']
+                        tarjeta.fecha_de_vencimiento= t["fecha_de_vencimiento"]
+                        tarjeta.codigo=t['codigo']
                     else:
                         tarjeta=Tarjeta.objects.create(pasajero=pasajero,numero=t["numero"],fecha_de_vencimiento=t["fecha_de_vencimiento"],codigo=t["codigo"],activo=True)
                     pasajero.tipo=p["tipo"]
@@ -287,12 +290,7 @@ def tarjeta_new_modificado(request,pk):
             else:
                 fecha_vencimiento_no_es_valida=True
     else:
-        if tiene:
-            tarj= obtener_tarjeta(pasajero.pk)
-            data={'numero':tarj.numero,'codigo':tarj.codigo,'fecha_de_vencimiento':tarj.fecha_de_vencimiento}
-            form=FormTarjeta(data)
-        else:
-            form=FormTarjeta()
+        form=FormTarjeta()
     return render(request,'demo1/form/formulario_tarjeta_modificado.html',{"form":form,"exitoso":exitoso,"fv":fecha_vencimiento_no_es_valida,'tarjetaRep':tarjetaRep,'user':pasajero.usuario})
 
 def calcular_edad(p):
