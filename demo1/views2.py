@@ -271,11 +271,11 @@ def obtener_tarjeta(pk):
 
 def armarInfo(pk, estado2):
     pasajero=Persona.objects.get(usuario=pk)
-    resul=Pasaje.objects.filter(activo=True, pasajero=pasajero.pk, estado=estado2)
+    resul=Pasaje.objects.filter(activo=True, pasajero=pasajero.pk, estado=estado2).order_by('viaje__fecha')
     lista=[]
     for p in resul:
         dic={'origen': p.viaje.ruta.origen.nombre_de_lugar, 'destino': p.viaje.ruta.destino.nombre_de_lugar,
-        'fecha':p.viaje.fecha, 'costoTotal':p.costoTotal, 'pk':p.pk}
+        'fecha':str(p.viaje.fecha)+', '+str(p.viaje.ruta.hora.hour)+':'+str(p.viaje.ruta.hora.minute), 'costoTotal':p.costoTotal, 'pk':p.pk}
         if estado2=="CANCELADO":
             dic['costoDevuelto']=p.costoDevuelto
         lista.append(dic)
