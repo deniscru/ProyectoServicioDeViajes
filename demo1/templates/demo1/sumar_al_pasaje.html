@@ -19,6 +19,15 @@
                 <form method="POST" class="post-form" id="usuarioForm">
                     {% csrf_token %}
                     {{ form.as_p}}
+                    {% if hayInsumosSelec %}
+                    <div>
+                    {% for key, value in cantInsumos.items %} 
+                     <!--<script>document.getElementsByTagName("body")[0].appendChild(document.createElement("table").appendChild(document.createElement("tbody").appendChild(document.createElement("tr").appendChild(document.createElement("td").appendChild(document.createTextNode("<center></h4>Ha seleccionado comprar {{key}}. Cantidad: {{value}}</center></h4>")))))).setAttribute("border", "1")</script>-->
+                   
+                     <h4>Ha seleccionado comprar {{key}}. Cantidad: {{value}}</h4>
+                    {% endfor %}
+                    </div>
+                   {% endif %}
                     <button type="button">
                         <a href="{% url 'inicializar_pasaje' pk=viaje.pk %}">Borrar compra</a>
                     </button>
@@ -56,13 +65,7 @@
                 {% endif %}
                 </div>
                 <div class = 'card'>
-                {% if hayInsumosSelec %}
-                    <ul>
-                    {% for key, value in cantInsumos.items %} 
-                      <h4>Ha seleccionado comprar {{key}}. Cantidad: {{value}}</h4>
-                    {% endfor %}
-                    </ul>
-                   {% endif %}
+                
                    {% if compro %}
                 </div>
                    <div class = 'card'>
