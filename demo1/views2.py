@@ -4,11 +4,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
 from django.contrib import messages
 from .forms import FormLugar,FormPasaje, FormCambiarContraseña,FormPasajeroModi, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormTarjeta, FormoBusquedaViaje
-from datetime import date, datetime
+from datetime import date, datetime,timedelta
 from django.core.paginator import Paginator
 from .models import Chofer, Pasaje,CantInsumo, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
 from django.contrib.auth.hashers import make_password
-from django.db.models import Q
+from django.db.models import Q,F
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.views.generic import TemplateView,View
@@ -288,3 +288,45 @@ def consultarPasajesUserPendi(request, pk):
 def consultarPasajesUserCance(request, pk):
     lista=armarInfo(pk, "CANCELADO")
     return render(request, 'demo1/listados/lisPasajesCance.html', {'lista':lista, 'valor': True if len(lista)!=0 else False})
+
+def es_antes_48(viaje):
+    fecha_viaje=viaje.fecha
+    ruta=Ruta.objects.get(id=viaje.ruta_id)
+    hora_ruta=ruta.hora
+    hora_dia_actual=datetime.now()
+    hora_dia_actual=datetime(hora_dia_actual.year,hora_dia_actual.month,hora_dia_actual.day,hora_dia_actual.hour,hora_dia_actual.minute)
+    hora_dia_viaje=datetime(fecha_viaje.year,fecha_viaje.month,fecha_viaje.day,hora_ruta.hour,hora_ruta.minute)
+    diferencia=hora_dia_viaje - hora_dia_actual
+    return diferencia
+
+def cambiar_a_cancelado(pk):
+    Pasaje.objects.filter(id=pk,estado="PENDIENTE").update(estado="CANCELADO")
+    pasaje=Pasaje.objects.get(id=pk)
+    Viaje.objects.filter(id=pasaje.viaje_id).update(asientos=F("asientos")+1)
+    viaje=Viaje.objects.get(id=pasaje.viaje_id)
+    diferencia=es_antes_48(viaje)
+    if diferencia>=timedelta(hours=48):
+        pasaje.objects.filter(id=pk).update(costoDevuelto=F("costoTotal"))
+    elif diferencia<timedelta(hours=48) and diferencia >timedelta(minutes=1):
+        pasaje.objects.filter(id=pk).update(costoDevuelto=F("costoTotal")/2)
+
+def cancelar_pasaje(request,pk):
+    cancelado_48=False
+    cancelado_dentro=False
+    pasado=False
+    Pasaje.objects.filter(id=pk,estado="PENDIENTE").update(estado="CANCELADO")
+    pasaje=Pasaje.objects.get(id=pk)
+    Viaje.objects.filter(id=pasaje.viaje_id).update(asientos=F("asientos")+pasaje.cantidad)
+    Viaje.objects.filter(id=pasaje.viaje_id).update(vendidos=F("vendidos") - pasaje.cantidad)
+    viaje=Viaje.objects.get(id=pasaje.viaje_id)
+    diferencia=es_antes_48(viaje)
+    if diferencia>=timedelta(hours=48):
+        Pasaje.objects.filter(id=pk).update(costoDevuelto=F("costoTotal"))
+        cancelado_48=True
+    elif diferencia<timedelta(hours=48) and diferencia >timedelta(minutes=1):
+        Pasaje.objects.filter(id=pk).update(costoDevuelto=F("costoTotal")/2)
+        cancelado_dentro=True
+    else:
+        pasado=True
+    lista=armarInfo(request.user.id,"PENDIENTE")
+    return render(request, 'demo1/listados/lisPasajesPendien.html', {'lista':lista, 'valor': True if len(lista)!=0 else False, "cancelado_48":cancelado_48,"cancelado_dentro":cancelado_dentro,"pasado":pasado}) 

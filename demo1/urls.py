@@ -60,6 +60,6 @@ urlpatterns = [
     path('home_usuario/crear_comentario/',views.comentario_new,name="crear_comentario"),
     path('home_usuario/consultarPasajes1/<int:pk>',views.consultarPasajesUserPendi,name="consultar_pasaje_user_p"),
     path('home_usuario/consultarPasajes2/<int:pk>',views.consultarPasajesUserCance,name="consultar_pasaje_user_c"),
-    path('home_usuario/cancelar_viaje/',views.cancelar_viaje,name="cancelar_viaje"),
+    path('home_usuario/consultarPasajes1/cancelar/<int:pk>',views2.cancelar_pasaje,name="cancelar_pasaje")
     
 ]

@@ -24,7 +24,7 @@
                 <td >{{i.destino}}</td>
                 <td >{{i.fecha}}</td>
                 <td >{{i.costoTotal}}</td>
-                <td ><a href="">Cancelar</a></td>
+                <td ><a href="{% url 'cancelar_pasaje' pk=i.pk%}">Cancelar</a></td>
             </tr>    
             {% endfor%}
     </tbody>
@@ -35,5 +35,22 @@
     </div>
     {%endif%}
     </div>
+{% if cancelado_48 %}
+    <div>
+        <p>Se ha cancelado correctamente y se le ha reembolsado el 100%</p>
+    </div>
+{% else %}
+    {% if cancelado_dentro %}
+        <div>
+            <p>Se ha cancelado correctamente y se le ha reembolsado el 50% ya que faltan menos de 48 horas para que se realice el viaje</p>
+        </div>
+    {% else %}
+        {% if pasado %}
+        <div>
+            <p>No se ha podido cancelar el viaje ya que el viaje ya paso,ahora aparecerá en la lista de cancelados</p>
+        </div>
+        {% endif %}
+    {% endif %}
+{% endif %}
 <div class="card"><h4><a href="{% url 'home_usuario' %}">Atras</a></h4></div>
 {% endblock %}
