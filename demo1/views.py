@@ -504,11 +504,25 @@ def login_usuario(request):
         form = FormLogin()
     return render(request, "demo1/login.html", {"form":form,"falloU":fallo_usuario,"falloP":fallo_password})
 
+def retornar_usuario(id_pasajero):
+    persona=Persona.objects.get(id=id_pasajero)
+    usuario=User.objects.get(id=persona.usuario_id)
+    return usuario
+
+def obtenerComentarios():
+    comentarios= Comentario.objects.filter(activo=True).values()
+    lista=[]
+    for i in comentarios:
+        usuario=retornar_usuario(i["pasajero_id"])
+        dic={'texto':i["texto"], 'fecha':i["fecha"], 'hora':i["hora"], 'id':i["id"],'first_name':usuario.first_name, 'last_name':usuario.last_name}
+        lista.append(dic)
+    return lista
+
 def home_usuario(request):
-    #archivo=open("demo1/pasajero_Actual.txt","wt")
-    #archivo.write(str(buscar_pasajero(request.user.id).id))
-    #archivo.close()
-    return render(request,"demo1/home_usuario.html")
+    comentarios=obtenerComentarios()
+    comentarios=sorted(comentarios,key=lambda item: (item["fecha"],item["hora"]),reverse=True )
+    page_obj,cantidad = listadoDePaginacion(comentarios, request)
+    return render(request,"demo1/home_usuario.html",{'page_obj':page_obj, 'cantidad':cantidad})
 
 def home_usuario_chofer(request):
     return render(request,"demo1/home_usuario_chofer.html")
@@ -688,14 +702,30 @@ def buscar_pasajero(id_u):
     except:
         return None
 
+def armar_texto(texto):
+    string=""
+    cantidad=0
+    for i in texto:
+        cantidad+=1
+        if cantidad <115:
+            string=string+i
+        else:
+            string=string+"\n"+i
+            cantidad=0
+    return string
+
 def comentario_new(request):
     exitoso=False
     if request.method=="POST":
-        form=FormComentario(request.POST)
+        form=FormComentario(request.POST,initial={},pk=buscar_pasajero(request.user.id).id)
         if form.is_valid():
             c=form.cleaned_data
             pasajero=buscar_pasajero(request.user.id)
-            comentario=Comentario.objects.create(texto=c["texto"],pasajero=pasajero,viaje=c["viaje"])
+            if len (c["texto"])>115:
+                texto=armar_texto(c["texto"])
+            else:
+                texto=c["texto"]
+            comentario=Comentario.objects.create(texto=texto,pasajero=pasajero,viaje=c["viaje"],fecha=date.today(),hora=datetime.now().time())
             comentario.save()
             exitoso=True
     else:        

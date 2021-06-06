@@ -98,6 +98,8 @@ class Viaje(models.Model):
 
 class Comentario(models.Model):
     texto=models.TextField(editable=True)
+    fecha=models.DateField()
+    hora=models.TimeField()
     pasajero=models.ForeignKey(Pasajero, on_delete=models.CASCADE)
     viaje=models.ForeignKey(Viaje, on_delete=models.CASCADE)
     activo=models.BooleanField(default=True)

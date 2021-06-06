@@ -24,6 +24,23 @@
    <div align="right">
       <h2><a href="{% url 'crear_comentario' %}">Crear Comentario</a></h2>
    </div>
+   {% if cantidad %}
+      {% for comentario in page_obj %}
+      <div style="background: #230aff57; border: 1px solid #5D0202; padding:3px; text-align: left;">
+            <h3>Publicado por {{comentario.first_name}}  {{comentario.last_name}}</h3>
+            <p>{{ comentario.texto|linebreaks }}</p>
+            <p>Fecha {{comentario.fecha}}  Hora {{comentario.hora}}</p>
+      </div>
+      {% endfor %}
+   {% endif %}
+      <div>
+          {%if page_obj.has_previous %}
+              <a href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+          {%endif%}
+          {%if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number}}">Siguiente</a>
+          {%endif%}
+  </div>
       
    {% endif %}
    {% endblock %}
