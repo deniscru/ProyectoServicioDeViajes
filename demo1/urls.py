@@ -47,6 +47,7 @@ urlpatterns = [
     path('registrar/registrar_tarjeta/<int:pk>/',views.tarjeta_new,name="registrar_tarjeta"),
     path('registrar_tarjeta_modificado/<int:pk>/',views.tarjeta_new_modificado,name="registrar_tarjeta_modificado"),
     path('home_usuario/',views.home_usuario,name="home_usuario"),
+    path('home_usuario/<int:pk>/',views.home_usuario,name="home_usuario"),
     path('home_usuario/modificar_pasajero/<int:pk>/',views.modificar_pasajero,name="modificar_pasajero"),
     path('home_usuario_chofer/',views.home_usuario_chofer,name="home_usuario_chofer"),
     path('logout/',views.logout_usuario,name='logout'),

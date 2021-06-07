@@ -7,7 +7,7 @@ from .models import Lugar
 from .models import Combi
 from .models import Ruta
 from .models import Viaje
-from .models import Persona,Pasaje,CantInsumo
+from .models import Persona,Pasaje,CantInsumo, Comentario
 
 admin.site.register(Chofer)
 admin.site.register(Pasajero)
@@ -20,4 +20,5 @@ admin.site.register(Viaje)
 admin.site.register(Persona)
 admin.site.register(CantInsumo)
 admin.site.register(Pasaje)
+admin.site.register(Comentario)
 

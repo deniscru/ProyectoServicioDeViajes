@@ -509,17 +509,22 @@ def retornar_usuario(id_pasajero):
     usuario=User.objects.get(id=persona.usuario_id)
     return usuario
 
-def obtenerComentarios():
+def obtenerComentarios(user):
     comentarios= Comentario.objects.filter(activo=True).values()
     lista=[]
     for i in comentarios:
         usuario=retornar_usuario(i["pasajero_id"])
-        dic={'texto':i["texto"], 'fecha':i["fecha"], 'hora':i["hora"], 'id':i["id"],'first_name':usuario.first_name, 'last_name':usuario.last_name}
+        valor=True if usuario.pk==user.pk else False
+        dic={'texto':i["texto"], 'fecha':i["fecha"], 'hora':i["hora"], 'id':i["id"],'first_name':usuario.first_name, 'last_name':usuario.last_name, 'valor':valor}
         lista.append(dic)
     return lista
 
-def home_usuario(request):
-    comentarios=obtenerComentarios()
+def home_usuario(request, pk=None):
+    if pk!=None:
+        comentar=Comentario.objects.get(id=pk)
+        comentar.activo=False
+        comentar.save()
+    comentarios=obtenerComentarios(request.user)
     comentarios=sorted(comentarios,key=lambda item: (item["fecha"],item["hora"]),reverse=True )
     page_obj,cantidad = listadoDePaginacion(comentarios, request)
     return render(request,"demo1/home_usuario.html",{'page_obj':page_obj, 'cantidad':cantidad})

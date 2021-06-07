@@ -104,6 +104,9 @@ class Comentario(models.Model):
     viaje=models.ForeignKey(Viaje, on_delete=models.CASCADE)
     activo=models.BooleanField(default=True)
 
+    def __str__(self):
+        return '%s' % (str(self.texto))
+
 class Pasaje(models.Model):
     TIPOS_ESTADOS = (
         ('PENDIENTE', 'PENDIENTE'),

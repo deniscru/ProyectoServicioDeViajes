@@ -30,6 +30,9 @@
             <h3>Publicado por {{comentario.first_name}}  {{comentario.last_name}}</h3>
             <p>{{ comentario.texto|linebreaks }}</p>
             <p>Fecha {{comentario.fecha}}  Hora {{comentario.hora}}</p>
+            {% if comentario.valor %}
+            <a href="{% url 'home_usuario' pk=comentario.id %}"><p>Eliminar</p></a>
+            {% endif %}
       </div>
       {% endfor %}
    {% endif %}
