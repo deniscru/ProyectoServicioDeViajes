@@ -970,6 +970,7 @@ def modificar_viaje(request,pk):
     asientosValidos=True
     viajeValido=True
     noModificado=False
+    exitoso=True
     if no_tieneViajesVendidos(pk):
         data= {'ruta':viaje.ruta,'fecha':viaje.fecha,'precio':viaje.precio,'asientos':viaje.asientos}
         if request.method=='GET':

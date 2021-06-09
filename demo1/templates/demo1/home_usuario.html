@@ -1,14 +1,7 @@
 {% extends 'demo1/base_home.html' %}
    {% block content %}
    {% if user.is_authenticated %}
-   
-
    <div class="lista" >
-      <!--<ul style="list-style: none;">
-         <li><p>Consultar Pasajes</p></li>
-         <li><a href="{% url 'consultar_pasaje_user_p' pk=user.pk %}">Pendientes</a></li>
-         <li><a href="{% url 'consultar_pasaje_user_c' pk=user.pk %}">Carcelados</a></li>
-      </ul>-->
       <nav class="navegacion">
          <ul class="menu" >
             <li><a href="{% url 'buscar_viajes' %}">Buscar viajes</a></li>
@@ -23,8 +16,10 @@
    </div>
    <div align="right">
       <h2><a href="{% url 'crear_comentario' %}">Crear Comentario</a></h2>
-   </div>
+   </div >
    {% if cantidad %}
+   <h2>Comentarios Realizados</h2>
+   <div>
       {% for comentario in page_obj %}
       <div style="background: #230aff57; border: 1px solid #5D0202; padding:3px; text-align: left;">
             <h3>Publicado por {{comentario.first_name}}  {{comentario.last_name}}</h3>
@@ -36,6 +31,7 @@
       </div>
       {% endfor %}
    {% endif %}
+   </div>
       <div>
           {%if page_obj.has_previous %}
               <a href="?page={{ page_obj.previous_page_number }}">Anterior</a>
@@ -43,7 +39,7 @@
           {%if page_obj.has_next %}
               <a href="?page={{ page_obj.next_page_number}}">Siguiente</a>
           {%endif%}
-  </div>
+      </div>
       
    {% endif %}
    {% endblock %}

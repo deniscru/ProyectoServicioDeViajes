@@ -9,9 +9,9 @@
         <link rel="stylesheet" href="{% static '/css/demo2.css' %}">
     </head>
     <body>
-        <div class="page-header" align="center">
+        <div class="page-header">
             {% if user.is_authenticated %}
-                <div align= "right">
+                <div align="right">
                     <h2><a href="http://127.0.0.1:8000/logout/"> Cerrar Sesión </a></h2>
                     <h3 ><a href="{% url 'modificar_pasajero' pk=user.pk%}"> Editar Datos de Cuenta </a></h3>
                 </div>

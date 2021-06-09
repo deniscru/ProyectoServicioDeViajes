@@ -275,7 +275,8 @@ def armarInfo(pk, estado2):
     lista=[]
     for p in resul:
         dic={'origen': p.viaje.ruta.origen.nombre_de_lugar, 'destino': p.viaje.ruta.destino.nombre_de_lugar,
-        'fecha':str(p.viaje.fecha)+', '+str(p.viaje.ruta.hora.hour)+':'+str(p.viaje.ruta.hora.minute), 'costoTotal':p.costoTotal, 'pk':p.pk}
+        'fecha':str(p.viaje.fecha)+', '+str(p.viaje.ruta.hora.hour)+':'+str(p.viaje.ruta.hora.minute), 'costoTotal':p.costoTotal, 
+        'pk':p.pk, 'cantidad':p.cantidad}
         if estado2=="CANCELADO":
             dic['costoDevuelto']=p.costoDevuelto
         lista.append(dic)
