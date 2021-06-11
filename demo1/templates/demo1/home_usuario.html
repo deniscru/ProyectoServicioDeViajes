@@ -27,6 +27,7 @@
             <p>Fecha {{comentario.fecha}}  Hora {{comentario.hora}}</p>
             {% if comentario.valor %}
             <a href="{% url 'home_usuario' pk=comentario.id %}"><p>Eliminar</p></a>
+            <a href="{% url 'modificar_comentario' pk=comentario.id %}"><p>Modificar</p></a>
             {% endif %}
       </div>
       {% endfor %}

@@ -101,7 +101,6 @@ class Comentario(models.Model):
     fecha=models.DateField()
     hora=models.TimeField()
     pasajero=models.ForeignKey(Pasajero, on_delete=models.CASCADE)
-    viaje=models.ForeignKey(Viaje, on_delete=models.CASCADE)
     activo=models.BooleanField(default=True)
 
     def __str__(self):

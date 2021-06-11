@@ -719,23 +719,35 @@ def armar_texto(texto):
             cantidad=0
     return string
 
+def tiene_viajes(pasajero):
+    viajes=Viaje.objects.filter(pk__in=(list(set(Pasaje.objects.filter(estado="PASADO",pasajero_id=pasajero.id).values_list('viaje', flat=True)))))
+    if len(viajes)>0:
+        return True
+    else:
+        return False
+    
+
 def comentario_new(request):
     exitoso=False
+    fallido=False
     if request.method=="POST":
-        form=FormComentario(request.POST,initial={},pk=buscar_pasajero(request.user.id).id)
+        form=FormComentario(request.POST)
         if form.is_valid():
             c=form.cleaned_data
             pasajero=buscar_pasajero(request.user.id)
-            if len (c["texto"])>115:
-                texto=armar_texto(c["texto"])
+            if tiene_viajes(pasajero):
+                if len (c["texto"])>115:
+                    texto=armar_texto(c["texto"])
+                else:
+                    texto=c["texto"]
+                comentario=Comentario.objects.create(texto=texto,pasajero=pasajero,fecha=date.today(),hora=datetime.now().time())
+                comentario.save()
+                exitoso=True
             else:
-                texto=c["texto"]
-            comentario=Comentario.objects.create(texto=texto,pasajero=pasajero,viaje=c["viaje"],fecha=date.today(),hora=datetime.now().time())
-            comentario.save()
-            exitoso=True
+                fallido=True
     else:        
-        form=FormComentario(initial={},pk= buscar_pasajero(request.user.id).id)
-    return render(request,'demo1/form/formulario_comentario.html',{'form':form,'exitoso':exitoso})
+        form=FormComentario()
+    return render(request,'demo1/form/formulario_comentario.html',{'form':form,'exitoso':exitoso,"fallido":fallido})
 
 def es_pendiente(viaje,id_pasajero):
     try:

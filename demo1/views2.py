@@ -3,10 +3,10 @@ from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
 from django.contrib import messages
-from .forms import FormLugar,FormPasaje, FormCambiarContraseña,FormPasajeroModi, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormTarjeta, FormoBusquedaViaje
+from .forms import FormLugar,FormPasaje, FormCambiarContraseña,FormPasajeroModi, FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormTarjeta, FormoBusquedaViaje ,FormComentario
 from datetime import date, datetime,timedelta
 from django.core.paginator import Paginator
-from .models import Chofer, Pasaje,CantInsumo, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona
+from .models import Chofer, Pasaje,CantInsumo, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona ,Comentario
 from django.contrib.auth.hashers import make_password
 from django.db.models import Q,F
 from django.contrib.auth import update_session_auth_hash
@@ -300,17 +300,6 @@ def es_antes_48(viaje):
     diferencia=hora_dia_viaje - hora_dia_actual
     return diferencia
 
-def cambiar_a_cancelado(pk):
-    Pasaje.objects.filter(id=pk,estado="PENDIENTE").update(estado="CANCELADO")
-    pasaje=Pasaje.objects.get(id=pk)
-    Viaje.objects.filter(id=pasaje.viaje_id).update(asientos=F("asientos")+1)
-    viaje=Viaje.objects.get(id=pasaje.viaje_id)
-    diferencia=es_antes_48(viaje)
-    if diferencia>=timedelta(hours=48):
-        pasaje.objects.filter(id=pk).update(costoDevuelto=F("costoTotal"))
-    elif diferencia<timedelta(hours=48) and diferencia >timedelta(minutes=1):
-        pasaje.objects.filter(id=pk).update(costoDevuelto=F("costoTotal")/2)
-
 def cancelar_pasaje(request,pk):
     cancelado_48=False
     cancelado_dentro=False
@@ -330,4 +319,61 @@ def cancelar_pasaje(request,pk):
     else:
         pasado=True
     lista=armarInfo(request.user.id,"PENDIENTE")
-    return render(request, 'demo1/listados/lisPasajesPendien.html', {'lista':lista, 'valor': True if len(lista)!=0 else False, "cancelado_48":cancelado_48,"cancelado_dentro":cancelado_dentro,"pasado":pasado}) 
+    return render(request, 'demo1/listados/lisPasajesPendien.html', {'lista':lista, 'valor': True if len(lista)!=0 else False, "cancelado_48":cancelado_48,"cancelado_dentro":cancelado_dentro,"pasado":pasado})
+
+def armar_texto(texto):
+    string=""
+    cantidad=0
+    for i in texto:
+        cantidad+=1
+        if cantidad <115:
+            string=string+i
+        else:
+            string=string+"\n"+i
+            cantidad=0
+    return string
+
+def modificar_lugar(request, pk):
+    lugar = Lugar.objects.get(pk=pk)
+    noModificado=False
+    if obtenerValorUnLugar(lugar.id):
+        if request.method == "POST":
+            form = FormLugar(request.POST)
+            if form.is_valid():
+                datos = form.cleaned_data
+                if datos['nombre']!='' and datos['provincia']!='':
+                    lugar.nombreYprovincia(datos['nombre'],datos['provincia'])
+                    lugar.save()
+                    return redirect('listado_lugar')
+        else:
+            data = {'nombre': lugar.nombre_de_lugar,'provincia': lugar.provincia}
+            form = FormLugar(data)
+        return render(request, 'demo1/modificar/formulario_modificar_lugar.html', {'form': form})
+    else:
+        noModificado=True
+        lugares=obtenerListaDeLugares()
+        page_obj,cantidad = listadoDePaginacion(lugares, request)
+        return render(request, 'demo1/listados/listado_lugar.html', {'page_obj':page_obj, 'cantidad':cantidad,'noModificado':noModificado})
+
+def modificar_comentario(request,pk):
+    comentario=Comentario.objects.get(pk=pk)
+    exitoso=False
+    fallido=False
+    if request.method=="POST":
+        form=FormComentario(request.POST)
+        if form.is_valid():
+            datos=form.cleaned_data
+            if len (datos["texto"])>115:
+                    texto=armar_texto(datos["texto"])
+            else:
+                texto=datos["texto"]
+            if comentario.texto != texto:
+                Comentario.objects.filter(id=pk).update(texto=texto,fecha=date.today(),hora=datetime.now().time())
+                exitoso=True
+            else:
+                fallido=True
+    else:
+        data={'texto':comentario.texto}
+        form=FormComentario(data)
+    return render(request,'demo1/modificar/formulario_modificar_comentario.html', {'form': form,"exitoso":exitoso,"fallido":fallido})
+

@@ -13,5 +13,11 @@
         <div>
             <meta http-equiv="refresh" content="0; URL=http://127.0.0.1:8000/home_usuario/" />
         </div>
+    {% else %}
+        {% if fallido %}
+        <div>
+            <p>No puede realizar un comentario ya que no ha realizado ningun viaje</p>
+        </div>
+        {% endif %}
     {% endif %}
 {% endblock %}

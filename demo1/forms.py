@@ -123,11 +123,7 @@ class FormoBusquedaViaje(forms.Form):
     fecha = forms.DateField(required=True,label='Fecha',widget=forms.SelectDateWidget(years=años))
 
 class FormComentario(forms.Form):
-    def __init__(self, *args, **kwargs):
-        pk = kwargs.pop('pk')
-        super().__init__( *args, **kwargs)
-        self.fields['viaje']=forms.ModelChoiceField(queryset=(Viaje.objects.filter(pk__in=(list(set(Pasaje.objects.filter(estado="PASADO",pasajero_id=pk).values_list('viaje', flat=True)))))),label='Viaje',widget=forms.Select())
-        self.fields['texto']=forms.CharField(required=True,widget=forms.Textarea(attrs={"rows":5, "cols":100}),label="Comentario",max_length=500)
+    texto=forms.CharField(required=True,widget=forms.Textarea(attrs={"rows":5, "cols":100}),label="Comentario",max_length=500)
 
 
 
