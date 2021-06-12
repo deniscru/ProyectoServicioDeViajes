@@ -1,0 +1,53 @@
+{% load static %}
+<html>
+    <head >
+        <title>Comprar insumos</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="{% static 'css/demo1.css' %}">
+    </head>
+    <body>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+                integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+                crossorigin="anonymous"></script>
+        <script src="{% static 'js/nuevojavascript.js' %}"></script>
+        <div class="page-header">
+            <h1>De Compras Para el Viaje</h1>
+        </div>
+        <div>
+            <div class="content container">
+                <div class="row">
+                    <form method="POST" id="form_creacion" action="{% url 'comprar_pasaje_form' pk %}">
+                        {% csrf_token %}
+                        {{ form.as_p}}
+                        <button type="button" class="sumar_insumos" onclick="datos.agregar()">Sumar mas insumos</button>
+                        <button type="button" class="Comfirmar compra" onclick="datos.confirmar()">Comfirmar Compra</button>
+                        {% if esGold %}
+                        <button type="button" class="usoDeTarjeta" onclick="datos.ponerTarjetaAlForm()"> User mi Tarjeta </button>
+                        {% endif %}
+                    </form>
+                    <div><a href="{% url 'home_usuario' %}">Salir</a></div>
+                    <div class="mi_total"><h1 id="texto_total">Compra total de los Insumos: {{0}}</h1></div>
+                </div>
+                <div id="confirmacion2">
+
+                </div>
+                <div id="confirmacion">
+
+                </div>
+                <script>
+                    const datos = new MisDatos('{{ pk }}', '{{ precioDeViaje }}');
+                    '{%for i in conPrecios %}'
+                        datos.agregarPrecios("{{ i.id }}", "{{ i.precio }}");
+                    '{% endfor %}'
+                    '{% if esGold %}'
+                        datos.agregarTarjeta("{{miTarjeta.numero}}","{{miTarjeta.fecha_de_vencimiento.day}}","{{miTarjeta.fecha_de_vencimiento.month}}","{{miTarjeta.fecha_de_vencimiento.year}}","{{miTarjeta.codigo}}");
+                    '{% endif %}'
+                </script>
+                <div class="resul">
+                    <h2 id="alerta"></h2>
+                </div>
+            </div>  
+        </div>
+    </body>
+</html>

@@ -1,3 +1,4 @@
+import json
 from django.db.models.fields import BLANK_CHOICE_DASH
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
@@ -12,6 +13,7 @@ from django.db.models import Q,F
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.views.generic import TemplateView,View
+from django.http import HttpResponse
 
 dicPasajeros={}
 
@@ -355,3 +357,38 @@ def modificar_comentario(request,pk):
         form=FormComentario(data)
     return render(request,'demo1/modificar/formulario_modificar_comentario.html', {'form': form,"exitoso":exitoso,"fallido":fallido})
 
+def armarDatosDePrecio():
+    insumos=Insumo.objects.filter(activo=True)
+    lista=[]
+    for i in insumos:
+        dic={}
+        dic['id']=i.pk
+        dic['precio']=i.precio
+        lista.append(dic)
+    return lista
+
+def prueba(request, pk=None, *arg, **kwags):
+    pasajero=Pasajero.objects.get(usuario=request.user.pk)
+    esGold= True if pasajero.tipo=='GOLD' else False
+    if esGold:
+        miTarjeta=Tarjeta.objects.get(pasajero=pasajero)
+    else:
+        miTarjeta=None
+    viaje=Viaje.objects.get(id=pk)
+    precios= armarDatosDePrecio()
+    conPrecios=json.dumps(precios)
+    if request.is_ajax():
+        form=FormPasaje(request.POST)
+        #insumo=Insumo.objects.get(id=int(request.POST.get('insumos')))
+        datos=request.GET.getlist('dato[]')
+        datos2=request.GET.getlist('datos[]')
+        print(datos)
+        print(datos2)
+        dato=json.dumps([{}])
+        return HttpResponse(dato, 'application/json')
+    else:
+        if request.method== 'POST':
+            form=FormPasaje(request.POST)
+        else:
+            form= FormPasaje()
+        return render(request, 'demo1/form/formulario_prueba.html', {'form':form, 'esGold':esGold, 'pk':pk, 'conPrecios':precios, 'precioDeViaje':viaje.precio, 'miTarjeta':miTarjeta})
