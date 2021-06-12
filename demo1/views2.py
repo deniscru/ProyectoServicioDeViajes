@@ -333,28 +333,6 @@ def armar_texto(texto):
             cantidad=0
     return string
 
-def modificar_lugar(request, pk):
-    lugar = Lugar.objects.get(pk=pk)
-    noModificado=False
-    if obtenerValorUnLugar(lugar.id):
-        if request.method == "POST":
-            form = FormLugar(request.POST)
-            if form.is_valid():
-                datos = form.cleaned_data
-                if datos['nombre']!='' and datos['provincia']!='':
-                    lugar.nombreYprovincia(datos['nombre'],datos['provincia'])
-                    lugar.save()
-                    return redirect('listado_lugar')
-        else:
-            data = {'nombre': lugar.nombre_de_lugar,'provincia': lugar.provincia}
-            form = FormLugar(data)
-        return render(request, 'demo1/modificar/formulario_modificar_lugar.html', {'form': form})
-    else:
-        noModificado=True
-        lugares=obtenerListaDeLugares()
-        page_obj,cantidad = listadoDePaginacion(lugares, request)
-        return render(request, 'demo1/listados/listado_lugar.html', {'page_obj':page_obj, 'cantidad':cantidad,'noModificado':noModificado})
-
 def modificar_comentario(request,pk):
     comentario=Comentario.objects.get(pk=pk)
     exitoso=False
