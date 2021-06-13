@@ -1,0 +1,44 @@
+{% load static %}
+<html>
+    <head >
+        <title>Comprar insumos</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="{% static 'css/demo1.css' %}">
+    </head>
+    <body>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+                integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+                crossorigin="anonymous"></script>
+        <script src="{% static 'js/nuevojavascript.js' %}"></script>
+        <div class="page-header">
+            <h1>De Compras Para el Viaje</h1>
+        </div>
+        <div>
+            <div class="content container">
+                <div class="row">
+                    <form method="POST" id="form_creacion" action="{% url 'comprar_pasajes_usuario' pk=pk %}">
+                        {% csrf_token %}
+                        {{ form.as_p}}
+                        <button type="button"> 
+                            <a href="">Confirmar compra</a>
+                        </button>
+                        <button type="button">
+                            <a href="">Borrar compra</a>
+                        </button>
+                        <button type="submit" class="guardar usuario" onclick="formulario()">Sumar mas insumos</button>
+                        {% if esGold %}
+                        <button type="button">
+                            <a href="{% url 'con_tarjeta' %}">Usar mi tarjeta</a>
+                        </button>
+                        {% endif %}
+                    </form>
+                    <div><a href="{% url 'home_usuario' %}">Salir</a></div>
+                </div>
+                <div class="resul">
+                    <h1 class="resul2"></h1>
+                </div>
+            </div>  
+        </div>
+    </body>
+</html>

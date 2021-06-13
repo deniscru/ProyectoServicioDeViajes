@@ -7,6 +7,10 @@
         <link rel="stylesheet" href="{% static 'css/demo1.css' %}">
     </head>
     <body>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+        crossorigin="anonymous"></script>
+        <script src="{% static 'js/nuevojavascript.js' %}"></script>
         <div class="page-header">
             {% if gold %}
             <h1><a></a>Comprar Pasaje Usuario Gold</a></h1>
@@ -19,11 +23,11 @@
                 <form method="POST" class="post-form" id="usuarioForm">
                     {% csrf_token %}
                     {{ form.as_p}}
+                    <!--<button type="submit" class="guardar usuario" onclick="formulario()">Sumar mas insumos</button>-->
                     {% if hayInsumosSelec %}
                     <div>
+
                     {% for key, value in cantInsumos.items %} 
-                     <!--<script>document.getElementsByTagName("body")[0].appendChild(document.createElement("table").appendChild(document.createElement("tbody").appendChild(document.createElement("tr").appendChild(document.createElement("td").appendChild(document.createTextNode("<center></h4>Ha seleccionado comprar {{key}}. Cantidad: {{value}}</center></h4>")))))).setAttribute("border", "1")</script>-->
-                   
                      <h4>Ha seleccionado comprar {{key}}. Cantidad: {{value}}</h4>
                     {% endfor %}
                     </div>

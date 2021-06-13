@@ -270,23 +270,19 @@ def tarjeta_new_modificado(request,pk):
             t=form.cleaned_data
             if tiene:
                 tarj= obtener_tarjeta(pasajero.pk)
-                tarjetaRep= tarjetaRepetidaModificado(tarj.pk,t["numero"])
-            else:
-                tarjetaRep= tarjetaRepetida(t["numero"])
             if fecha_vencimiento_es_valida(t["fecha_de_vencimiento"]):
-                if not tarjetaRep:
-                    if tiene:
-                        tarjeta=tarj
-                        tarjeta.numero=t['numero']
-                        tarjeta.fecha_de_vencimiento= t["fecha_de_vencimiento"]
-                        tarjeta.codigo=t['codigo']
-                    else:
-                        tarjeta=Tarjeta.objects.create(pasajero=pasajero,numero=t["numero"],fecha_de_vencimiento=t["fecha_de_vencimiento"],codigo=t["codigo"],activo=True)
-                    pasajero.tipo=p["tipo"]
-                    pasajero.save()
-                    tarjeta.save()
-                    exitoso=True
-                    #del dicPasajeros2[pk]
+                if tiene:
+                    tarjeta=tarj
+                    tarjeta.numero=t['numero']
+                    tarjeta.fecha_de_vencimiento= t["fecha_de_vencimiento"]
+                    tarjeta.codigo=t['codigo']
+                else:
+                    tarjeta=Tarjeta.objects.create(pasajero=pasajero,numero=t["numero"],fecha_de_vencimiento=t["fecha_de_vencimiento"],codigo=t["codigo"],activo=True)
+                pasajero.tipo=p["tipo"]
+                pasajero.save()
+                tarjeta.save()
+                exitoso=True
+                    
             else:
                 fecha_vencimiento_no_es_valida=True
     else:
@@ -418,31 +414,26 @@ def modificar_pasajero(request,pk):
                 dniUnico= not Persona.objects.exclude(pk=pasajeropk).filter(dni=(p["dni"])).exists()
                 mailUnico= not User.objects.exclude(pk=pk).filter(email=(p["email"])).exists()
                 if (edad>=18 and dniUnico and mailUnico):
-                   
-                        if not tarjetaRepetidaModificado(tarjeta.pk,p["numero"]):
-                            if fecha_vencimiento_es_valida(p["fecha_de_vencimiento"]):
-                                pasajero.usuario.email=p["email"]
-                                pasajero.usuario.first_name=p["first_name"]
-                                pasajero.usuario.last_name=p["last_name"]
-                                pasajero.usuario.username=pasajero.usuario.id
-                                pasajero.usuario.save()
-                                pasajero.dni=int(p["dni"])
-                                pasajero.telefono=int(p["telefono"])
-                                pasajero.tipo=p["tipo"]
-                                pasajero.fecha_de_nacimiento=p["fecha_de_nacimiento"]
-                                pasajero.save()
-                                exitoso=True
-                                tarjeta.numero = p["numero"]
-                                tarjeta.codigo = p["codigo"]
-                                tarjeta.fecha_de_vencimiento = p["fecha_de_vencimiento"]
-                                tarjeta.save()
-                                if p["tipo"]=="BASICO":
-                                    return redirect('modificar_pasajero',pk)
-
-                            else:
-                                vencNoValida=True
+                    if fecha_vencimiento_es_valida(p["fecha_de_vencimiento"]):
+                        pasajero.usuario.email=p["email"]
+                        pasajero.usuario.first_name=p["first_name"]
+                        pasajero.usuario.last_name=p["last_name"]
+                        pasajero.usuario.username=pasajero.usuario.id
+                        pasajero.usuario.save()
+                        pasajero.dni=int(p["dni"])
+                        pasajero.telefono=int(p["telefono"])
+                        pasajero.tipo=p["tipo"]
+                        pasajero.fecha_de_nacimiento=p["fecha_de_nacimiento"]
+                        pasajero.save()
+                        exitoso=True
+                        tarjeta.numero = p["numero"]
+                        tarjeta.codigo = p["codigo"]
+                        tarjeta.fecha_de_vencimiento = p["fecha_de_vencimiento"]
+                        tarjeta.save()
+                        if p["tipo"]=="BASICO":
+                            return redirect('modificar_pasajero',pk)
                         else:
-                            tarjetaRep=True
+                            vencNoValida=True
         return render(request,'demo1/modificar/formulario_modificar_pasajero.html',{"form":form,'pk':pk,"tarjetaRep":tarjetaRep,"vencNoValida":vencNoValida,"edad":edad,"exitoso":exitoso,"dniUnico":dniUnico,"mailUnico":mailUnico}) 
 
 
