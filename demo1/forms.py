@@ -83,6 +83,14 @@ class FormChofer(forms.Form):
     password = forms.CharField(required=True,label="Contraseña",min_length=6)
     telefono=forms.IntegerField(required=True,label="Teléfono",max_value=1000000000000000000,min_value=100000)
 
+class FormChoferModi(forms.Form):
+    email=forms.EmailField(required=True)
+    dni=forms.IntegerField(max_value=99999999,min_value=1000000,required=True,label="Dni")  
+    first_name=forms.CharField(required=True,max_length=30,label="Nombre")
+    last_name=forms.CharField(required=True,max_length=30,label="Apellido")
+    password = forms.CharField(required=False, label="Contraseña",min_length=6)
+    telefono=forms.IntegerField(required=True,label="Teléfono",max_value=1000000000000000000,min_value=100000)
+
 
 class FormCombi(forms.Form):
     TIPOS_COMBI = (

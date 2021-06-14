@@ -2,12 +2,29 @@ import json
 from django.db.models.fields import BLANK_CHOICE_DASH
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
-from .forms import FormPasaje,FormComentario
+from .forms import FormPasaje,FormComentario, FormCambiarContraseña
 from datetime import date, datetime,timedelta
 from .models import Chofer, Pasaje,CantInsumo, Pasajero, Tarjeta, Insumo, Ruta, Viaje, Persona ,Comentario
 from django.db.models import Q,F
 from django.http import HttpResponse
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth import login
 
+def change_password(request,pk):
+    exito=False
+    user=request.user
+    if request.method == 'POST':
+        form = FormCambiarContraseña(request.POST)
+        if form.is_valid():
+            c=form.cleaned_data
+            user.password=make_password(c['password'])
+            user.save()
+            login(request, user)
+            exito=True
+        return render(request, 'demo1/change_password.html', {'form': form,'exito':exito,'user':user})
+    else:
+        form = FormCambiarContraseña()
+    return render(request, 'demo1/change_password.html', {'form': form,'exito':exito,'user':user})
 
 def armarInfo(pk, estado2):
     pasajero=Persona.objects.get(usuario=pk)

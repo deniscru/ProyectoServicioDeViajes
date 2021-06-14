@@ -50,5 +50,5 @@ urlpatterns = [
     path('home_usuario/consultarPasajes1/cancelar/<int:pk>',views2.cancelar_pasaje,name="cancelar_pasaje"),
     path('home_usuario/modificar/<int:pk>',views2.modificar_comentario,name="modificar_comentario"),
     path('home_usuario/buscar_viaje/comprar_pasaje/<int:pk>',views2.prueba,name="comprar_pasaje_form"),
-    
+    path('change_password/<int:pk>', views2.change_password, name='change_password')
 ]

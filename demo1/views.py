@@ -2,7 +2,7 @@ from django.db.models.fields import BLANK_CHOICE_DASH
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
-from .forms import FormLugar,FormPasajeroModi, FormPasajeroModi2,FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormTarjeta, FormoBusquedaViaje ,FormComentario
+from .forms import FormLugar,FormPasajeroModi, FormPasajeroModi2,FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormTarjeta, FormoBusquedaViaje ,FormComentario, FormChoferModi
 from datetime import date, datetime
 from django.core.paginator import Paginator
 from .models import Chofer, Pasaje, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona,Comentario
@@ -634,16 +634,16 @@ def viaje_new(request):
     return render(request, 'demo1/form/formulario_viaje.html', {'form': form, 'valor':valor, 'exitoso':exitoso, 'asientosValidos':asientosValidos})
 
 def verificarInsumo(datos):
-    insumos=Insumo.objects.all().values()
+    insumos=Insumo.objects.filter(activo=True)
     for i in insumos:
-        if i['nombre'].upper()==datos['nombre'].upper():
+        if i.nombre.upper()==datos['nombre'].upper():
             return False
     return True
 
 def verificarInsumoModificado(datos,pk):
-    insumos=Insumo.objects.filter(activo=True).exclude(pk=pk).values()
+    insumos=Insumo.objects.filter(activo=True).exclude(pk=pk)
     for i in insumos:
-        if i['nombre'].upper()==datos['nombre'].upper():
+        if i.nombre.upper()==datos['nombre'].upper():
             return False
     return True
 
@@ -930,9 +930,9 @@ def modificar_chofer(request,pk):
         fercho = Chofer.objects.get(pk=pk)
         data = {'email':fercho.usuario.email,'password':'','first_name':fercho.usuario.first_name,'last_name':fercho.usuario.last_name,'username':fercho.usuario.username,'dni':fercho.dni,'telefono':fercho.telefono}
         if request.method=="GET":
-            form=FormChofer(data)
+            form=FormChoferModi(data)
         else:
-            form=FormChofer(request.POST)
+            form=FormChoferModi(request.POST)
             if form.is_valid():
                 d=form.cleaned_data
                 userpk=fercho.usuario.pk

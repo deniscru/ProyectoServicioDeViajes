@@ -117,7 +117,7 @@ class MisDatos{
     cambiarHtml(cantidad){
         let descuento=this.calcularTotalDeCompra(parseInt(cantidad));
         document.getElementById("confirmacion2").innerHTML = "<h4>Tarjeta Valida.</h4><h3>Monto totol de la compra es: "+this.totalDeCompra+"$</h3>";
-        if(this.esGold){
+        if(this.esGold=="True"){
             this.totalDeCompra=this.totalDeCompra-descuento;
             document.getElementById("esGold").innerHTML = "<h3>Por ser usuario gold obtubo un descuento del 15%. Precio total es: " +this.totalDeCompra+"$</h3";
         }
@@ -147,7 +147,7 @@ class MisDatos{
         let dato=this.precioDeViaje*cant;
         this.totalDeCompra=this.total+dato;
         let descuento=0;
-        if (this.esGold){
+        if (this.esGold=="True"){
             descuento=(this.totalDeCompra*15)/100;
         }
         return descuento;
