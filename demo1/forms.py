@@ -136,7 +136,7 @@ class FormPasaje(forms.Form):
     numero=forms.IntegerField(required=True,max_value=1000000000000000000,min_value=1000000000000000,label="Número Tarjeta")
     fecha_de_vencimiento=forms.DateField(required=True,label="Fecha Vencimiento",widget=forms.SelectDateWidget(years=años))
     codigo=forms.IntegerField(required=False,label="Codigo de Seguridad",min_value=100, max_value=999)
-    insumos=forms.ModelChoiceField(queryset=Insumo.objects.filter(activo=True),required=False,label='Insumos',widget=forms.RadioSelect())
+    insumos=forms.ModelChoiceField(queryset=Insumo.objects.filter(activo=True),required=False,label='Insumos')
     cantInsumo = forms.IntegerField(required=False,label="Cantidad",min_value=0)
 
 
