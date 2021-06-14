@@ -11,12 +11,10 @@
                   <li><a href="{% url 'consultar_pasaje_user_c' pk=user.pk %}">Cancelados</a></li>
                </ul>
             </li>
+            <li><a href="{% url 'crear_comentario' %}">Crear Comentario</a></li>
          </ul>
       </nav>
    </div>
-   <div align="right">
-      <h2><a href="{% url 'crear_comentario' %}">Crear Comentario</a></h2>
-   </div >
    {% if cantidad %}
    <h2>Comentarios Realizados</h2>
    <div>

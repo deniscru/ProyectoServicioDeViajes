@@ -1,16 +1,12 @@
-from io import IncrementalNewlineDecoder
 from django.db.models.fields import BLANK_CHOICE_DASH
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
 from .forms import FormLugar,FormPasajeroModi, FormPasajeroModi2,FormPasajero, FormLogin, FormChofer, FormCombi, FormViaje, FormInsumo, FormRuta,FormTarjeta, FormoBusquedaViaje ,FormComentario
-from datetime import date, datetime,timedelta
+from datetime import date, datetime
 from django.core.paginator import Paginator
 from .models import Chofer, Pasaje, Pasajero, Tarjeta, Insumo, Lugar, Combi, Ruta, Viaje, Persona,Comentario
 from django.contrib.auth.hashers import make_password
-from django.db.models import Q,F
-from .views2 import change_password, consultarPasajesUserPendi, consultarPasajesUserCance
-
 
 dicPasajeros1 = {0:0}
 dicPasajeros2 = {0:0}
@@ -85,18 +81,6 @@ def listado_chofer(request):
     page_obj,cantidad = listadoDePaginacion(choferes, request)
     return render(request, 'demo1/listados/listado_chofer.html', {'page_obj':page_obj, 'cantidad':cantidad})
 
-def listado_persona(request):
-    personas= Persona.objects.all()
-    return render(request, 'demo1/listados/listado_persona.html', {'personas':personas})
-
-def lisatdo_usuario(request):
-    usuarios=User.objects.all()
-    return render(request, 'demo1/listados/listado_usuario.html', {'usuarios':usuarios})
-
-def lisatdo_pasajero(request):
-    pasajeros=Pasajero.objects.all()
-    return render(request, 'demo1/listados/listado_pasajero.html', {'pasajeros':pasajeros})
-
 def verificarSiCombiValido(id):
     viajes=Viaje.objects.filter(activo=True).values()
     for i in viajes:
@@ -121,9 +105,9 @@ def listado_combi(request):
     page_obj,cantidad = listadoDePaginacion(combis, request)
     return render(request, 'demo1/listados/listado_combi.html', {'page_obj':page_obj, 'cantidad':cantidad, 'noSePuede':False})
 
-def listado_tarjeta(request):
-    tarjetas=Tarjeta.objects.all()
-    return render(request, 'demo1/listados/listado_tarjeta.html', {'tarjetas':tarjetas})
+def lisatdo_pasajero(request):
+    pasajeros=Pasajero.objects.all()
+    return render(request, 'demo1/listados/listado_pasajero.html', {'pasajeros':pasajeros})
 
 def obtenerValorUnLugar(id):
     rutas=Ruta.objects.filter(activo=True).values()
@@ -763,10 +747,6 @@ def es_pendiente(viaje,id_pasajero):
     except:
         return False
 
-def detalle_pasajero(request, pk):
-    pasajero = Pasajero.objects.filter(pk=pk)
-    return render(request, 'demo1/detalle/detalle_pasajero.html', {'pasajero': pasajero})
-
 def detalle_chofer(request, pk):
     print('detalle ',pk)
     chofer = Chofer.objects.filter(pk=pk)
@@ -775,18 +755,6 @@ def detalle_chofer(request, pk):
 def detalle_combi(request, pk):
     combi = Combi.objects.filter(pk=pk)
     return render(request, 'demo1/detalle/detalle_combi.html', {'combi': combi})
-
-def detalle_viaje(request, pk):
-    viaje = Viaje.objects.filter(pk=pk)
-    return render(request, 'demo1/detalle/detalle_viaje.html', {'viaje': viaje})
-
-def detalle_insumo(request, pk):
-    insumo = Insumo.objects.filter(pk=pk)
-    return render(request, 'demo1/detalle/detalle_insumo.html', {'insumo': insumo})
-
-def detalle_ruta(request, pk):
-    ruta = Ruta.objects.filter(pk=pk)
-    return render(request, 'demo1/detalle/detalle_ruta.html', {'ruta': ruta})
 
 def modificar_ruta(request,pk):
     noModificado=False

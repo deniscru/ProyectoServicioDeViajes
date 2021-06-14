@@ -80,8 +80,7 @@ class MisDatos{
                 data: {'dato': this.unosInsumos, 
                         'datos': this.cantInsumos,
                         "total": this.totalDeCompra,
-                        "cant": cantAsientos,
-                        "tipo":false},
+                        "cant": cantAsientos},
                 url: $('#form_creacion').attr('action'),
                 type:'GET',
                 dataType: "json",
@@ -129,7 +128,7 @@ class MisDatos{
         if (parseInt(cant)<=this.cantAsientosDis && parseInt(cant)>0){
             return true;
         }else{
-            alert("La cantidad de pasajes ingresados debe ser menor a las Disponibles (Disp: "+this.cantAsientosDis+") y mayor a 0. Vuelva a ingresar la cantidad");
+            alert("La cantidad de pasajes ingresados debe ser menor a las disponibles (Disp: "+this.cantAsientosDis+") y mayor a 0. Vuelva a ingresar la cantidad");
             return false;
         }
     }
@@ -137,6 +136,11 @@ class MisDatos{
         document.getElementById("confirmacion2").innerHTML ="";
         document.getElementById("esGold").innerHTML ="";
         document.getElementById("confirmacion").innerHTML ="";
+        this.unosInsumos=new Array();
+        this.cantInsumos=new Array();
+        this.totalDeCompra=0;
+        this.total=0;
+        this.cambiarTotal();
     }
     
     calcularTotalDeCompra(cant){
@@ -168,14 +172,14 @@ class MisDatos{
                     if (dias==parseInt(diasHtml) && mes==parseInt(mesHtml)-1 && year==parseInt(añoHtml)){
                         return true;
                     }else{
-                        alert("La fecha ingrada no debe ser pasada");
+                        alert("La fecha ingresada no debe ser pasada");
                         return false;
                     }
                 }else{
                     return true;
                 }
             }else{
-                alert("Ingrese dos datos correctamente. El codigo es de 3 dig. y numero de tarjeta de 18 digitos");
+                alert("Ingrese dos datos correctamente. El codigo es de 3 dig. y el numero de tarjeta de 18 digitos");
                 return false;
             }
         }

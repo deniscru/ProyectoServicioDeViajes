@@ -21,9 +21,9 @@
                         {% csrf_token %}
                         {{ form.as_p}}
                         <button type="button" class="sumar_insumos" onclick="datos.agregar()">Sumar mas insumos</button>
-                        <button type="button" class="Comfirmar compra" onclick="datos.confirmar()">Comfirmar Compra</button>
+                        <button type="button" class="Confirmar compra" onclick="datos.confirmar()">Confirmar Compra</button>
                         {% if esGold %}
-                        <button type="button" class="usoDeTarjeta" onclick="datos.ponerTarjetaAlForm()"> User mi Tarjeta </button>
+                        <button type="button" class="usoDeTarjeta" onclick="datos.ponerTarjetaAlForm()"> Usar mi Tarjeta </button>
                         {% endif %}
                     </form>
                     <div class="mi_total" id="mi_total"><h4 id="texto_total">Compra total de los Insumos: {{0}}</h4></div>
