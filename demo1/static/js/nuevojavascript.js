@@ -67,7 +67,6 @@ class MisDatos{
             let cant= respuesta[0]["cant"];
             let f=respuesta[0]["fecha"];
             let h=respuesta[0]["hora"];
-            let hora=new Date();
             document.getElementById("esGold").innerHTML="";
             document.getElementById("mi_total").innerHTML="";
             document.getElementById("form").innerHTML="";
@@ -109,7 +108,10 @@ class MisDatos{
         let valido=this.verificarCantidad(cantidad);
         let validarTarjeta=this.validarTarjeta();
         if (valido && validarTarjeta){
-            this.cambiarHtml(cantidad);
+            setTimeout(() => {
+                this.cambiarHtml(cantidad)
+            }, 5000);
+            document.getElementById("confirmacion2").innerHTML= "<h4>Validando tarjeta....</h4>";
         }
     }
 
@@ -118,7 +120,7 @@ class MisDatos{
         document.getElementById("confirmacion2").innerHTML = "<h4>Tarjeta Valida.</h4><h3>Monto totol de la compra es: "+this.totalDeCompra+"$</h3>";
         if(this.esGold){
             this.totalDeCompra=this.totalDeCompra-descuento;
-            document.getElementById("esGold").innerHTML = "<h3>Por ser usuario gold obtubo un descuento del 15%. Precio total es:" +this.totalDeCompra+"$</h3";
+            document.getElementById("esGold").innerHTML = "<h3>Por ser usuario gold obtubo un descuento del 15%. Precio total es: " +this.totalDeCompra+"$</h3";
         }
         document.getElementById("confirmacion").innerHTML = "<p>Esta seguro de realizar la compra?</p><button type='button' onclick=datos.formulario()>Confirmar </button><button type='button' onclick=datos.cancelado()>Cancelar</button>";
     }
