@@ -354,6 +354,15 @@ def armarDatosDePrecio():
         lista.append(dic)
     return lista
 
+def registrarPasaje(insumos, cantInsumos, total, cantAsientos, unPasajero, unViaje):
+    pasaje= Pasaje.objects.create(pasajero=unPasajero, viaje=unViaje, costoTotal=total, cantidad=cantAsientos, estado="PENDIENTE")
+    unViaje.asientos=unViaje.asientos-cantAsientos
+    unViaje.save()
+    for i in range(len(insumos)):
+        unInsumo=Insumo.objects.get(id=int(insumos[i]))
+        unCantInsumo=CantInsumo.objects.create(insumo=unInsumo, cantidad=int(cantInsumos[i]))
+        pasaje.cantInsumos.add(unCantInsumo)
+
 def prueba(request, pk=None, *arg, **kwags):
     pasajero=Pasajero.objects.get(usuario=request.user.pk)
     esGold= True if pasajero.tipo=='GOLD' else False
@@ -363,19 +372,25 @@ def prueba(request, pk=None, *arg, **kwags):
         miTarjeta=None
     viaje=Viaje.objects.get(id=pk)
     precios= armarDatosDePrecio()
-    conPrecios=json.dumps(precios)
     if request.is_ajax():
         form=FormPasaje(request.POST)
-        #insumo=Insumo.objects.get(id=int(request.POST.get('insumos')))
-        datos=request.GET.getlist('dato[]')
-        datos2=request.GET.getlist('datos[]')
-        print(datos)
-        print(datos2)
-        dato=json.dumps([{}])
+        insumos=request.GET.getlist('dato[]')
+        cantInsumos=request.GET.getlist('datos[]')
+        total=request.GET.get('total')
+        cantAsientos=request.GET.get('cant')
+        tipo=request.GET.get('tipo')
+        registrarPasaje(insumos, cantInsumos, float(total), int(cantAsientos), pasajero, viaje)
+        user=User.objects.get(id=request.user.pk)
+        fecha=str(date.today())
+        hora=datetime.today().ctime().split()
+        datosAEnviar=[{"nombre":user.first_name+" "+user.last_name,"costo":234, "total":total,
+                     "origen":viaje.ruta.origen.__str__(), "destino":viaje.ruta.destino.__str__(),
+                     "cant":cantAsientos, "fecha":fecha, "hora":hora[3]}]
+        dato=json.dumps(datosAEnviar)
         return HttpResponse(dato, 'application/json')
     else:
         if request.method== 'POST':
             form=FormPasaje(request.POST)
         else:
             form= FormPasaje()
-        return render(request, 'demo1/form/formulario_prueba.html', {'form':form, 'esGold':esGold, 'pk':pk, 'conPrecios':precios, 'precioDeViaje':viaje.precio, 'miTarjeta':miTarjeta})
+        return render(request, 'demo1/form/formulario_prueba.html', {'form':form, 'esGold':esGold, 'pk':pk, 'conPrecios':precios, 'precioDeViaje':viaje.precio, 'miTarjeta':miTarjeta, "cantAsientos":viaje.asientos})
