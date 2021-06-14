@@ -147,13 +147,15 @@ def listado_lugar(request):
     return render(request, 'demo1/listados/listado_lugar.html', {'page_obj':page_obj, 'cantidad':cantidad})
 
 def verificarInsumoEnViaje(pk):
+    """
     hoy= date.today()
     pasajes=Pasaje.objects.filter(activo=True)
     for i in pasajes:
         if i.viaje.fecha >= hoy and i.cantInsumos.count()!=0:
             for j in i.cantInsumos:
-                if j.insumo==pk:
+                if j.insumo.pk==pk:
                     return False
+    """
     return True
 
 def listado_insumo(request):
@@ -204,6 +206,13 @@ def listado_viaje(request):
 
 def compararLugar(d):
     lugares= Lugar.objects.filter(activo=True).values()
+    for l in lugares:
+        if l['nombre_de_lugar'].upper()==d['nombre'].upper() and l['provincia'].upper()==d['provincia'].upper():
+            return False
+    return True
+
+def compararLugarModificado(d,pk):
+    lugares= Lugar.objects.filter(activo=True).exclude(pk=pk).values()
     for l in lugares:
         if l['nombre_de_lugar'].upper()==d['nombre'].upper() and l['provincia'].upper()==d['provincia'].upper():
             return False
@@ -647,6 +656,13 @@ def verificarInsumo(datos):
             return False
     return True
 
+def verificarInsumoModificado(datos,pk):
+    insumos=Insumo.objects.filter(activo=True).exclude(pk=pk).values()
+    for i in insumos:
+        if i['nombre'].upper()==datos['nombre'].upper():
+            return False
+    return True
+
 def insumo_new(request):
     valor=False
     exitoso=False
@@ -813,11 +829,15 @@ def modificar_insumo(request,pk):
             form=FormInsumo(request.POST)
             if form.is_valid():
                 d=form.cleaned_data
-                insumo.tipo = d['tipo']
-                insumo.nombre = d['nombre']
-                insumo.precio = d['precio']
-                insumo.save()
-                return redirect('listado_insumo') 
+                if verificarInsumoModificado(d,pk):
+                    insumo.tipo = d['tipo']
+                    insumo.nombre = d['nombre']
+                    insumo.precio = d['precio']
+                    insumo.save()
+                    return redirect('listado_insumo') 
+                else:
+                    noModificado=True
+                    return render(request, 'demo1/modificar/formulario_modificar_insumo.html', {'form': form,'noModificado':noModificado})
         else:
             data = {'tipo': insumo.tipo,'nombre': insumo.nombre,'precio': insumo.precio}
             form=FormInsumo(data)
@@ -841,14 +861,18 @@ def modificar_lugar(request, pk):
             form = FormLugar(request.POST)
             if form.is_valid():
                 datos = form.cleaned_data
-                if datos['nombre']!='' and datos['provincia']!='':
-                    lugar.nombreYprovincia(datos['nombre'],datos['provincia'])
-                    lugar.save()
-                    return redirect('listado_lugar')
+                if compararLugarModificado(datos,pk):
+                    if datos['nombre']!='' and datos['provincia']!='':
+                        lugar.nombreYprovincia(datos['nombre'],datos['provincia'])
+                        lugar.save()
+                        return redirect('listado_lugar')
+                else:
+                    noModificado=True
+                    
         else:
             data = {'nombre': lugar.nombre_de_lugar,'provincia': lugar.provincia}
             form = FormLugar(data)
-        return render(request, 'demo1/modificar/formulario_modificar_lugar.html', {'form': form})
+        return render(request, 'demo1/modificar/formulario_modificar_lugar.html', {'form': form,'noModificado':noModificado})
     else:
         noModificado=True
         lugares=obtenerListaDeLugares()

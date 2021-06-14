@@ -14,6 +14,9 @@
             
         </div>
         <div class="card">
+            {%if noModificado%}
+            <p>No se puede modificar porque el nombre esta repetido</p>
+            {%endif%}
             <h2><a href="{% url 'listado_insumo' %}"> Atras</a></h2>
         </div>
     </div>
