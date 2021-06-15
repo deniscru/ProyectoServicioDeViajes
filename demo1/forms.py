@@ -58,7 +58,7 @@ class FormPasajeroModi(forms.Form):
     telefono=forms.IntegerField(required=True,label="Teléfono",max_value=1000000000000000000,min_value=100000)
     fecha_de_nacimiento = forms.DateField(required=True,label='Fecha Nacimiento',widget=forms.SelectDateWidget(years=años))
     tipo =forms.ChoiceField(widget=forms.RadioSelect, choices=tipos)
-    numero=forms.IntegerField(required=True,max_value=1000000000000000000,min_value=1000000000000000,label="Número Tarjeta")
+    numero=forms.IntegerField(required=True,max_value=999999999999999999,min_value=100000000000000000,label="Número Tarjeta")
     fecha_de_vencimiento=forms.DateField(label="Fecha Vencimiento",widget=forms.SelectDateWidget(years=años1))
     codigo=forms.IntegerField(required=False,label="Codigo de Seguridad",min_value=100, max_value=999)
 
@@ -67,7 +67,7 @@ class FormTarjeta(forms.Form):
     años=[]
     for i in range(año,(año+10)):
         años.append(i)
-    numero=forms.IntegerField(required=True,max_value=1000000000000000000,min_value=1000000000000000,label="Número Tarjeta")
+    numero=forms.IntegerField(required=True,max_value=999999999999999999,min_value=100000000000000000,label="Número Tarjeta")
     fecha_de_vencimiento=forms.DateField(required=True,label="Fecha Vencimiento",widget=forms.SelectDateWidget(years=años))
     codigo=forms.IntegerField(required=False,label="Codigo de Seguridad",min_value=100, max_value=999)
 
@@ -141,7 +141,7 @@ class FormPasaje(forms.Form):
     for i in range(año,(año+10)):
         años.append(i)
     cantidad=forms.IntegerField(required=True,label="Cantidad de Pasajes",initial=1)
-    numero=forms.IntegerField(required=True,max_value=1000000000000000000,min_value=1000000000000000,label="Número Tarjeta")
+    numero=forms.IntegerField(required=True,max_value=999999999999999999,min_value=100000000000000000,label="Número Tarjeta")
     fecha_de_vencimiento=forms.DateField(required=True,label="Fecha Vencimiento",widget=forms.SelectDateWidget(years=años))
     codigo=forms.IntegerField(required=False,label="Codigo de Seguridad",min_value=100, max_value=999)
     insumos=forms.ModelChoiceField(queryset=Insumo.objects.filter(activo=True),required=False,label='Insumos')
