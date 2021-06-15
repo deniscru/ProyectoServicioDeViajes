@@ -122,7 +122,7 @@ class FormRuta(forms.Form):
     origen = forms.ModelChoiceField(queryset=Lugar.objects.filter(activo=True),label='Lugares origen',widget=forms.Select())
     destino = forms.ModelChoiceField(queryset=Lugar.objects.filter(activo=True),label='Lugares destino',widget=forms.Select())
     hora = forms.TimeField(required=True,label="Hora", widget=forms.TimeInput())
-    distancia = forms.IntegerField(required=True,label="Distancia", max_value=100)
+    distancia = forms.IntegerField(required=True,label="Distancia", max_value=1000)
 
 class FormoBusquedaViaje(forms.Form):
     origen = forms.CharField(required=True,max_length=70,label="Origen")

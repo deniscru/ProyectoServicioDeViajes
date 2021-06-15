@@ -24,6 +24,10 @@
                 <div class="card">
                     <h3> La modificacion no se realizo porque la cantidad de asientos ingresada es mayor a la capacidad de la combi</h3>
                 </div>
+            {% elif pasado %}
+            <div class="card">
+                <h3> La modificacion no se realizo porque la fecha ingresada es pasada</h3>
+            </div>
             {% endif %}
         </div>
         <div class="card">

@@ -26,6 +26,11 @@
                     <p> La cantidad de asientos debe ser menor o igual al de la combi</p>
                 </div>
             {% endif %}
+            {% if pasado %}
+                <div>
+                    <p> La fecha no puede ser pasada</p>
+                </div>
+            {% endif %}
         </div>
         <div>
             <h2><a href="{% url 'principal' %}"> salir</a></h2>

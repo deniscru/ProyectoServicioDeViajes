@@ -125,6 +125,7 @@ def armarDatosDePrecio():
 def registrarPasaje(insumos, cantInsumos, total, cantAsientos, unPasajero, unViaje):
     pasaje= Pasaje.objects.create(pasajero=unPasajero, viaje=unViaje, costoTotal=total, cantidad=cantAsientos, estado="PENDIENTE")
     unViaje.asientos=unViaje.asientos-cantAsientos
+    unViaje.vendidos=unViaje.vendidos + cantAsientos
     unViaje.save()
     for i in range(len(insumos)):
         unInsumo=Insumo.objects.get(id=int(insumos[i]))
