@@ -958,7 +958,11 @@ def modificar_chofer(request,pk):
         return render(request, 'demo1/listados/listado_chofer.html', {'page_obj':page_obj, 'cantidad':cantidad,"noModificado":noModificado})
 
 def no_tieneViajesVendidos(pk):
-    return Viaje.objects.get(pk=pk).vendidos == 0 
+    elviaje=Viaje.objects.get(pk=pk)
+    if elviaje.fecha < date.today():
+        return True
+    else:
+        return Viaje.objects.get(pk=pk).vendidos == 0 
 
 def modificar_viaje(request,pk):
     viaje= Viaje.objects.get(pk=pk)
