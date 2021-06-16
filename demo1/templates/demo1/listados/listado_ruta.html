@@ -1,10 +1,14 @@
 {% extends 'demo1/base.html' %}
-
+{% load static %}
 {% block content %}
 <div class="card">
     <h2>Listado de rutas</h2>  
 </div>
     <div >
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+        crossorigin="anonymous"></script>
+    <script src="{% static 'js/nuevojavascript.js' %}"></script>
     <table class="tablalista" width=100% border="1">
         <tbody>
         {% if cantidad %}
@@ -19,10 +23,10 @@
                     <td>{{ i.origen  }}</td>
                     <td>{{ i.destino }}</td>
                     <td>{{ i.hora }}</td>
-                    <td>
-                        <a href="{% url 'eliminar_ruta' pk=i.pk%}">Eliminar</a></td>
-                    <td>
-                        <a href="{% url 'modificar_ruta' pk=i.pk%}">Modificar</a>
+                    <td align="center"> 
+                        <button onclick="confirmarEliminacion('{% url 'eliminar_ruta' pk=i.pk%}', 'Esta seguro que desea eliminar la ruta?' )" style="color: black;">Eliminar</button></td>
+                    <td align="center">
+                        <button><a href="{% url 'modificar_ruta' pk=i.pk%}" style="text-decoration:none; color: black;">Modificar</a></button>
                     </td>
                 </tr>
             {% endfor %}
@@ -31,9 +35,10 @@
         {% endif %}
     </tbody>
     </table>
-    {% if exitosoE %}
-        <h3>La ruta que desea eliminar esta en un viaje presente o futuro, no se realizo la eliminación</h3>
-    {% elif noModificado %}
+    <div id="mensaje">
+
+    </div>
+    {% if noModificado %}
         <h3>La ruta no se puede modificar debido a que corresponde a un viaje activo o futuro</h3>
     {% endif %}
     </div>

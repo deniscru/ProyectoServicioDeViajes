@@ -1,4 +1,6 @@
+import json
 from django.db.models.fields import BLANK_CHOICE_DASH
+from django.http.response import HttpResponse
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
@@ -864,21 +866,20 @@ def eliminar_chofer(request, pk):
             object.save()
     else:
         noEliminado=True
-    user= obtenerChoferes() 
-    page_obj,cantidad = listadoDePaginacion(user, request)
-    return render(request, 'demo1/listados/listado_chofer.html', {'page_obj':page_obj, 'cantidad':cantidad,"noEliminado":noEliminado})
-
+    dato=json.dumps([{"seElimino":noEliminado,
+                        "mensaje":"No fue posible borrar al chofer ya que se encuentra asignado a una combi"}])
+    return HttpResponse(dato, 'application/json')
+    
 def eliminar_combi(request, pk):
-    noEliminado=False
+    noEliminado=True
     if no_se_encuentra_en_ruta(pk):
         combi = Combi.objects.get(pk=pk)
         combi.activo = False
         combi.save()
-    else:
-        noEliminado=True
-    combis=filaDeCombi()
-    page_obj,cantidad = listadoDePaginacion(combis, request)
-    return render(request, 'demo1/listados/listado_combi.html', {'page_obj':page_obj, 'cantidad':cantidad, 'noEliminado':noEliminado})
+        noEliminado=False
+    dato=json.dumps([{"seElimino":noEliminado,
+                        "mensaje":"No es posible borrar la combi ya que se encuentra asignado a una ruta"}])
+    return HttpResponse(dato, 'application/json')
 
 def no_tieneViajesVendidos(pk):
     elviaje=Viaje.objects.get(pk=pk)
@@ -894,9 +895,9 @@ def eliminar_viaje(request, pk):
         viaje.activo = False
         viaje.save()
         exitoso=False
-    viajes=armarFilaViaje()
-    page_obj,cantidad = listadoDePaginacion(viajes, request)
-    return render(request, 'demo1/listados/listado_viaje.html', {'page_obj':page_obj, 'cantidad':cantidad, 'exitoso':exitoso})
+    dato=json.dumps([{"seElimino":exitoso,
+                        "mensaje":"No se realizo la eliminacion porque hay al menos un pasaje vendido"}])
+    return HttpResponse(dato, 'application/json')
 
 def eliminar_ruta(request, pk):
     exitosoE=True
@@ -905,34 +906,30 @@ def eliminar_ruta(request, pk):
         ruta.activo = False
         ruta.save()
         exitosoE=False
-    rutas=obtenerOrigenesDestino()
-    page_obj,cantidad = listadoDePaginacion(rutas, request) 
-    return render(request, 'demo1/listados/listado_ruta.html',{'page_obj':page_obj, 'cantidad':cantidad, 'exitosoE':exitosoE})
+    dato=json.dumps([{"seElimino":exitosoE,
+                "mensaje":"La ruta que desea eliminar esta en un viaje presente o futuro, no se realizo la eliminación"}])
+    return HttpResponse(dato, "application/json")
 
 def eliminar_insumo(request, pk):
-    noSeElimina=False
     if verificarInsumoEnViaje(pk):
         insumo = Insumo.objects.get(pk=pk)
         insumo.activo = False
         insumo.save()
-    else:
-        noSeElimina=True
-    insumos=Insumo.objects.filter(activo=True)
-    page_obj,cantidad = listadoDePaginacion(insumos, request)
-    return render(request, 'demo1/listados/listado_insumo.html',{'page_obj':page_obj, 'cantidad':cantidad, 'noSeElimina':noSeElimina})
+    dato=json.dumps([{"seElimino":False,
+                        "mensaje":""}])
+    return HttpResponse(dato, 'application/json')
 
 def eliminar_lugar(request, pk):
     lugar = Lugar.objects.get(pk=pk)
-    fallido=False
+    fallido=True
     if obtenerValorUnLugar(lugar.id):
         lugar.activo = False
         lugar.save()
-    else:
-        fallido=True
-    lugares=Lugar.objects.filter(activo=True)
-    page_obj,cantidad = listadoDePaginacion(lugares, request)
-    return render(request, 'demo1/listados/listado_lugar.html', {'page_obj':page_obj, 'cantidad':cantidad,"fallido":fallido})
-   
+        fallido=False
+    dato=json.dumps([{"seElimino":fallido,
+                        "mensaje":"No fue posible borrar el lugar ya que se encuentra en una ruta"}])
+    return HttpResponse(dato, 'application/json')
+  
 def detalle_tarjeta(request, pk):
     tarjeta = Tarjeta.objects.filter(pk=pk)
     return render(request, 'demo1/detalle/detalle_tarjeta.html', {'tarjeta': tarjeta})

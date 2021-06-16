@@ -1,10 +1,14 @@
 {% extends 'demo1/base.html' %}
-
+{% load static %}
 {% block content %}
 <div class="card">
     <h2>Listado de lugares</h2>  
 </div>
     <div class="card">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+        crossorigin="anonymous"></script>
+    <script src="{% static 'js/nuevojavascript.js' %}"></script>
     <table class="tablalista" width=100% border="1">
         <tbody>
         {% if cantidad %}
@@ -17,10 +21,10 @@
                 <tr>
                     <td>{{lugar.nombre_de_lugar}}</td>
                     <td>{{lugar.provincia }}</td>
-                    <td> 
-                        <a href="{% url 'eliminar_lugar' pk=lugar.pk%}">Eliminar</a></td>
-                    <td>
-                        <a href="{% url 'modificar_lugar' pk=lugar.pk%}">Modificar</a>
+                    <td align="center"> 
+                        <button onclick="confirmarEliminacion('{% url 'eliminar_lugar' pk=lugar.pk%}', 'Esta seguro que desea eliminar el lugar?' )" style="color: black;">Eliminar</button></td>
+                    <td align="center">
+                        <button><a href="{% url 'modificar_lugar' pk=lugar.pk%}" style="text-decoration:none; color: black;">Modificar</a></button>
                     </td>
                 </tr>
             {% endfor %}
@@ -30,6 +34,9 @@
     </tbody>
     </table>
     </div>
+    <div id="mensaje">
+
+    </div>
     <div>
         {%if page_obj.has_previous %}
             <a href="?page={{ page_obj.previous_page_number }}">Anterior</a>
@@ -38,11 +45,7 @@
             <a href="?page={{ page_obj.next_page_number}}">Siguiente</a>
         {%endif%}
 </div>
-{% if fallido %}
-    <div>
-        <h3>No fue posible borrar el lugar ya que se encuentra en una ruta</h3>
-    </div>
-{% elif noModificado%}
+{% if noModificado%}
     <div>
         <h3>No fue posible modificar el lugar ya que se encuentra en una ruta</h3>
     </div>

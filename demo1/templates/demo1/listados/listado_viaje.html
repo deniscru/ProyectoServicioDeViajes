@@ -1,10 +1,14 @@
 {% extends 'demo1/base.html' %}
-
+{% load static %}
 {% block content %}
 <div class="card">
     <h2>Listado de Viajes</h2>  
 </div>
     <div >
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+                integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+                crossorigin="anonymous"></script>
+        <script src="{% static 'js/nuevojavascript.js' %}"></script>
     <table class="tablalista" width=100% border="1">
         <tbody>
         {% if cantidad %}
@@ -33,9 +37,10 @@
                     <td>{{ v.fecha }}</td>
                     <td>{{ v.precio }}</td>
                     <td>
-                        <a href="{% url 'eliminar_viaje' pk=v.pk%}">Eliminar</a></td>
+                        <button class="boton_de_eliminacion" onclick="confirmarEliminacion('{% url 'eliminar_viaje' pk=v.pk%}', 'Esta seguro de que desea eliminar el viaje?' )" style="color: black;">Eliminar</button>
+                    </td>
                     <td>
-                        <a href="{% url 'modificar_viaje' pk=v.pk%}">Modificar</a>
+                        <button><a href="{% url 'modificar_viaje' pk=v.pk%}" style="text-decoration:none; color: black;">Modificar</a></button>
                     </td>
                 </tr>
             {% endfor %}
@@ -45,10 +50,11 @@
     </tbody>
     </table>
     </div>
+    <div id="mensaje">
+
+    </div>
     <div class="card">
-    {% if exitoso %}
-        <h3>No se realizo la eliminacion porque hay al menos un pasaje vendido</h3>
-    {% elif noModificado %}
+    {% if noModificado %}
         <h3>No se realizo la modificacion porque hay al menos un pasaje vendido</h3>
     {% endif %}
     </div>

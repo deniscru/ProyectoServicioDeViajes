@@ -1,10 +1,14 @@
 {% extends 'demo1/base.html' %}
-
+{% load static %}
 {% block content %}
 <div class="card">
     <h2>Listado de Choferes</h2>  
 </div>
     <div>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+        crossorigin="anonymous"></script>
+    <script src="{% static 'js/nuevojavascript.js' %}"></script>
     <table class="tablalista" width=100% border="1">
         <tbody>
         {% if cantidad %}
@@ -19,14 +23,13 @@
                     <td>{{ chofer.first_name  }}</td>
                     <td>{{ chofer.last_name }}</td>
                     <td>{{ chofer.email }}</td>
-                    <td> 
-                        <a href="{% url 'detalle_chofer' pk=chofer.pk%}">Detalle</a></td>
-                    <td> 
-                        <a href="{% url 'eliminar_chofer' pk=chofer.pk%}">Eliminar</a></td>
-                    
-                        <td>
-                            <a href="{% url 'modificar_chofer' pk=chofer.pk%}">Modificar</a>
-                        </td>
+                    <td align="center"> 
+                        <button><a href="{% url 'detalle_chofer' pk=chofer.pk%}" style="text-decoration:none; color: black;">Detalle</a></button></td>
+                    <td align="center"> 
+                        <button onclick="confirmarEliminacion('{% url 'eliminar_chofer' pk=chofer.pk%}', 'Esta seguro que desea eliminar el chofer?' )" style="color: black;">Eliminar</button></td>
+                    <td align="center">
+                        <button><a href="{% url 'modificar_chofer' pk=chofer.pk%}" style="text-decoration:none; color: black;">Modificar</a></button>
+                    </td>
                 </tr>
             {% endfor %}
         {% else %}
@@ -34,6 +37,9 @@
         {% endif %}
     </tbody>
     </table>
+    </div>
+    <div id="mensaje">
+
     </div>
     <div>
         {%if page_obj.has_previous %}
@@ -43,11 +49,7 @@
             <a href="?page={{ page_obj.next_page_number}}">Siguiente</a>
         {%endif%}
 </div>
-{% if noEliminado %}
-    <div>
-        <h3>No fue posible borrar al chofer ya que se encuentra asignado a una combi</h3>
-    </div>
-{% elif noModificado %}
+{% if noModificado %}
     <div>
         <h3>No fue posible modificar al chofer ya que se encuentra asignado a una combi</h3>
     </div>

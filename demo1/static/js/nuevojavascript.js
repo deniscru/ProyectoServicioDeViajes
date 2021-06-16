@@ -186,3 +186,27 @@ class MisDatos{
     }
 }
 
+function confirmarEliminacion(unUrl, mensaje) {
+    let valor=confirm(mensaje);
+    if (valor){
+        $.ajax({
+            url: unUrl,
+            type:'GET',
+            dataType: "json",
+            success : function(respuesta) {
+                console.log(respuesta);
+                if (respuesta[0]["seElimino"]){
+                    document.getElementById("mensaje").innerHTML= "<h3>"+respuesta[0]["mensaje"]+"</h3>";
+                    setTimeout(() => {
+                        document.getElementById("mensaje").innerHTML="";
+                    }, 5000);
+                }else{
+                    location.reload();
+                }
+                },
+            error: function(error){
+                console.log(error);
+            }
+        });
+    }
+}
