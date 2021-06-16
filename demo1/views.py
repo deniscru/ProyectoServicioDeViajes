@@ -675,7 +675,7 @@ def insumo_new(request):
     return render(request, 'demo1/form/formulario_insumo.html', {'form': form, 'valor':valor, 'exitoso':exitoso})
 
 def verificarHoraYRuta(d):
-    dato=Ruta.objects.filter(origen = d['origen'].pk, destino= d['destino'].pk)
+    dato=Ruta.objects.filter(origen = d['origen'].pk, destino= d['destino'].pk,activo=True)
     if dato.count() !=0:
         if dato[0].hora.hour==d['hora'].hour:
             return True
