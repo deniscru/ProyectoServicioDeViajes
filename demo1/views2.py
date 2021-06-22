@@ -119,6 +119,7 @@ def armarDatosDePrecio():
         dic={}
         dic['id']=i.pk
         dic['precio']=i.precio
+        dic['nombre']=i.nombre
         lista.append(dic)
     return lista
 

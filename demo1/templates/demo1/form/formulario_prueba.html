@@ -5,8 +5,10 @@
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
         <link rel="stylesheet" href="{% static 'css/demo1.css' %}">
+        
     </head>
     <body>
+        
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"
                 integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
                 crossorigin="anonymous"></script>
@@ -27,6 +29,10 @@
                         {% endif %}
                     </form>
                     <div class="mi_total" id="mi_total"><h4 id="texto_total">Compra total de los Insumos: {{0}}</h4></div>
+                
+                <div id="ListaInsumos">
+
+                </div>
                 </div>
                 <div id="confirmacion2">
 
@@ -44,7 +50,7 @@
                 <script>
                     const datos = new MisDatos('{{ pk }}', '{{ precioDeViaje }}', '{{cantAsientos}}', '{{ esGold}}');
                     '{%for i in conPrecios %}'
-                        datos.agregarPrecios("{{ i.id }}", "{{ i.precio }}");
+                        datos.agregarPrecios("{{ i.id }}", "{{ i.precio }}","{{i.nombre}}");
                     '{% endfor %}'
                     '{% if esGold %}'
                         datos.agregarTarjeta("{{miTarjeta.numero}}","{{miTarjeta.fecha_de_vencimiento.day}}","{{miTarjeta.fecha_de_vencimiento.month}}","{{miTarjeta.fecha_de_vencimiento.year}}","{{miTarjeta.codigo}}");

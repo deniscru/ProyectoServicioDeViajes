@@ -7,11 +7,13 @@ class MisDatos{
         this.total=0;
         this.totalDeCompra=0;
         this.precios=new Map();
+        this.nombre=new Map();
         this.conTarjeta=new Map();
         this.cantAsientosDis=parseInt(cantAsientos);
         this.esGold=esGold;
     }
     agregar(){
+        
         var unId=document.getElementById('id_insumos').value;
         var unaCant=document.getElementById('id_cantInsumo').value;
         if (unId.length==0 || unaCant.length===0){    
@@ -22,10 +24,52 @@ class MisDatos{
                 this.unosInsumos.unshift(unId);
                 this.cantInsumos.unshift(unaCant);
             }
+            var element = document.getElementsByTagName("table"), index;
+            for (index = element.length - 1; index >= 0; index--) {
+                element[index].parentNode.removeChild(element[index]);  
+                }
+            this.genera_tabla();
+            
             this.sumarTotal(unId,unaCant);
             this.cambiarTotal();
         }
     }
+    genera_tabla() {
+        
+        // Obtener la referencia del elemento body
+        var body = document.getElementsByTagName("body")[0];
+      
+        // Crea un elemento <table> y un elemento <tbody>
+        var tabla   = document.createElement("table");
+        tabla.style.margin="40px";
+        var tblBody = document.createElement("tbody");
+      
+        // Crea las celdas
+        for (var i = 0; i < this.unosInsumos.length; i++) {
+          // Crea las hileras de la tabla
+          var hilera = document.createElement("tr");
+      
+          
+            var celda = document.createElement("td");
+            
+            var textoCelda = document.createTextNode("Producto: " + this.nombre.get(this.unosInsumos[i])  + " cantidad:  "+ this.cantInsumos[i]);
+            celda.appendChild(textoCelda);
+            hilera.appendChild(celda);
+          
+      
+          // agrega la hilera al final de la tabla (al final del elemento tblbody)
+          tblBody.appendChild(hilera);
+        }
+      
+        // posiciona el <tbody> debajo del elemento <table>
+        tabla.appendChild(tblBody);
+        // appends <table> into <body>
+        body.appendChild(tabla);
+        // modifica el atributo "border" de la tabla y lo fija a "2";
+        tabla.setAttribute("border", "1");
+      }
+    
+     
     verficarExistenciaDeInsumo(unId, unaCant){
         let tiene=true;
         for (let index = 0; index < this.unosInsumos.length; index++) {
@@ -37,8 +81,9 @@ class MisDatos{
         }
         return tiene;
     }
-    agregarPrecios(unId, unPrecio){
+    agregarPrecios(unId, unPrecio,unNombre){
         this.precios.set(unId, unPrecio);
+        this.nombre.set(unId, unNombre);
     }
 
     cambiarTotal(){
@@ -60,6 +105,7 @@ class MisDatos{
     formulario() {
         
         function resumenDecompra(respuesta) {
+            
             let o=respuesta[0]["origen"];
             let d=respuesta[0]["destino"];
             let n=respuesta[0]["nombre"];
@@ -73,6 +119,7 @@ class MisDatos{
             document.getElementById("confirmacion2").innerHTML="<h3>La compra se realizo con exito. Resumen de compra:</h3>";
             document.getElementById("confirmacion").innerHTML="<p>Pasajero: "+n+"</p><p>Costo: $"+t+"</p><p>Origen: "+o+"</p><p>Destino: "+d+"</p><p>Fecha: "+f+"</p><p>Hora: "+h+"</p><p>Cantidad de asientos: "+cant+"</p><p></p>";
             document.getElementById("botones").innerHTML="";
+            
         }
         let cantAsientos= document.getElementById("id_cantidad").value;
         $.ajax(
