@@ -17,8 +17,8 @@
             <h1>Comprar Pasajes</h1>
         </div>
         <div>
-            <div class="content container">
-                <div class="row" id="form">
+            <div class="content container" style="width: 100%;">
+                <div class="row" id="form" style="width: 40%; display:inline-block; height: 300px;margin: auto;">
                     <form method="POST" id="form_creacion" action="{% url 'comprar_pasaje_form' pk %}">
                         {% csrf_token %}
                         {{ form.as_p}}
@@ -28,15 +28,13 @@
                         <button type="button" class="usoDeTarjeta" onclick="datos.ponerTarjetaAlForm()"> Usar mi Tarjeta </button>
                         {% endif %}
                     </form>
-                    <div id="Detalle">
+                        <div id="Detalle">
 
-                    </div>
-                    <div id="Tabla">
-
-                    </div>
+                        </div>
                     <div class="mi_total" id="mi_total"><h4 id="texto_total">Compra total de los Insumos: {{0}}</h4></div>
-                
-                
+                </div>
+                <div id="Tabla" style="width: 55%; display:inline-block;height: 300px;margin: auto;">
+
                 </div>
                 <div id="confirmacion2">
 
@@ -50,7 +48,6 @@
                 <div id="botones">
 
                 </div>
-                
                 <div><a href="{% url 'home_usuario' %}">Salir</a><a href="{% url 'buscar_viajes'%}"> Atras</a></div>
                 <script>
                     const datos = new MisDatos('{{ pk }}', '{{ precioDeViaje }}', '{{cantAsientos}}', '{{ esGold}}');

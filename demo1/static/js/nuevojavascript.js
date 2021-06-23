@@ -29,47 +29,38 @@ class MisDatos{
                 element[index].parentNode.removeChild(element[index]);  
                 }
             
-            this.genera_tabla();
+            this.generar_tabla();
             document.getElementById("Detalle").innerHTML = "<h4>El precio de cada pasaje es: $"+this.precioDeViaje+"</h4>";
             this.sumarTotal(unId,unaCant);
             this.cambiarTotal();
         }
     }
-    genera_tabla() {
-        
-        // Obtener la referencia del elemento body
-        var body = document.getElementsByTagName("body")[0];
-      
-        // Crea un elemento <table> y un elemento <tbody>
-        var tabla   = document.createElement("table");
-        tabla.style.margin="40px";
-        
-        var tblBody = document.createElement("tbody");
-      
-        // Crea las celdas
-        for (var i = 0; i < this.unosInsumos.length; i++) {
-          // Crea las hileras de la tabla
-          var hilera = document.createElement("tr");
-      
-          
-            var celda = document.createElement("td");
-            
-            var textoCelda = document.createTextNode("Producto: " + this.nombre.get(this.unosInsumos[i])  + "  cantidad:  "+ this.cantInsumos[i]+ "  costo unitario $"+this.precios.get(this.unosInsumos[i]));
-            celda.appendChild(textoCelda);
-            hilera.appendChild(celda);
-          
-      
-          // agrega la hilera al final de la tabla (al final del elemento tblbody)
-          tblBody.appendChild(hilera);
+    generar_fila(lista_texto){
+        var fila=document.createElement("tr");
+        for (let i = 0; i < lista_texto.length; i++) {
+            const element = document.createElement("td");
+            var textoCelda = document.createTextNode(lista_texto[i]);
+            element.appendChild(textoCelda);
+            fila.appendChild(element);  
         }
-      
-        // posiciona el <tbody> debajo del elemento <table>
-        tabla.appendChild(tblBody);
-        // appends <table> into <body>
-        body.appendChild(tabla);
-        // modifica el atributo "border" de la tabla y lo fija a "2";
-        tabla.setAttribute("border", "2");
-      }
+        document.getElementById("cuerpo_tabla").appendChild(fila);
+    }
+    generar_tabla(){
+        document.getElementById("Tabla").innerHTML= "<table border='1' style='width:90%;'><tbody id='cuerpo_tabla'></tbody></table>";
+        var nombre_cabecera=["Producto", "Cantidad", "Costo unitario" ];
+        var fila=document.createElement("tr");
+        var colum=document.createElement("td");
+        colum.colSpan='3';
+        colum.align="center";
+        colum.appendChild(document.createTextNode("Carrito de Productos"));
+        fila.appendChild(colum);
+        document.getElementById("cuerpo_tabla").appendChild(fila);
+        this.generar_fila(nombre_cabecera);
+        for (var i = 0; i < this.unosInsumos.length; i++) {
+            var lista_texto = [this.nombre.get(this.unosInsumos[i]), this.cantInsumos[i],this.precios.get(this.unosInsumos[i])];
+            this.generar_fila(lista_texto);
+        }   
+    }
     
      
     verficarExistenciaDeInsumo(unId, unaCant){
@@ -118,6 +109,9 @@ class MisDatos{
             document.getElementById("esGold").innerHTML="";
             document.getElementById("mi_total").innerHTML="";
             document.getElementById("form").innerHTML="";
+            document.getElementById("form").style="";
+            document.getElementById("Tabla").style="";
+            document.getElementById("Tabla").innerHTML="";
             document.getElementById("confirmacion2").innerHTML="<h3>La compra se realizo con exito. Resumen de compra:</h3>";
             document.getElementById("confirmacion").innerHTML="<p>Pasajero: "+n+"</p><p>Costo: $"+t+"</p><p>Origen: "+o+"</p><p>Destino: "+d+"</p><p>Fecha: "+f+"</p><p>Hora: "+h+"</p><p>Cantidad de asientos: "+cant+"</p><p></p>";
             document.getElementById("botones").innerHTML="";
