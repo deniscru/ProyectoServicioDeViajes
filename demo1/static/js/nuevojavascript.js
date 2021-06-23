@@ -253,3 +253,20 @@ function confirmarEliminacion(unUrl, mensaje) {
         });
     }
 }
+
+function confirmEliminacion(unUrl,mensaje){
+    let valor=confirm(mensaje)
+    if(valor){
+        $.ajax({
+            url:unUrl,
+            type:'GET',
+            success: function(respuesta){
+                console.log(respuesta);
+                location.reload();
+            },
+            error: function(error){
+                console.log(error);
+            }
+        })
+    }
+}

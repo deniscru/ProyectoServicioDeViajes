@@ -1,6 +1,12 @@
 {% extends 'demo1/base_home.html' %}
-   {% block content %}
+{% load static %}
+{% block content %}
    {% if user.is_authenticated %}
+   <div>
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      crossorigin="anonymous"></script>
+      <script src="{% static 'js/nuevojavascript.js' %}"></script>
    <div class="lista" >
       <nav class="navegacion">
          <ul class="menu" >
@@ -15,25 +21,28 @@
          </ul>
       </nav>
    </div>
-   {% if cantidad %}
-   <h2>Comentarios Realizados</h2>
-   <div>
-      {% for comentario in page_obj %}
-      <div style="background: #230aff57; border: 1px solid #5D0202; padding:3px; text-align: left;">
+      {% if cantidad %}
+      <h2>Comentarios Realizados</h2>
+      <div>
+         {% for comentario in page_obj %}
+         <div style="background: #230aff57; border: 1px solid #5D0202; padding:3px; text-align: left;">
             <h3>Publicado por {{comentario.first_name}}  {{comentario.last_name}}</h3>
             <p>{{ comentario.texto|linebreaks }}</p>
             <p>Fecha {{comentario.fecha}}  Hora {{comentario.hora}}</p>
             {% if comentario.valor %}
-            <a href="{% url 'home_usuario' pk=comentario.id %}"><p>Eliminar</p></a>
-            <a href="{% url 'modificar_comentario' pk=comentario.id %}"><p>Modificar</p></a>
+               <button class="boton_de_eliminacion" onclick="confirmEliminacion('{% url 'home_usuario' pk=comentario.id%}','¿Está seguro que desea eliminar el comentario?' )" style="color: black; background-color: #230aff57;">Eliminar</button>
+               <form method="get" action="{% url 'modificar_comentario' pk=comentario.id %}">
+                  <button style="color: black; background-color: #230aff57;" type="submit">Modificar</button>
+              </form>
             {% endif %}
-      </div>
-      {% endfor %}
-   {% else %}
+         </div>
+         {% endfor %}
+      {% else %}
       <div>
          <p>No se ha realizado ningún comentario</p>
       </div>
    </div>
    {% endif %}
-   {% endif %}
+{% endif %}
+</div>
    {% endblock %}
