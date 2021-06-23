@@ -28,8 +28,9 @@ class MisDatos{
             for (index = element.length - 1; index >= 0; index--) {
                 element[index].parentNode.removeChild(element[index]);  
                 }
-            this.genera_tabla();
             
+            this.genera_tabla();
+            document.getElementById("Detalle").innerHTML = "<h4>El precio de cada pasaje es: $"+this.precioDeViaje+"</h4>";
             this.sumarTotal(unId,unaCant);
             this.cambiarTotal();
         }
@@ -42,6 +43,7 @@ class MisDatos{
         // Crea un elemento <table> y un elemento <tbody>
         var tabla   = document.createElement("table");
         tabla.style.margin="40px";
+        
         var tblBody = document.createElement("tbody");
       
         // Crea las celdas
@@ -52,7 +54,7 @@ class MisDatos{
           
             var celda = document.createElement("td");
             
-            var textoCelda = document.createTextNode("Producto: " + this.nombre.get(this.unosInsumos[i])  + " cantidad:  "+ this.cantInsumos[i]);
+            var textoCelda = document.createTextNode("Producto: " + this.nombre.get(this.unosInsumos[i])  + "  cantidad:  "+ this.cantInsumos[i]+ "  costo unitario $"+this.precios.get(this.unosInsumos[i]));
             celda.appendChild(textoCelda);
             hilera.appendChild(celda);
           
@@ -66,7 +68,7 @@ class MisDatos{
         // appends <table> into <body>
         body.appendChild(tabla);
         // modifica el atributo "border" de la tabla y lo fija a "2";
-        tabla.setAttribute("border", "1");
+        tabla.setAttribute("border", "2");
       }
     
      

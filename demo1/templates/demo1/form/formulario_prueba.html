@@ -28,11 +28,15 @@
                         <button type="button" class="usoDeTarjeta" onclick="datos.ponerTarjetaAlForm()"> Usar mi Tarjeta </button>
                         {% endif %}
                     </form>
+                    <div id="Detalle">
+
+                    </div>
+                    <div id="Tabla">
+
+                    </div>
                     <div class="mi_total" id="mi_total"><h4 id="texto_total">Compra total de los Insumos: {{0}}</h4></div>
                 
-                <div id="ListaInsumos">
-
-                </div>
+                
                 </div>
                 <div id="confirmacion2">
 
@@ -46,6 +50,7 @@
                 <div id="botones">
 
                 </div>
+                
                 <div><a href="{% url 'home_usuario' %}">Salir</a><a href="{% url 'buscar_viajes'%}"> Atras</a></div>
                 <script>
                     const datos = new MisDatos('{{ pk }}', '{{ precioDeViaje }}', '{{cantAsientos}}', '{{ esGold}}');
