@@ -3,7 +3,7 @@ from django.db.models.fields import BLANK_CHOICE_DASH
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from .forms import FormPasaje,FormComentario, FormCambiarContraseña
-from datetime import date, datetime,timedelta
+from datetime import date, datetime,timedelta,time
 from .models import Chofer, Pasaje,CantInsumo, Pasajero, Tarjeta, Insumo, Ruta, Viaje, Persona ,Comentario
 from django.db.models import Q,F
 from django.http import HttpResponse
@@ -163,3 +163,69 @@ def prueba(request, pk=None, *arg, **kwags):
         else:
             form= FormPasaje()
         return render(request, 'demo1/form/formulario_prueba.html', {'form':form, 'esGold':esGold, 'pk':pk, 'conPrecios':precios, 'precioDeViaje':viaje.precio, 'miTarjeta':miTarjeta, "cantAsientos":viaje.asientos})
+
+def buscar_chofer(pk):
+    queryset=Chofer.objects.filter(activo=True)
+    for chofer in queryset:
+        if chofer.usuario.id == pk:
+            return chofer
+
+def viajesEnCurso(chofer):
+    viajes=Viaje.objects.filter(activo=True).filter(estado='ENCURSO')
+    if viajes.exists():
+        for viaje in viajes:
+            if viaje.ruta.combi.chofer.id ==chofer.id:
+                return True
+    return False
+
+def viajesEnCursoId(chofer):
+    viajes=Viaje.objects.filter(activo=True).filter(estado='ENCURSO')
+    for viaje in viajes:
+        if viaje.ruta.combi.chofer.id ==chofer.id:
+            return viaje
+    
+
+def iniciarViaje(request):
+    enCurso=False
+    ok=True
+    mensaje=''
+    chofer=buscar_chofer(request.user.pk)
+    pk=31   #es el viaje de hoy, puede cambiar si fuera otro debe dar error
+    viaje=Viaje.objects.get(pk=pk)
+    if not (viaje.fecha == date.today() and viaje.ruta.hora < datetime.now().time()):
+        ok=False #ya debe haberse verificado que el viaje pertenzca al chofer y que este en estado pendiente al ingresar al listado
+        mensaje='el viaje seleccionado aun no ha pasado por lo que no puede iniciarse todavia'
+    if viajesEnCurso(chofer):
+        ok=False
+        mensaje='no puede iniciar un viaje si ya tiene un viaje en curso, debe finalizar el viaje en curso'
+    if ok:
+        enCurso=True
+        viaje.estado='ENCURSO'
+        viaje.save()
+        mensaje='El viaje fue iniciado correctamente'
+        pasajes=Pasaje.objects.filter(activo=True).filter(viaje=viaje)
+        if pasajes.exists():
+            for pasaje in pasajes:
+                pasaje.estado='ENCURSO'
+                pasaje.save()
+    return render(request, "demo1/home_usuario_chofer.html", {"enCurso":enCurso,"mensaje":mensaje}) 
+
+def finalizarViaje(request):
+    enCurso=False
+    ok=True
+    mensaje=''
+    chofer=buscar_chofer(request.user.pk)
+    if not viajesEnCurso(chofer):
+        ok=False
+        mensaje='No puede finalizar un viaje si no tiene viajes en curso'
+    if ok:
+        viaje = viajesEnCursoId(chofer)
+        viaje.estado='PASADO'
+        viaje.save()
+        mensaje='El viaje fue finalizado correctamente'
+        pasajes=Pasaje.objects.filter(activo=True).filter(viaje=viaje)
+        if pasajes.exists():
+            for pasaje in pasajes:
+                pasaje.estado='PASADO'
+                pasaje.save()
+    return render(request, "demo1/home_usuario_chofer.html", {"enCurso":enCurso,"mensaje":mensaje}) 

@@ -85,6 +85,12 @@ class Ruta(models.Model):
         return '%s %s %s %s' % ('Origen: '+self.origen.nombre_de_lugar,', Destino: '+self.destino.nombre_de_lugar, ', Hora: '+str(self.hora), ', Cant. de asientos de la combi:'+str(self.combi.asientos))
 
 class Viaje(models.Model):
+    TIPOS_ESTADOS = (
+        ('PENDIENTE', 'PENDIENTE'),
+        ('CANCELADO', 'CANCELADO'),
+        ('ENCURSO', 'ENCURSO'),
+        ('PASADO', 'PASADO'),)
+    estado = models.CharField(max_length=9,default='PENDIENTE', choices=TIPOS_ESTADOS)
     ruta = models.ForeignKey(Ruta, on_delete=models.CASCADE)
     cantInsumos = models.ManyToManyField(CantInsumo,blank=True)
     fecha = models.DateField()

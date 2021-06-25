@@ -1,3 +1,20 @@
 {% extends 'demo1/base_home_chofer.html' %}
    {% block content %}
-    {% endblock %}
+   <script>
+      function asegurar ()
+        {
+            rc = confirm("¿Está seguro que desea finalizar el viaje?");
+            return rc;
+        }
+      </script>
+
+   {%if enCurso%}
+   <p>Viaje en Curso</p>
+   {%endif%}
+
+   <li><a href="{% url 'iniciar_viaje' %}">iniciar viaje</a></li>
+   <a href="{% url 'finalizar_viaje' %}" onclick="javascript:return asegurar();">Finalizar viaje</a>
+   
+      <p>{{mensaje}}</p>
+   
+   {% endblock %}

@@ -464,6 +464,20 @@ def es_pasajero(user):
 def es_admin(user):
     return user.is_superuser or user.is_staff
 
+def viajesEnCurso(chofer):
+    viajes=Viaje.objects.filter(activo=True).filter(estado='ENCURSO')
+    if viajes.exists():
+        for viaje in viajes:
+            if viaje.ruta.combi.chofer.id ==chofer.id:
+                return True
+    return False
+
+def buscar_chofer(pk):
+    queryset=Chofer.objects.filter(activo=True)
+    for chofer in queryset:
+        if chofer.usuario.id == pk:
+            return chofer
+
 def login_usuario(request):
     fallo_usuario=False
     fallo_password=False
@@ -481,7 +495,11 @@ def login_usuario(request):
                 elif es_pasajero(user):
                     return redirect("http://127.0.0.1:8000/home_usuario/")
                 else:
-                    return redirect("http://127.0.0.1:8000/home_usuario_chofer/")
+                    enCurso=False
+                    if viajesEnCurso(buscar_chofer(request.user.pk)):
+                        enCurso=True
+                    return render(request, "demo1/home_usuario_chofer.html", {"enCurso":enCurso})
+                    
             elif es_fallo_usuario(email):
                 fallo_usuario=True
             else:
