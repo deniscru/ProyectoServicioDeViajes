@@ -495,8 +495,7 @@ def login_usuario(request):
                 elif es_pasajero(user):
                     return redirect("http://127.0.0.1:8000/home_usuario/")
                 else:
-                    return redirect("http://127.0.0.1:8000/home_usuario_chofer/")
-                    
+                    return redirect("http://127.0.0.1:8000/home_usuario_chofer/")            
             elif es_fallo_usuario(email):
                 fallo_usuario=True
             else:
@@ -534,7 +533,7 @@ def home_usuario_chofer(request):
     enCurso=False
     if viajesEnCurso(buscar_chofer(request.user.pk)):
         enCurso=True
-    return render(request, "demo1/home_usuario_chofer.html", {"enCurso":enCurso})
+    return render(request,"demo1/home_usuario_chofer.html", {"enCurso":enCurso})
 
 def logout_usuario(request):
     logout(request)

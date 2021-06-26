@@ -54,4 +54,6 @@ urlpatterns = [
     path('iniciarViaje', views2.iniciarViaje, name='iniciar_viaje'),
     path('finalizarViaje', views2.finalizarViaje, name='finalizar_viaje'),
     path('registrarSintomas', views2.registrarSintomas, name='registrar_sintomas')
+    path("home_usuario_chofer/viajes_proximos", views2.viajes_proximos, name="viajes_proximos"),
+    path("home_usuario_chofer/viajes_proximos/listado_pasajeros/<int:pk>", views2.pasajeros_de_viajes_proximos, name="pasajeros_viajes_proximos"),
 ]

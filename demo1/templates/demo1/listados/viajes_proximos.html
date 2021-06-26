@@ -1,0 +1,48 @@
+{% load static %}
+<html>
+    <head >
+        <title>Home</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="{% static 'css/demo1.css' %}">
+    </head>
+    <body>
+        <div id="titulo" align="center">
+            <h2>Listado de Viajes Proximos</h2>
+        </div>
+        <div class="card" style="margin: 5%;">
+            {% if valor %}
+            <table class="tablalista" width=100% border="1">
+                <tbody>
+                    <tr>
+                        <td align="center" colspan="6">Viajes</td>
+                    </tr>
+                    <tr>
+                        <td align="center">Origen</td>
+                        <td align="center">Destino</td>
+                        <td align="center">Fecha y Hora de Viaje</td>
+                        <td align="center">Cant. de Pasajeros</td>
+                        <td align="center">Combi</td>
+                        <td align="center">Opcion</td>
+                    </tr>
+                    {% for i in lista %}
+                    <tr>
+                        <td>{{i.origen}}</td>
+                        <td>{{i.destino}}</td>
+                        <td>{{i.fecha}}</td>
+                        <td>{{i.cantidad}}</td>
+                        <td>{{i.combi}}</td>
+                        <td align="center"><button type="button" style="width: 100%;"><a href="{% url 'pasajeros_viajes_proximos' pk=i.pk %}" style="text-decoration:none; color: black;">Ver Pasajeros</a></button></td>
+                    </tr>    
+                    {% endfor%}
+            </tbody>
+            </table>
+            {%else%}
+                <div>
+                    <p>No posee ningun pasaje en Pendientes</p>
+                </div>
+            {%endif%}
+        </div>
+        <div style="margin-left: 5%;"><button type="button"><a href="{% url 'home_usuario_chofer' %}">Atras</a></button></div>
+    </body>
+</html>

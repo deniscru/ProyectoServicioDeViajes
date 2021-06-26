@@ -1,0 +1,51 @@
+{% load static %}
+<html>
+    <head >
+        <title>Home</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="{% static 'css/demo1.css' %}">
+    </head>
+    <body>
+        <div id="titulo" align="center">
+            <h2>Listado de pasajeros</h2>
+        </div>
+        <div class="card" style="margin: 3%;">
+            {% if valor %}
+            <table class="tablalista" width=100% border="1">
+                <tbody>
+                    <tr>
+                        <td align="center" colspan="8">Pasajeros</td>
+                    </tr>
+                    <tr>
+                        <td align="center">Nombre y Apellido</td>
+                        <td align="center">Origen</td>
+                        <td align="center">Destino</td>
+                        <td align="center">Fecha y Hora de Viaje</td>
+                        <td align="center">Cant. Pasajes</td>
+                        <td align="center">Costo Total</td>
+                        <td align="center" colspan="2">Opcion</td>
+                    </tr>
+                    {% for p in lista %}
+                    <tr>
+                        <td>{{p.pasajero.usuario.first_name}}, {{p.pasajero.usuario.last_name}}</td>
+                        <td>{{p.viaje.ruta.origen.nombre_de_lugar}}</td>
+                        <td>{{p.viaje.ruta.destino.nombre_de_lugar}}</td>
+                        <td>{{p.viaje.fecha}}</td>
+                        <td>{{p.cantidad}}</td>
+                        <td>{{p.costoTotal}}</td>
+                        <td align="center" width="180px"><button type="button" style="width: 90%;"><a href="" style="text-decoration:none; color: black;">Registrar Sintomas</a></button></td>
+                        <td align="center" width="100px"><button type="button" style="width: 90%;"><a href="" style="text-decoration:none; color: black;">Asistencia</a></button></td>
+                    </tr>    
+                    {% endfor%}
+            </tbody>
+            </table>
+            {%else%}
+                <div>
+                    <p>No posee ningun pasaje en Pendientes</p>
+                </div>
+            {%endif%}
+        </div>
+        <div style="margin-left: 5%;"><button type="button"><a href="{% url 'viajes_proximos' %}">Atras</a></button></div>
+    </body>
+</html>
