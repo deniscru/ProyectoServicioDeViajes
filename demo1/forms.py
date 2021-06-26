@@ -147,4 +147,14 @@ class FormPasaje(forms.Form):
     insumos=forms.ModelChoiceField(queryset=Insumo.objects.filter(activo=True),required=False,label='Insumos')
     cantInsumo = forms.IntegerField(required=False,label="Cantidad",min_value=0)
 
-
+class RegistroSintomas(forms.Form):
+    tipo_eleccion= ( ('Si', True), ('No', False) )
+    temperatura= forms.FloatField(required=True,max_value=42.0,min_value=35.0,label="Temperatura corporal",initial=36.5)
+    tos=forms.ChoiceField(widget=forms.RadioSelect, choices=tipo_eleccion)
+    dolor_de_cabeza=forms.ChoiceField(widget=forms.RadioSelect, choices=tipo_eleccion)
+    falta_de_aire=forms.ChoiceField(widget=forms.RadioSelect, choices=tipo_eleccion)
+    diarrea=forms.ChoiceField(widget=forms.RadioSelect, choices=tipo_eleccion)
+    dolor_de_garganta=forms.ChoiceField(widget=forms.RadioSelect, choices=tipo_eleccion)
+    perdida_del_gusto=forms.ChoiceField(widget=forms.RadioSelect, choices=tipo_eleccion)
+    perdida_de_olfato=forms.ChoiceField(widget=forms.RadioSelect, choices=tipo_eleccion)
+    dolor_en_el_pecho=forms.ChoiceField(widget=forms.RadioSelect, choices=tipo_eleccion)

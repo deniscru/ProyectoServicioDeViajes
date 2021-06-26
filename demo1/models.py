@@ -18,6 +18,8 @@ class Pasajero(Persona):
         ('GOLD', 'GOLD'),)
     tipo = models.CharField(max_length=6, choices=TIPOS_PLANES)
     fecha_de_nacimiento = models.DateField()
+    habilitado = models.BooleanField(default=True)
+    fecha_habilitacion = models.DateField()
     
 class Tarjeta(models.Model):
     pasajero = models.ForeignKey(Pasajero, on_delete=models.CASCADE)

@@ -2,7 +2,7 @@ import json
 from django.db.models.fields import BLANK_CHOICE_DASH
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
-from .forms import FormPasaje,FormComentario, FormCambiarContraseña
+from .forms import FormPasaje,FormComentario, FormCambiarContraseña, RegistroSintomas
 from datetime import date, datetime,timedelta,time
 from .models import Chofer, Pasaje,CantInsumo, Pasajero, Tarjeta, Insumo, Ruta, Viaje, Persona ,Comentario
 from django.db.models import Q,F
@@ -228,4 +228,15 @@ def finalizarViaje(request):
             for pasaje in pasajes:
                 pasaje.estado='PASADO'
                 pasaje.save()
-    return render(request, "demo1/home_usuario_chofer.html", {"enCurso":enCurso,"mensaje":mensaje}) 
+    return render(request, "demo1/home_usuario_chofer.html", {"enCurso":enCurso,"mensaje":mensaje})
+
+def registrarSintomas(request):
+    pk=25 #la clave viene de la lista de pasajeros
+    if request.method=="POST":
+        form=RegistroSintomas(request.POST)
+        if form.is_valid():
+            datos=form.cleaned_data
+            
+    else:
+        form=RegistroSintomas()
+    return render(request, "demo1/home_usuario_chofer.html", {"form":form})
