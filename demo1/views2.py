@@ -229,3 +229,27 @@ def finalizarViaje(request):
                 pasaje.estado='PASADO'
                 pasaje.save()
     return render(request, "demo1/home_usuario_chofer.html", {"enCurso":enCurso,"mensaje":mensaje}) 
+
+def armarInfo2(pk):
+    chofer=Persona.objects.get(usuario=pk)
+    viajes_pendientes=Viaje.objects.filter(activo=True, estado="PENDIENTE")
+    lista=[]
+    for p in viajes_pendientes:
+        if p.ruta.combi.chofer.id == chofer.id:
+            pasajes=Pasaje.objects.filter(activo=True, viaje=p)
+            cantidad=0
+            if len(pasajes)!=0:
+                for i in pasajes:
+                    cantidad=cantidad+i.cantidad
+            dic={'origen': p.ruta.origen.nombre_de_lugar, 'destino': p.ruta.destino.nombre_de_lugar,
+            'fecha':str(p.fecha)+', '+str(p.ruta.hora.hour)+':'+str(p.ruta.hora.minute), "cantidad":cantidad, "combi":p.ruta.combi, "pk":p.pk}
+            lista.append(dic)
+    return lista
+
+def viajes_proximos(request):
+    lista_viajes_proximos=armarInfo2(request.user.pk)
+    return render(request, "demo1/listados/viajes_proximos.html",{'lista':lista_viajes_proximos, 'valor': True if len(lista_viajes_proximos)!=0 else False})
+
+def pasajeros_de_viajes_proximos(request, pk):
+    lista= Pasaje.objects.filter(activo=True, viaje_id=pk)
+    return render(request, "demo1/listados/pasajeros_viajes_proximos.html",{'lista':lista, 'valor': True if len(lista)!=0 else False})
