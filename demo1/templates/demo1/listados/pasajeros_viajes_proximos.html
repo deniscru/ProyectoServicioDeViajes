@@ -10,6 +10,11 @@
         <div id="titulo" align="center">
             <h2>Listado de pasajeros</h2>
         </div>
+        <div>
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
+            <script src="{% static 'js/nuevojavascript.js' %}"></script>
         <div class="card" style="margin: 3%;">
             {% if valor %}
             <table class="tablalista" width=100% border="1">
@@ -35,7 +40,7 @@
                         <td>{{p.cantidad}}</td>
                         <td>{{p.costoTotal}}</td>
                         <td align="center" width="180px"><button type="button" style="width: 90%;"><a href="{% url 'registrar_sintomas' pk=p.pk %}" style="text-decoration:none; color: black;">Registrar Sintomas</a></button></td>
-                        <td align="center" width="100px"><button type="button" style="width: 90%;"><a href="" style="text-decoration:none; color: black;">Asistencia</a></button></td>
+                        <td align="center" width="100px"><button type="button" style="width: 90%;" onclick="confirmEliminacion('{% url 'registrar_ausencia' pk=p.pk %}','¿Está seguro que desea registrar la ausencia del pasajero?' )" style="text-decoration:none; color: black;">Asistencia</a></button></td>
                     </tr>    
                     {% endfor%}
             </tbody>
@@ -48,4 +53,5 @@
         </div>
         <div style="margin-left: 5%;"><button type="button"><a href="{% url 'viajes_proximos' %}">Atras</a></button></div>
     </body>
+    </div>
 </html>

@@ -78,6 +78,17 @@ def cancelar_pasaje(request,pk):
     lista=armarInfo(request.user.id,"PENDIENTE")
     return render(request, 'demo1/listados/lisPasajesPendien.html', {'lista':lista, 'valor': True if len(lista)!=0 else False, "cancelado_48":cancelado_48,"cancelado_dentro":cancelado_dentro,"pasado":pasado})
 
+def registrar_ausencia(request,pk):
+    pasaje=Pasaje.objects.get(id=pk)
+    if (pasaje.viaje.fecha == date.today() and pasaje.viaje.ruta.hora < datetime.now().time()):
+        Pasaje.objects.filter(id=pk).update(estado="CANCELADO")
+        Viaje.objects.filter(id=pasaje.viaje_id).update(asientos=F("asientos")+pasaje.cantidad)
+        Viaje.objects.filter(id=pasaje.viaje_id).update(vendidos=F("vendidos") - pasaje.cantidad)
+        Pasaje.objects.filter(id=pk).update(costoDevuelto=0)
+    lista= Pasaje.objects.filter(activo=True,estado="PENDIENTE", viaje_id=pk)
+    return render(request, "demo1/listados/pasajeros_viajes_proximos.html",{'lista':lista, 'valor': True if len(lista)!=0 else False})
+
+
 def armar_texto(texto):
     string=""
     cantidad=0
@@ -299,7 +310,7 @@ def armarInfo2(pk):
     lista=[]
     for p in viajes_pendientes:
         if p.ruta.combi.chofer.id == chofer.id:
-            pasajes=Pasaje.objects.filter(activo=True, viaje=p)
+            pasajes=Pasaje.objects.filter(activo=True,estado="PENDIENTE", viaje=p)
             cantidad=0
             if len(pasajes)!=0:
                 for i in pasajes:
@@ -315,5 +326,18 @@ def viajes_proximos(request):
     return render(request, "demo1/listados/viajes_proximos.html",{'lista':lista_viajes_proximos, 'valor': True if len(lista_viajes_proximos)!=0 else False,"mensaje":mensaje})
 
 def pasajeros_de_viajes_proximos(request, pk):
-    lista= Pasaje.objects.filter(activo=True, viaje_id=pk)
+    lista= Pasaje.objects.filter(activo=True,estado="PENDIENTE", viaje_id=pk)
     return render(request, "demo1/listados/pasajeros_viajes_proximos.html",{'lista':lista, 'valor': True if len(lista)!=0 else False})
+
+def obtener_viaje_en_curso(chofer):
+    viajes=Viaje.objects.filter(activo=True).filter(estado='ENCURSO')
+    if viajes.exists():
+        for viaje in viajes:
+            if viaje.ruta.combi.chofer.id ==chofer.id:
+                return viaje.id
+    return -1
+
+def vender_pasaje_en_curso(request):
+    pass
+
+

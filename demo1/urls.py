@@ -56,4 +56,6 @@ urlpatterns = [
     path('registrarSintomas/<int:pk>', views2.registrarSintomas, name='registrar_sintomas'),
     path("home_usuario_chofer/viajes_proximos", views2.viajes_proximos, name="viajes_proximos"),
     path("home_usuario_chofer/viajes_proximos/listado_pasajeros/<int:pk>", views2.pasajeros_de_viajes_proximos, name="pasajeros_viajes_proximos"),
+    path("home_usuario_chofer/viajes_proximos/listado_pasajeros/ausencia/<int:pk>",views2.registrar_ausencia,name="registrar_ausencia"),
+    path("home_usuario_chofer/vender_pasaje_en_curso",views2.vender_pasaje_en_curso,name="vender_pasaje_en_curso")
 ]
