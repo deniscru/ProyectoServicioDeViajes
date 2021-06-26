@@ -15,7 +15,7 @@
             <table class="tablalista" width=100% border="1">
                 <tbody>
                     <tr>
-                        <td align="center" colspan="6">Viajes</td>
+                        <td align="center" colspan="">Viajes</td>
                     </tr>
                     <tr>
                         <td align="center">Origen</td>
@@ -23,7 +23,7 @@
                         <td align="center">Fecha y Hora de Viaje</td>
                         <td align="center">Cant. de Pasajeros</td>
                         <td align="center">Combi</td>
-                        <td align="center">Opcion</td>
+                        <td align="center" colspan="2">Opcion</td>
                     </tr>
                     {% for i in lista %}
                     <tr>
@@ -32,7 +32,8 @@
                         <td>{{i.fecha}}</td>
                         <td>{{i.cantidad}}</td>
                         <td>{{i.combi}}</td>
-                        <td align="center"><button type="button" style="width: 100%;"><a href="{% url 'pasajeros_viajes_proximos' pk=i.pk %}" style="text-decoration:none; color: black;">Ver Pasajeros</a></button></td>
+                        <td align="center" width="160px"><button type="button" style="width: 90%;"><a href="{% url 'pasajeros_viajes_proximos' pk=i.pk %}" style="text-decoration:none; color: black;">Ver Pasajeros</a></button></td>
+                        <td align="center" width="120px"><button type="button" style="width: 90%;"><a href="{% url 'iniciar_viaje' pk=i.pk %}" style="text-decoration:none; color: black;">iniciar viaje</a></button></td>
                     </tr>    
                     {% endfor%}
             </tbody>
@@ -42,7 +43,11 @@
                     <p>No posee ningun pasaje en Pendientes</p>
                 </div>
             {%endif%}
+            
+
         </div>
+        <div class="card">
+        <h3>{{mensaje}}</h3></div>
         <div style="margin-left: 5%;"><button type="button"><a href="{% url 'home_usuario_chofer' %}">Atras</a></button></div>
     </body>
 </html>

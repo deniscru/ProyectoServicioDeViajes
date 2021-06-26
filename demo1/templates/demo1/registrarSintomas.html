@@ -1,0 +1,13 @@
+{% extends 'demo1/base_home_chofer.html' %}
+   {% block content %}
+   <div class="card">
+   <form method="POST" class="post-form">
+    {% csrf_token %}
+    {{ form.as_p}}
+    <button type="submit" class="guardar chofer">Registrar Sintomas</button>
+    </form>
+
+</div>
+<h2>{{mensaje}}</h2>
+   <div style="margin-left: 5%;"><button type="button"><a href="{% url 'pasajeros_viajes_proximos' pk=viajeId %}">Atras</a></button></div>
+   {% endblock %}

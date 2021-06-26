@@ -9,15 +9,18 @@
       </script>
 
    {%if enCurso%}
-   <p>Viaje en Curso</p>
+   <div class="card">
+   <h2>Viaje en Curso</h2> &nbsp;&nbsp;&nbsp;&nbsp;
+   <h3><a href="{% url 'finalizar_viaje' %}" onclick="javascript:return asegurar();">Finalizar viaje</a></h3></div>
    {%endif%}
+   
    <div class="lista" >
       <h3><a href="{% url 'viajes_proximos' %}">Viajes Proximos</a></h3>
    </div>
 
-   <li><a href="{% url 'iniciar_viaje' %}">iniciar viaje</a></li>
-   <a href="{% url 'finalizar_viaje' %}" onclick="javascript:return asegurar();">Finalizar viaje</a>
    
-      <p>{{mensaje}}</p>
+   
+   
+      <h3>{{mensaje}}</h3>
    
    {% endblock %}

@@ -185,61 +185,113 @@ def viajesEnCursoId(chofer):
             return viaje
     
 
-def iniciarViaje(request):
+def iniciarViaje(request,pk):
     enCurso=False
     ok=True
     mensaje=''
     chofer=buscar_chofer(request.user.pk)
-    pk=31   #es el viaje de hoy, puede cambiar si fuera otro debe dar error
     viaje=Viaje.objects.get(pk=pk)
     if not (viaje.fecha == date.today() and viaje.ruta.hora < datetime.now().time()):
         ok=False #ya debe haberse verificado que el viaje pertenzca al chofer y que este en estado pendiente al ingresar al listado
-        mensaje='el viaje seleccionado aun no ha pasado por lo que no puede iniciarse todavia'
-    if viajesEnCurso(chofer):
+        mensaje='el viaje seleccionado no pertenece a los viajes del dia de hoy o la hora de inicio todavia no llego'
+    if Pasaje.objects.filter(activo=True).filter(viaje=viaje).filter(estado="PENDIENTE").exists():
         ok=False
-        mensaje='no puede iniciar un viaje si ya tiene un viaje en curso, debe finalizar el viaje en curso'
+        mensaje="No puede iniciar el viaje porque hay pasajeros que no fueron revisados"
     if ok:
-        enCurso=True
-        viaje.estado='ENCURSO'
-        viaje.save()
-        mensaje='El viaje fue iniciado correctamente'
-        pasajes=Pasaje.objects.filter(activo=True).filter(viaje=viaje)
+        pasajes=Pasaje.objects.filter(activo=True).filter(viaje=viaje).filter(estado="ACEPTADO")
         if pasajes.exists():
             for pasaje in pasajes:
                 pasaje.estado='ENCURSO'
                 pasaje.save()
-    return render(request, "demo1/home_usuario_chofer.html", {"enCurso":enCurso,"mensaje":mensaje}) 
+            viaje.estado='ENCURSO'
+            viaje.save()
+            mensaje='El viaje fue iniciado correctamente'
+        else:
+            ok=False
+            mensaje="no se puede iniciar el viaje porque no hay pasajeros para iniciarlo"
+        
+    lista_viajes_proximos=armarInfo2(request.user.pk)
+    return render(request, "demo1/listados/viajes_proximos.html",{'lista':lista_viajes_proximos, 'valor': True if len(lista_viajes_proximos)!=0 else False,"mensaje":mensaje})
+    
 
 def finalizarViaje(request):
     enCurso=False
     ok=True
     mensaje=''
     chofer=buscar_chofer(request.user.pk)
-    if not viajesEnCurso(chofer):
-        ok=False
-        mensaje='No puede finalizar un viaje si no tiene viajes en curso'
     if ok:
         viaje = viajesEnCursoId(chofer)
         viaje.estado='PASADO'
         viaje.save()
         mensaje='El viaje fue finalizado correctamente'
-        pasajes=Pasaje.objects.filter(activo=True).filter(viaje=viaje)
+        pasajes=Pasaje.objects.filter(activo=True).filter(viaje=viaje).filter(estado="ACEPTADO")
         if pasajes.exists():
             for pasaje in pasajes:
                 pasaje.estado='PASADO'
                 pasaje.save()
     return render(request, "demo1/home_usuario_chofer.html", {"enCurso":enCurso,"mensaje":mensaje}) 
 
-def registrarSintomas(request):
-    pk=25 #la clave viene de la lista de pasajeros
+def registrarSintomas(request,pk):
+    ok=False
+    mensaje="No puede registrar los sintomas de este pasajero porque no esta pendiente de registracion"
+    pasaje=Pasaje.objects.get(pk=pk)
+    viajeId=pasaje.viaje.pk
+    pasajero=pasaje.pasajero
+    if pasaje.estado=="PENDIENTE":
+        if (pasaje.viaje.fecha == date.today() and pasaje.viaje.ruta.hora < datetime.now().time()):
+            ok=True
+            mensaje=""
+        else:
+            ok=False
+            mensaje="No puede registrar los sintomas de este pasajero porque no llego el dia o la hora del viaje"
+
     if request.method=="POST":
         form=RegistroSintomas(request.POST)
         if form.is_valid():
             datos=form.cleaned_data
-            
+            temp=datos["temp"]
+            if temp >= 38:
+                ok=False
+                mensaje="El pasajero presenta mas de 38 grados por tanto no puede abordar la unidad"
+            if ok:
+                cant=0
+                if int(datos["tos"])==1:
+                    cant+=1
+                if int(datos["dolor_de_cabeza"])==1:
+                    cant+=1
+                if int(datos["falta_de_aire"])==1:
+                    cant+=1
+                if int(datos["diarrea"])==1:
+                    cant+=1
+                if int(datos["dolor_de_garganta"])==1:
+                    cant+=1
+                if int(datos["perdida_del_gusto"])==1:
+                    cant+=1
+                if int(datos["perdida_de_olfato"])==1:
+                    cant+=1
+                if int(datos["dolor_en_el_pecho"])==1:
+                    cant+=1
+                print(cant)
+                if cant > 1:
+                    ok=False
+                    mensaje="El pasajero presenta mas 2 o mas sintomas de covid19 y no puede abordar la unidad"
+            if not ok:
+                pasaje.estado="RECHAZADO"
+                pasaje.costoDevuelto=pasaje.costoTotal
+                pasajero.habilitado=False
+                pasajero.fecha_habilitacion=date.today() + timedelta(days=14)
+                
+            else:
+                pasaje.estado="ACEPTADO"
+                pasajero.habilitado=True
+                pasajero.fecha_habilitacion=date.today()
+                mensaje="El pasajero fue aceptado para abordar la unidad"
+            pasajero.save()
+            pasaje.save()
+
     else:
         form=RegistroSintomas()
-    return render(request, "demo1/home_usuario_chofer.html", {"form":form})
+    return render(request, "demo1/registrarSintomas.html", {"form":form,"viajeId":viajeId,"mensaje":mensaje})
 
 def armarInfo2(pk):
     chofer=Persona.objects.get(usuario=pk)
@@ -258,8 +310,9 @@ def armarInfo2(pk):
     return lista
 
 def viajes_proximos(request):
+    mensaje=''
     lista_viajes_proximos=armarInfo2(request.user.pk)
-    return render(request, "demo1/listados/viajes_proximos.html",{'lista':lista_viajes_proximos, 'valor': True if len(lista_viajes_proximos)!=0 else False})
+    return render(request, "demo1/listados/viajes_proximos.html",{'lista':lista_viajes_proximos, 'valor': True if len(lista_viajes_proximos)!=0 else False,"mensaje":mensaje})
 
 def pasajeros_de_viajes_proximos(request, pk):
     lista= Pasaje.objects.filter(activo=True, viaje_id=pk)

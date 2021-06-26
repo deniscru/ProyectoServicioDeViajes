@@ -51,9 +51,9 @@ urlpatterns = [
     path('home_usuario/modificar/<int:pk>',views2.modificar_comentario,name="modificar_comentario"),
     path('home_usuario/buscar_viaje/comprar_pasaje/<int:pk>',views2.prueba,name="comprar_pasaje_form"),
     path('change_password/<int:pk>', views2.change_password, name='change_password'),
-    path('iniciarViaje', views2.iniciarViaje, name='iniciar_viaje'),
+    path('iniciarViaje/<int:pk>', views2.iniciarViaje, name='iniciar_viaje'),
     path('finalizarViaje', views2.finalizarViaje, name='finalizar_viaje'),
-    path('registrarSintomas', views2.registrarSintomas, name='registrar_sintomas')
+    path('registrarSintomas/<int:pk>', views2.registrarSintomas, name='registrar_sintomas'),
     path("home_usuario_chofer/viajes_proximos", views2.viajes_proximos, name="viajes_proximos"),
     path("home_usuario_chofer/viajes_proximos/listado_pasajeros/<int:pk>", views2.pasajeros_de_viajes_proximos, name="pasajeros_viajes_proximos"),
 ]

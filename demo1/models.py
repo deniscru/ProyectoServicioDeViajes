@@ -117,6 +117,7 @@ class Comentario(models.Model):
 class Pasaje(models.Model):
     TIPOS_ESTADOS = (
         ('PENDIENTE', 'PENDIENTE'),
+        ('ACEPTADO', 'ACEPTADO'),
         ('CANCELADO', 'CANCELADO'),
         ('ENCURSO', 'ENCURSO'),
         ('RECHAZADO', 'RECHAZADO'),
