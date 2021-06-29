@@ -1,0 +1,38 @@
+{% extends 'demo1/base_venta_en_curso.html' %}
+
+{% block content %}
+    <form method="POST" class="post-form">
+        {% csrf_token %}
+        {{ form.as_p}}
+        <button type="submit" class="guardar tarjeta">Vender pasaje</button>
+    </form>
+    {% if exitoso %}
+        {% if exitoso_sin_email %}
+            <div>
+                <p>Como el email ingresado no se encontraba registrado el sistema registró el email con una contraseña por defecto enviada al email indicado</p>
+            </div>
+        {% endif %}
+        <div>
+            <p>El precio final del pasaje es de ${{precio}}</p>
+        </div>
+        <form method="get" action="{% url 'home_usuario_chofer' %}">
+            <button style="color: black; background-color: #230aff57;" type="submit">Ok</button>
+        </form>
+    {% endif %}
+    {% if fallido %}
+        {% if cantidad_fallida %}
+            <div>
+                <p>La cantidad ingresada debe ser inferior o igual a {{cantidad_pasajes}}</p>
+            </div>
+        {% elif temperatura %}
+            <div>
+                <p>El pasajero presenta mas de 38 grados por tanto no puede abordar la unidad</p>
+            </div>
+        {% elif sintomas %}
+        <div>
+            <p>El pasajero presenta mas 2 o mas sintomas de covid19 y no puede abordar la unidad</p>
+        </div>
+        {% endif %}
+    {% endif %}
+    
+{% endblock %}

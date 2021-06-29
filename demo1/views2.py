@@ -2,13 +2,14 @@ import json
 from django.db.models.fields import BLANK_CHOICE_DASH
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
-from .forms import FormPasaje,FormComentario, FormCambiarContraseña, RegistroSintomas
+from .forms import FormPasaje,FormComentario, FormCambiarContraseña, FormPasajeEnCurso, RegistroSintomas
 from datetime import date, datetime,timedelta,time
 from .models import Chofer, Pasaje,CantInsumo, Pasajero, Tarjeta, Insumo, Ruta, Viaje, Persona ,Comentario
 from django.db.models import Q,F
 from django.http import HttpResponse
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import login
+from random import randint
 
 def change_password(request,pk):
     exito=False
@@ -329,15 +330,114 @@ def pasajeros_de_viajes_proximos(request, pk):
     lista= Pasaje.objects.filter(activo=True,estado="PENDIENTE", viaje_id=pk)
     return render(request, "demo1/listados/pasajeros_viajes_proximos.html",{'lista':lista, 'valor': True if len(lista)!=0 else False})
 
+def existe_email(email):
+    try:
+        usuario=User.objects.get(email=email)
+        return True
+    except:
+        return False
+
+def generar_contraseña():
+    contraseña=""
+    for i in range(6):
+        digito=randint(0,9)
+        contraseña=contraseña + str(digito)
+    return contraseña
+
+
 def obtener_viaje_en_curso(chofer):
     viajes=Viaje.objects.filter(activo=True).filter(estado='ENCURSO')
     if viajes.exists():
         for viaje in viajes:
             if viaje.ruta.combi.chofer.id ==chofer.id:
-                return viaje.id
+                return viaje
     return -1
 
+def calcular_costo(viaje,cantidad,gold):
+    precio=viaje.precio * cantidad
+    if gold:
+        precio=precio * 50/100
+    return precio
+
+def buscar_pasajero(pk):
+    queryset=Pasajero.objects.filter(activo=True)
+    for pasajero in queryset:
+        if pasajero.usuario.id == pk:
+            return pasajero
+
+def buscar_usuario_con_email(email):
+    usuario=User.objects.get(email=email)
+    return usuario.id
+
+
+
 def vender_pasaje_en_curso(request):
-    pass
+    fallido=False
+    cantidad_fallida=False
+    costo_total=0
+    exitoso=False
+    exitoso_sin_email=False
+    temperatura=False
+    sintomas=False
+    chofer=buscar_chofer(request.user.pk)
+    viaje=obtener_viaje_en_curso(chofer)
+    if request.method=="POST":
+        form=FormPasajeEnCurso(request.POST)
+        if form.is_valid():
+            datos=form.cleaned_data
+            email=form.cleaned_data.get('email')
+            cantidad=form.cleaned_data.get('cantidad')
+            if viaje.asientos >=cantidad:
+                temp=datos["temp"]
+                if temp >= 38:
+                    temperatura=True
+                    fallido=True
+                if  not temperatura:
+                    cant=0
+                    if int(datos["tos"])==1:
+                        cant+=1
+                    if int(datos["dolor_de_cabeza"])==1:
+                        cant+=1
+                    if int(datos["falta_de_aire"])==1:
+                        cant+=1
+                    if int(datos["diarrea"])==1:
+                        cant+=1
+                    if int(datos["dolor_de_garganta"])==1:
+                        cant+=1
+                    if int(datos["perdida_del_gusto"])==1:
+                        cant+=1
+                    if int(datos["perdida_de_olfato"])==1:
+                        cant+=1
+                    if int(datos["dolor_en_el_pecho"])==1:
+                        cant+=1
+                    if cant > 1:
+                       sintomas=True
+                       fallido=True
+                if not fallido:
+                    if not existe_email(email):
+                        contraseña=generar_contraseña()
+                        print(contraseña)
+                        usuario=User.objects.create(is_superuser=False,password=contraseña,email=email,first_name="Usuario",last_name="Nuevo")
+                        usuario.username=usuario.id
+                        usuario.password=make_password(contraseña)
+                        usuario.save()
+                        pasajero=Pasajero.objects.create(usuario=usuario,dni=11111111,telefono=11111111,tipo="BASICO",fecha_de_nacimiento=datetime(1990, 10, 4))
+                        pasajero.save()
+                        exitoso_sin_email=True
+                    else:
+                        pasajero=buscar_pasajero(buscar_usuario_con_email(email))
+                    costo_total=calcular_costo(viaje,cantidad,True if pasajero.tipo=="GOLD" else False )
+                    pasaje=Pasaje.objects.create(cantidad=cantidad,costoTotal=costo_total,costoDevuelto=0,pasajero_id=pasajero.id,viaje_id=viaje.id,estado="ENCURSO")
+                    pasaje.save()
+                    viaje.asientos=viaje.asientos - cantidad
+                    viaje.vendidos=viaje.vendidos + cantidad
+                    viaje.save()
+                    exitoso=True
+            else:
+                fallido=True
+                cantidad_fallida=True
+    else:
+        form=FormPasajeEnCurso()
+    return render(request, 'demo1/form/formulario_venta_en_curso.html', {"form":form,"fallido":fallido,"cantidad_fallida":cantidad_fallida,"exitoso":exitoso,"exitoso_sin_email":exitoso_sin_email,"temperatura":temperatura,"sintomas":sintomas,"cantidad_pasajes":viaje.asientos,"precio":costo_total})
 
 
