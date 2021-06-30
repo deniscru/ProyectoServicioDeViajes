@@ -179,6 +179,7 @@ class MisDatos{
         document.getElementById("confirmacion2").innerHTML ="";
         document.getElementById("esGold").innerHTML ="";
         document.getElementById("confirmacion").innerHTML ="";
+        document.getElementById("Tabla").innerHTML="";
         this.unosInsumos=new Array();
         this.cantInsumos=new Array();
         this.totalDeCompra=0;
