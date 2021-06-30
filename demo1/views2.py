@@ -80,14 +80,19 @@ def cancelar_pasaje(request,pk):
     return render(request, 'demo1/listados/lisPasajesPendien.html', {'lista':lista, 'valor': True if len(lista)!=0 else False, "cancelado_48":cancelado_48,"cancelado_dentro":cancelado_dentro,"pasado":pasado})
 
 def registrar_ausencia(request,pk):
+    mensaje=""
+    
     pasaje=Pasaje.objects.get(id=pk)
     if (pasaje.viaje.fecha == date.today() and pasaje.viaje.ruta.hora < datetime.now().time()):
         Pasaje.objects.filter(id=pk).update(estado="CANCELADO")
         Viaje.objects.filter(id=pasaje.viaje_id).update(asientos=F("asientos")+pasaje.cantidad)
         Viaje.objects.filter(id=pasaje.viaje_id).update(vendidos=F("vendidos") - pasaje.cantidad)
         Pasaje.objects.filter(id=pk).update(costoDevuelto=0)
-    lista= Pasaje.objects.filter(activo=True,estado="PENDIENTE", viaje_id=pk)
-    return render(request, "demo1/listados/pasajeros_viajes_proximos.html",{'lista':lista, 'valor': True if len(lista)!=0 else False})
+    else:
+        mensaje="No se puede registrar la ausencia del pasajero porque todavia no llego el momento del iniciar el viaje"
+    print(mensaje)
+    lista= Pasaje.objects.filter(activo=True,estado="PENDIENTE", viaje_id=pasaje.viaje_id)
+    return render(request, "demo1/listados/pasajeros_viajes_proximos.html",{'lista':lista, 'valor': True if len(lista)!=0 else False,'mensaje':mensaje})
 
 
 def armar_texto(texto):
@@ -198,7 +203,7 @@ def viajesEnCursoId(chofer):
     
 
 def iniciarViaje(request,pk):
-    enCurso=False
+    
     ok=True
     mensaje=''
     chofer=buscar_chofer(request.user.pk)
@@ -209,6 +214,9 @@ def iniciarViaje(request,pk):
     if Pasaje.objects.filter(activo=True).filter(viaje=viaje).filter(estado="PENDIENTE").exists():
         ok=False
         mensaje="No puede iniciar el viaje porque hay pasajeros que no fueron revisados"
+    if viajesEnCurso(chofer):
+        ok=False
+        mensaje="No puede iniciar el viaje porque tiene un viaje en curso"
     if ok:
         pasajes=Pasaje.objects.filter(activo=True).filter(viaje=viaje).filter(estado="ACEPTADO")
         if pasajes.exists():
@@ -236,7 +244,7 @@ def finalizarViaje(request):
         viaje.estado='PASADO'
         viaje.save()
         mensaje='El viaje fue finalizado correctamente'
-        pasajes=Pasaje.objects.filter(activo=True).filter(viaje=viaje).filter(estado="ACEPTADO")
+        pasajes=Pasaje.objects.filter(activo=True).filter(viaje=viaje).filter(estado="ENCURSO")
         if pasajes.exists():
             for pasaje in pasajes:
                 pasaje.estado='PASADO'
@@ -261,45 +269,47 @@ def registrarSintomas(request,pk):
         form=RegistroSintomas(request.POST)
         if form.is_valid():
             datos=form.cleaned_data
-            temp=datos["temp"]
-            if temp >= 38:
-                ok=False
-                mensaje="El pasajero presenta mas de 38 grados por tanto no puede abordar la unidad"
             if ok:
-                cant=0
-                if int(datos["tos"])==1:
-                    cant+=1
-                if int(datos["dolor_de_cabeza"])==1:
-                    cant+=1
-                if int(datos["falta_de_aire"])==1:
-                    cant+=1
-                if int(datos["diarrea"])==1:
-                    cant+=1
-                if int(datos["dolor_de_garganta"])==1:
-                    cant+=1
-                if int(datos["perdida_del_gusto"])==1:
-                    cant+=1
-                if int(datos["perdida_de_olfato"])==1:
-                    cant+=1
-                if int(datos["dolor_en_el_pecho"])==1:
-                    cant+=1
-                print(cant)
-                if cant > 1:
+                temp=datos["temp"]
+                if temp >= 38:
                     ok=False
-                    mensaje="El pasajero presenta mas 2 o mas sintomas de covid19 y no puede abordar la unidad"
-            if not ok:
-                pasaje.estado="RECHAZADO"
-                pasaje.costoDevuelto=pasaje.costoTotal
-                pasajero.habilitado=False
-                pasajero.fecha_habilitacion=date.today() + timedelta(days=14)
+                    mensaje="El pasajero presenta mas de 38 grados por tanto no puede abordar la unidad"
+                if ok:
+                    cant=0
+                    if int(datos["tos"])==1:
+                        cant+=1
+                    if int(datos["dolor_de_cabeza"])==1:
+                        cant+=1
+                    if int(datos["falta_de_aire"])==1:
+                        cant+=1
+                    if int(datos["diarrea"])==1:
+                        cant+=1
+                    if int(datos["dolor_de_garganta"])==1:
+                        cant+=1
+                    if int(datos["perdida_del_gusto"])==1:
+                        cant+=1
+                    if int(datos["perdida_de_olfato"])==1:
+                        cant+=1
+                    if int(datos["dolor_en_el_pecho"])==1:
+                        cant+=1
+                    if cant > 1:
+                        ok=False
+                        mensaje="El pasajero presenta mas 2 o mas sintomas de covid19 y no puede abordar la unidad"
+                if not ok:
+                    pasaje.estado="RECHAZADO"
+                    pasaje.costoDevuelto=pasaje.costoTotal
+                    Viaje.objects.filter(id=pasaje.viaje_id).update(asientos=F("asientos")+pasaje.cantidad)
+                    Viaje.objects.filter(id=pasaje.viaje_id).update(vendidos=F("vendidos") - pasaje.cantidad)
+                    
+                    pasajero.fecha_habilitacion=date.today() + timedelta(days=14)
                 
-            else:
-                pasaje.estado="ACEPTADO"
-                pasajero.habilitado=True
-                pasajero.fecha_habilitacion=date.today()
-                mensaje="El pasajero fue aceptado para abordar la unidad"
-            pasajero.save()
-            pasaje.save()
+                else:
+                    pasaje.estado="ACEPTADO"
+                    
+                    pasajero.fecha_habilitacion=date.today()
+                    mensaje="El pasajero fue aceptado para abordar la unidad"
+                pasajero.save()
+                pasaje.save()
 
     else:
         form=RegistroSintomas()
@@ -327,8 +337,9 @@ def viajes_proximos(request):
     return render(request, "demo1/listados/viajes_proximos.html",{'lista':lista_viajes_proximos, 'valor': True if len(lista_viajes_proximos)!=0 else False,"mensaje":mensaje})
 
 def pasajeros_de_viajes_proximos(request, pk):
+    mensaje=""
     lista= Pasaje.objects.filter(activo=True,estado="PENDIENTE", viaje_id=pk)
-    return render(request, "demo1/listados/pasajeros_viajes_proximos.html",{'lista':lista, 'valor': True if len(lista)!=0 else False})
+    return render(request, "demo1/listados/pasajeros_viajes_proximos.html",{'lista':lista, 'valor': True if len(lista)!=0 else False,"mensaje":mensaje})
 
 def existe_email(email):
     try:
@@ -372,6 +383,7 @@ def buscar_usuario_con_email(email):
 
 
 def vender_pasaje_en_curso(request):
+    habilitado=True
     fallido=False
     cantidad_fallida=False
     costo_total=0
@@ -387,7 +399,20 @@ def vender_pasaje_en_curso(request):
             datos=form.cleaned_data
             email=form.cleaned_data.get('email')
             cantidad=form.cleaned_data.get('cantidad')
-            if viaje.asientos >=cantidad:
+            if not existe_email(email):
+                contraseña=generar_contraseña()
+                print(contraseña)
+                usuario=User.objects.create(is_superuser=False,password=contraseña,email=email,first_name="Usuario",last_name="Nuevo")
+                usuario.username=usuario.id
+                usuario.password=make_password(contraseña)
+                usuario.save()
+                pasajero=Pasajero.objects.create(usuario=usuario,dni=11111111,telefono=11111111,tipo="BASICO",fecha_de_nacimiento=datetime(1990, 10, 4))
+                pasajero.save()
+                exitoso_sin_email=True
+            else:
+                pasajero=buscar_pasajero(buscar_usuario_con_email(email))
+                habilitado=pasajero.fecha_habilitacion <= date.today()
+            if viaje.asientos >=cantidad and habilitado:
                 temp=datos["temp"]
                 if temp >= 38:
                     temperatura=True
@@ -414,18 +439,6 @@ def vender_pasaje_en_curso(request):
                        sintomas=True
                        fallido=True
                 if not fallido:
-                    if not existe_email(email):
-                        contraseña=generar_contraseña()
-                        print(contraseña)
-                        usuario=User.objects.create(is_superuser=False,password=contraseña,email=email,first_name="Usuario",last_name="Nuevo")
-                        usuario.username=usuario.id
-                        usuario.password=make_password(contraseña)
-                        usuario.save()
-                        pasajero=Pasajero.objects.create(usuario=usuario,dni=11111111,telefono=11111111,tipo="BASICO",fecha_de_nacimiento=datetime(1990, 10, 4))
-                        pasajero.save()
-                        exitoso_sin_email=True
-                    else:
-                        pasajero=buscar_pasajero(buscar_usuario_con_email(email))
                     costo_total=calcular_costo(viaje,cantidad,True if pasajero.tipo=="GOLD" else False )
                     pasaje=Pasaje.objects.create(cantidad=cantidad,costoTotal=costo_total,costoDevuelto=0,pasajero_id=pasajero.id,viaje_id=viaje.id,estado="ENCURSO")
                     pasaje.save()
@@ -433,11 +446,16 @@ def vender_pasaje_en_curso(request):
                     viaje.vendidos=viaje.vendidos + cantidad
                     viaje.save()
                     exitoso=True
+                else:
+                    pasajero.fecha_habilitacion=date.today() + timedelta(days=14)
+                    pasajero.save()
             else:
+                if habilitado:
+                    cantidad_fallida=True
                 fallido=True
-                cantidad_fallida=True
+                
     else:
         form=FormPasajeEnCurso()
-    return render(request, 'demo1/form/formulario_venta_en_curso.html', {"form":form,"fallido":fallido,"cantidad_fallida":cantidad_fallida,"exitoso":exitoso,"exitoso_sin_email":exitoso_sin_email,"temperatura":temperatura,"sintomas":sintomas,"cantidad_pasajes":viaje.asientos,"precio":costo_total})
+    return render(request, 'demo1/form/formulario_venta_en_curso.html', {"form":form,"fallido":fallido,"cantidad_fallida":cantidad_fallida,"exitoso":exitoso,"exitoso_sin_email":exitoso_sin_email,"temperatura":temperatura,"sintomas":sintomas,"cantidad_pasajes":viaje.asientos,"precio":costo_total,"habilitado":habilitado})
 
 

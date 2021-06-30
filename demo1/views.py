@@ -1121,6 +1121,9 @@ def buscarViajesEnLaBD(d):
     return lista
 
 def buscarViajes(request):
+    pasajero=buscar_pasajero(request.user.id)
+    habilitado=pasajero.fecha_habilitacion <= date.today()
+    
     validarOriyDes=False
     conViajes=None
     page_obj=[]
@@ -1141,5 +1144,5 @@ def buscarViajes(request):
     else:
         form=FormoBusquedaViaje()
     noHay=True if (conViajes!=None and not conViajes) else False
-    return render(request,"demo1/form/formulario_viaje_busquedas.html", {'page_obj':page_obj, 'form': form, 'conViajes':conViajes, 'validarOriyDes':validarOriyDes, 'noHay':noHay, 'fecha':fecha})
+    return render(request,"demo1/form/formulario_viaje_busquedas.html", {'page_obj':page_obj, 'form': form, 'conViajes':conViajes, 'validarOriyDes':validarOriyDes, 'noHay':noHay, 'fecha':fecha,"habilitado":habilitado})
 

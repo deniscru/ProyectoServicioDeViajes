@@ -7,6 +7,14 @@
         <link rel="stylesheet" href="{% static 'css/demo1.css' %}">
     </head>
     <body>
+        <script>
+            function asegurar ()
+              {
+                  rc = confirm("¿Está seguro que desea registrar la ausencia del pasajero?");
+                  return rc;
+              }
+            </script>
+
         <div id="titulo" align="center">
             <h2>Listado de pasajeros</h2>
         </div>
@@ -40,7 +48,9 @@
                         <td>{{p.cantidad}}</td>
                         <td>{{p.costoTotal}}</td>
                         <td align="center" width="180px"><button type="button" style="width: 90%;"><a href="{% url 'registrar_sintomas' pk=p.pk %}" style="text-decoration:none; color: black;">Registrar Sintomas</a></button></td>
-                        <td align="center" width="100px"><button type="button" style="width: 90%;" onclick="confirmEliminacion('{% url 'registrar_ausencia' pk=p.pk %}','¿Está seguro que desea registrar la ausencia del pasajero?' )" style="text-decoration:none; color: black;">Asistencia</a></button></td>
+                        <td align="center" width="100px"><button type="button" style="width: 90%;"><a href="{% url 'registrar_ausencia' pk=p.pk %}" onclick="javascript:return asegurar();" style="text-decoration:none; color: black;">Asistencia</a></button></td>
+                        
+                        <!--<td align="center" width="100px"><button type="button" style="width: 90%;" onclick="confirmEliminacion1('{% url 'registrar_ausencia' pk=p.pk %}','¿Está seguro que desea registrar la ausencia del pasajero?' )" style="text-decoration:none; color: black;">Asistencia</a></button></td>-->
                     </tr>    
                     {% endfor%}
             </tbody>
@@ -50,7 +60,10 @@
                     <p>No posee ningun pasajero en este viaje</p>
                 </div>
             {%endif%}
+            
         </div>
+        <div class="card">
+            <h3>{{mensaje}}</h3></div>
         <div style="margin-left: 5%;"><button type="button"><a href="{% url 'viajes_proximos' %}">Atras</a></button></div>
     </body>
     </div>

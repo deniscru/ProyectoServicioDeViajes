@@ -49,7 +49,9 @@
                             <td>{{ v.cant }}</td>
                             <td>{{ v.tipo }}</td>
                             <td>
+                                {%if habilitado%}
                                 <a href="{% url 'comprar_pasaje_form' pk=v.pk %}">Comprar Pasaje</a>
+                                {%endif%}
                             </td>
                             <!--'comprar_pasaje_form'-->
                         </tr>
@@ -57,6 +59,9 @@
             </tbody>
             </table>
             {% endif %}
+            {%if not habilitado%}
+            <p>No se puede vender pasajes por ser caso sospechoso de covid19</p>
+            {%endif%}
             {% if noHay %}
             <div>
                 <p>No hay resultados de la busqueda</p>

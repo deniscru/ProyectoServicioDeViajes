@@ -32,7 +32,11 @@
         <div>
             <p>El pasajero presenta mas 2 o mas sintomas de covid19 y no puede abordar la unidad</p>
         </div>
+        {% elif not habilitado %}
+        <div>
+            <p>El pasajero es casos sospechoso de covid19 con anterioridad y no puede abordar la unidad</p>
+        </div>
         {% endif %}
     {% endif %}
-    
+    <div style="margin-left: 5%;"><button type="button"><a href="{% url 'home_usuario_chofer' %}">Atras</a></button></div>
 {% endblock %}
