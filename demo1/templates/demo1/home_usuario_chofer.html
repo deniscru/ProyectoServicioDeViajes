@@ -9,6 +9,30 @@
       </script>
 
    {%if enCurso%}
+   <div class="card" style="margin: 1%;">
+      <table class="tablalista" width=100% border="1">
+          <tbody>
+              <tr>
+                  <td align="center" colspan="5">Viaje</td>
+              </tr>
+              <tr>
+                  <td align="center">Origen</td>
+                  <td align="center">Destino</td>
+                  <td align="center">Fechade Viaje</td>
+                  <td align="center">Hora de Viaje</td>
+                  <td align="center">Combi</td>
+              </tr>
+              <tr>
+                  <td>{{viaje.ruta.origen}}</td>
+                  <td>{{viaje.ruta.destino}}</td>
+                  <td>{{viaje.fecha}}</td>
+                  <td>{{viaje.ruta.hora}}</td>
+                  <td>{{viaje.ruta.combi}}</td>
+              </tr>    
+      </tbody>
+      </table>
+      </div>
+
    <div class="card">
    <h2>Viaje en Curso</h2> &nbsp;&nbsp;&nbsp;&nbsp;
    <h3><a href="{% url 'finalizar_viaje' %}" onclick="javascript:return asegurar();">Finalizar viaje</a></h3></div>
@@ -17,6 +41,9 @@
    
    <div class="lista" >
       <h3><a href="{% url 'viajes_proximos' %}">Viajes Proximos</a></h3>
+   </div>
+   <div class="lista" >
+      <h3><a href="{% url 'lista_viajes_pasados' %}">Viajes Pasados</a></h3>
    </div>
 
    

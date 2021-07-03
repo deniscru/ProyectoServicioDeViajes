@@ -529,11 +529,20 @@ def home_usuario(request, pk=None):
     page_obj,cantidad = listadoDePaginacion(comentarios, request)
     return render(request,"demo1/home_usuario.html",{'page_obj':page_obj, 'cantidad':cantidad})
 
+def viajesEnCursoId(chofer):
+    viajes=Viaje.objects.filter(activo=True).filter(estado='ENCURSO')
+    for viaje in viajes:
+        if viaje.ruta.combi.chofer.id ==chofer.id:
+            return viaje
+    
+
 def home_usuario_chofer(request):
+    viaje=None
     enCurso=False
     if viajesEnCurso(buscar_chofer(request.user.pk)):
         enCurso=True
-    return render(request,"demo1/home_usuario_chofer.html", {"enCurso":enCurso})
+        viaje=viajesEnCursoId(buscar_chofer(request.user.pk))
+    return render(request,"demo1/home_usuario_chofer.html", {"enCurso":enCurso,"viaje":viaje})
 
 def logout_usuario(request):
     logout(request)

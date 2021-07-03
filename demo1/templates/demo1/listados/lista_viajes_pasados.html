@@ -1,0 +1,48 @@
+{% load static %}
+<html>
+    <head >
+        <title>Home</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="{% static 'css/demo1.css' %}">
+    </head>
+    <body>
+        <div id="titulo" align="center">
+            <h2>Listado de Viajes Pasados</h2>
+        </div>
+        <div class="card" style="margin: 5%;">
+            {% if valor %}
+            <table class="tablalista" width=100% border="1">
+                <tbody>
+                    <tr>
+                        <td align="center" colspan="4">Viajes</td>
+                    </tr>
+                    <tr>
+                        <td align="center">Origen</td>
+                        <td align="center">Destino</td>
+                        <td align="center">Fecha y Hora de Viaje</td>
+                        <td align="center">Combi</td>
+                    </tr>
+                    {% for i in lista %}
+                    <tr>
+                        <td>{{i.origen}}</td>
+                        <td>{{i.destino}}</td>
+                        <td>{{i.fecha}}</td>
+                        <td>{{i.combi}}</td>
+                    </tr>    
+                    {% endfor%}
+            </tbody>
+            </table>
+            {%else%}
+                <div>
+                    <p>No posee ningun viaje pasado</p>
+                </div>
+            {%endif%}
+            
+
+        </div>
+        <div class="card">
+        <h3>{{mensaje}}</h3></div>
+        <div style="margin-left: 5%;"><button type="button"><a href="{% url 'home_usuario_chofer' %}">Atras</a></button></div>
+    </body>
+</html>

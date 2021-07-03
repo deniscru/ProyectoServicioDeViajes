@@ -162,7 +162,7 @@ class RegistroSintomas(forms.Form):
 
 class FormPasajeEnCurso(forms.Form):
     email=forms.EmailField(required=True,label="Email")
-    cantidad=forms.IntegerField(required=True,label="Cantidad")
+    #cantidad=forms.IntegerField(required=True,max_value=1,min_value=1,label="Cantidad")
     tipo_eleccion= ( (0, "No"), (1, "Si") )
     temp= forms.FloatField(required=True,max_value=42.0,min_value=35.0,label="Temperatura corporal",initial=36.5)
     tos=forms.ChoiceField(widget=forms.Select, choices=tipo_eleccion)

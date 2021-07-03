@@ -23,12 +23,35 @@
             integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
             crossorigin="anonymous"></script>
             <script src="{% static 'js/nuevojavascript.js' %}"></script>
-        <div class="card" style="margin: 3%;">
-            {% if valor %}
+            <div class="card" style="margin: 3%;">
             <table class="tablalista" width=100% border="1">
                 <tbody>
                     <tr>
-                        <td align="center" colspan="8">Pasajeros</td>
+                        <td align="center" colspan="4">Viaje</td>
+                    </tr>
+                    <tr>
+                        <td align="center">Origen</td>
+                        <td align="center">Destino</td>
+                        <td align="center">Fecha y Hora de Viaje</td>
+                        <td align="center">Combi</td>
+                    </tr>
+                    <tr>
+                        <td>{{viaje.ruta.origen}}</td>
+                        <td>{{viaje.ruta.destino}}</td>
+                        <td>{{viaje.fecha}}</td>
+                        <td>{{viaje.ruta.combi}}</td>
+                    </tr>    
+            </tbody>
+            </table>
+            </div>
+        <div class="card" style="margin: 3%;">
+            {% if valor %}
+            
+
+            <table class="tablalista" width=100% border="1">
+                <tbody>
+                    <tr>
+                        <td align="center" colspan="9">Pasajeros</td>
                     </tr>
                     <tr>
                         <td align="center">Nombre y Apellido</td>
@@ -37,6 +60,7 @@
                         <td align="center">Fecha y Hora de Viaje</td>
                         <td align="center">Cant. Pasajes</td>
                         <td align="center">Costo Total</td>
+                        <td align="center">Estado</td>
                         <td align="center" colspan="2">Opcion</td>
                     </tr>
                     {% for p in lista %}
@@ -47,8 +71,9 @@
                         <td>{{p.viaje.fecha}}</td>
                         <td>{{p.cantidad}}</td>
                         <td>{{p.costoTotal}}</td>
+                        <td>{{p.estado}}</td>
                         <td align="center" width="180px"><button type="button" style="width: 90%;"><a href="{% url 'registrar_sintomas' pk=p.pk %}" style="text-decoration:none; color: black;">Registrar Sintomas</a></button></td>
-                        <td align="center" width="100px"><button type="button" style="width: 90%;"><a href="{% url 'registrar_ausencia' pk=p.pk %}" onclick="javascript:return asegurar();" style="text-decoration:none; color: black;">Asistencia</a></button></td>
+                        <td align="center" width="120px"><button type="button" style="width: 90%;"><a href="{% url 'registrar_ausencia' pk=p.pk %}" onclick="javascript:return asegurar();" style="text-decoration:none; color: black;">Inasistencia</a></button></td>
                         
                         <!--<td align="center" width="100px"><button type="button" style="width: 90%;" onclick="confirmEliminacion1('{% url 'registrar_ausencia' pk=p.pk %}','¿Está seguro que desea registrar la ausencia del pasajero?' )" style="text-decoration:none; color: black;">Asistencia</a></button></td>-->
                     </tr>    

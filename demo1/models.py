@@ -121,6 +121,7 @@ class Pasaje(models.Model):
         ('CANCELADO', 'CANCELADO'),
         ('ENCURSO', 'ENCURSO'),
         ('RECHAZADO', 'RECHAZADO'),
+        ('AUSENTE', 'AUSENTE'),
         ('PASADO', 'PASADO'),)
     estado = models.CharField(max_length=9, choices=TIPOS_ESTADOS)
     activo=models.BooleanField(default=True)

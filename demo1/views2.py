@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import login
 from random import randint
-
+dicPasajeros1 = {}
 def change_password(request,pk):
     exito=False
     user=request.user
@@ -83,16 +83,16 @@ def registrar_ausencia(request,pk):
     mensaje=""
     
     pasaje=Pasaje.objects.get(id=pk)
-    if (pasaje.viaje.fecha == date.today() and pasaje.viaje.ruta.hora < datetime.now().time()):
-        Pasaje.objects.filter(id=pk).update(estado="CANCELADO")
-        Viaje.objects.filter(id=pasaje.viaje_id).update(asientos=F("asientos")+pasaje.cantidad)
-        Viaje.objects.filter(id=pasaje.viaje_id).update(vendidos=F("vendidos") - pasaje.cantidad)
-        Pasaje.objects.filter(id=pk).update(costoDevuelto=0)
+    if (pasaje.viaje.fecha == date.today() and pasaje.viaje.ruta.hora < (datetime.now() - timedelta(minutes=30)).time() and pasaje.estado =="PENDIENTE"):
+        Pasaje.objects.filter(id=pk).update(estado="AUSENTE")
+        
     else:
         mensaje="No se puede registrar la ausencia del pasajero porque todavia no llego el momento del iniciar el viaje"
-    print(mensaje)
-    lista= Pasaje.objects.filter(activo=True,estado="PENDIENTE", viaje_id=pasaje.viaje_id)
-    return render(request, "demo1/listados/pasajeros_viajes_proximos.html",{'lista':lista, 'valor': True if len(lista)!=0 else False,'mensaje':mensaje})
+    if pasaje.estado !="PENDIENTE":
+        mensaje="no se puede registrar la ausencia porque el pasajero ya fue registrado"
+
+    lista=Pasaje.objects.exclude(estado="CANCELADO").filter(activo=True, viaje_id = pasaje.viaje_id)
+    return render(request, "demo1/listados/pasajeros_viajes_proximos.html",{'lista':lista, 'valor': True if len(lista)!=0 else False,'mensaje':mensaje,"viaje":pasaje.viaje})
 
 
 def armar_texto(texto):
@@ -218,6 +218,14 @@ def iniciarViaje(request,pk):
         ok=False
         mensaje="No puede iniciar el viaje porque tiene un viaje en curso"
     if ok:
+        pasajes=Pasaje.objects.filter(activo=True).filter(viaje=viaje).filter(estado="AUSENTE")
+        if pasajes.exists():
+            for pasaje in pasajes:
+                pasaje.estado='CANCELADO'
+                Viaje.objects.filter(id=pasaje.viaje_id).update(asientos=F("asientos")+pasaje.cantidad)
+                Viaje.objects.filter(id=pasaje.viaje_id).update(vendidos=F("vendidos") - pasaje.cantidad)
+                Pasaje.objects.filter(id=pasaje.pk).update(costoDevuelto=0)
+                pasaje.save()
         pasajes=Pasaje.objects.filter(activo=True).filter(viaje=viaje).filter(estado="ACEPTADO")
         if pasajes.exists():
             for pasaje in pasajes:
@@ -239,8 +247,9 @@ def finalizarViaje(request):
     ok=True
     mensaje=''
     chofer=buscar_chofer(request.user.pk)
+    viaje = viajesEnCursoId(chofer)
     if ok:
-        viaje = viajesEnCursoId(chofer)
+        
         viaje.estado='PASADO'
         viaje.save()
         mensaje='El viaje fue finalizado correctamente'
@@ -249,16 +258,23 @@ def finalizarViaje(request):
             for pasaje in pasajes:
                 pasaje.estado='PASADO'
                 pasaje.save()
-    return render(request, "demo1/home_usuario_chofer.html", {"enCurso":enCurso,"mensaje":mensaje}) 
+    return render(request, "demo1/home_usuario_chofer.html", {"enCurso":enCurso,"mensaje":mensaje,"viaje":viaje}) 
 
 def registrarSintomas(request,pk):
+    
     ok=False
     mensaje="No puede registrar los sintomas de este pasajero porque no esta pendiente de registracion"
     pasaje=Pasaje.objects.get(pk=pk)
     viajeId=pasaje.viaje.pk
     pasajero=pasaje.pasajero
-    if pasaje.estado=="PENDIENTE":
-        if (pasaje.viaje.fecha == date.today() and pasaje.viaje.ruta.hora < datetime.now().time()):
+    try:
+        dicPasajeros1[pk]
+
+    except:
+        dicPasajeros1[pk]=pasaje.cantidad
+
+    if pasaje.estado=="PENDIENTE" or pasaje.estado=="AUSENTE":
+        if (pasaje.viaje.fecha == date.today() and pasaje.viaje.ruta.hora < (datetime.now() - timedelta(minutes=30)).time()):
             ok=True
             mensaje=""
         else:
@@ -300,20 +316,39 @@ def registrarSintomas(request,pk):
                     pasaje.costoDevuelto=pasaje.costoTotal
                     Viaje.objects.filter(id=pasaje.viaje_id).update(asientos=F("asientos")+pasaje.cantidad)
                     Viaje.objects.filter(id=pasaje.viaje_id).update(vendidos=F("vendidos") - pasaje.cantidad)
-                    
+                    viajes= Viajes14dias()
+                    pasajes=Pasaje.objects.filter(activo=True).filter(pasajero=pasajero).filter(viaje__in=viajes)
+                    for p in pasajes:
+                        p.estado="CANCELADO"
+                        p.costoDevuelto=p.costoTotal
+                        Viaje.objects.filter(id=p.viaje_id).update(asientos=F("asientos")+p.cantidad)
+                        Viaje.objects.filter(id=p.viaje_id).update(vendidos=F("vendidos") - p.cantidad)
+                        p.save()
                     pasajero.fecha_habilitacion=date.today() + timedelta(days=14)
                 
                 else:
+                    dicPasajeros1[pk]=dicPasajeros1[pk]-1
+                    if dicPasajeros1[pk] > 0:
+                        return render(request, "demo1/registrarSintomas.html", {"form":form,"viajeId":viajeId,"mensaje":mensaje})
                     pasaje.estado="ACEPTADO"
-                    
                     pasajero.fecha_habilitacion=date.today()
                     mensaje="El pasajero fue aceptado para abordar la unidad"
+                del dicPasajeros1[pk]
                 pasajero.save()
                 pasaje.save()
 
     else:
         form=RegistroSintomas()
     return render(request, "demo1/registrarSintomas.html", {"form":form,"viajeId":viajeId,"mensaje":mensaje})
+
+def Viajes14dias():
+    viajes=Viaje.objects.filter(activo=True).filter(estado="PENDIENTE")
+    viajes14=[]
+    for v in viajes:
+        if v.fecha < date.today() + timedelta(days=14):
+            viajes14.append(v)
+    return viajes14
+
 
 def armarInfo2(pk):
     chofer=Persona.objects.get(usuario=pk)
@@ -331,6 +366,17 @@ def armarInfo2(pk):
             lista.append(dic)
     return lista
 
+def armarInfo3(pk):
+    chofer=Persona.objects.get(usuario=pk)
+    viajes_pasados=Viaje.objects.filter(activo=True, estado="PASADO")
+    lista=[]
+    for p in viajes_pasados:
+        if p.ruta.combi.chofer.id == chofer.id:
+            dic={'origen': p.ruta.origen.nombre_de_lugar, 'destino': p.ruta.destino.nombre_de_lugar,
+            'fecha':str(p.fecha)+', '+str(p.ruta.hora.hour)+':'+str(p.ruta.hora.minute), "combi":p.ruta.combi}
+            lista.append(dic)
+    return lista
+
 def viajes_proximos(request):
     mensaje=''
     lista_viajes_proximos=armarInfo2(request.user.pk)
@@ -338,8 +384,13 @@ def viajes_proximos(request):
 
 def pasajeros_de_viajes_proximos(request, pk):
     mensaje=""
-    lista= Pasaje.objects.filter(activo=True,estado="PENDIENTE", viaje_id=pk)
-    return render(request, "demo1/listados/pasajeros_viajes_proximos.html",{'lista':lista, 'valor': True if len(lista)!=0 else False,"mensaje":mensaje})
+    lista= Pasaje.objects.exclude(estado="CANCELADO").filter(activo=True, viaje_id=pk)
+    viaje=Viaje.objects.get(pk=pk)
+    return render(request, "demo1/listados/pasajeros_viajes_proximos.html",{'lista':lista, 'valor': True if len(lista)!=0 else False,"mensaje":mensaje,"viaje":viaje})
+
+def lista_viajes_pasados(request):
+    lista=armarInfo3(request.user.pk)
+    return render(request, "demo1/listados/lista_viajes_pasados.html",{'lista':lista, 'valor': True if len(lista)!=0 else False})
 
 def existe_email(email):
     try:
@@ -398,7 +449,7 @@ def vender_pasaje_en_curso(request):
         if form.is_valid():
             datos=form.cleaned_data
             email=form.cleaned_data.get('email')
-            cantidad=form.cleaned_data.get('cantidad')
+            cantidad=1
             if not existe_email(email):
                 contraseña=generar_contraseña()
                 print(contraseña)
@@ -407,6 +458,7 @@ def vender_pasaje_en_curso(request):
                 usuario.password=make_password(contraseña)
                 usuario.save()
                 pasajero=Pasajero.objects.create(usuario=usuario,dni=11111111,telefono=11111111,tipo="BASICO",fecha_de_nacimiento=datetime(1990, 10, 4))
+                pasajero.fecha_habilitacion=date.today()
                 pasajero.save()
                 exitoso_sin_email=True
             else:
@@ -447,6 +499,15 @@ def vender_pasaje_en_curso(request):
                     viaje.save()
                     exitoso=True
                 else:
+                    viajes= Viajes14dias()
+                    pasajes=Pasaje.objects.filter(activo=True).filter(pasajero=pasajero).filter(viaje__in=viajes)
+                    for p in pasajes:
+                        p.estado="CANCELADO"
+                        p.costoDevuelto=p.costoTotal
+                        Viaje.objects.filter(id=p.viaje_id).update(asientos=F("asientos")+p.cantidad)
+                        Viaje.objects.filter(id=p.viaje_id).update(vendidos=F("vendidos") - p.cantidad)
+                        p.save()
+
                     pasajero.fecha_habilitacion=date.today() + timedelta(days=14)
                     pasajero.save()
             else:
