@@ -240,6 +240,7 @@ def tarjeta_new(request,pk):
                 usuario.password=make_password(p["password"])
                 usuario.save()
                 pasajero=Pasajero.objects.create(usuario=usuario,dni=int(p["dni"]),telefono=int(p["telefono"]),tipo=p["tipo"],fecha_de_nacimiento=p["fecha_de_nacimiento"])
+                pasajero.fecha_habilitacion=date.today()
                 pasajero.save()
                 tarjeta=Tarjeta.objects.create(pasajero=Pasajero.objects.last(),numero=t["numero"],fecha_de_vencimiento=t["fecha_de_vencimiento"],codigo=t["codigo"],activo=True)
                 tarjeta.save()
@@ -318,6 +319,7 @@ def pasajero_new(request):
                     usuario.password=make_password(p["password"])
                     usuario.save()
                     pasajero=Pasajero.objects.create(usuario=usuario,dni=int(p["dni"]),telefono=int(p["telefono"]),tipo=p["tipo"],fecha_de_nacimiento=p["fecha_de_nacimiento"])
+                    pasajero.fecha_habilitacion=date.today()
                     pasajero.save()
                     tipo=True
                     exitoso=True

@@ -12,20 +12,24 @@ from django.contrib.auth import login
 from random import randint
 dicPasajeros1 = {}
 def change_password(request,pk):
+    mensaje=""
     exito=False
     user=request.user
     if request.method == 'POST':
         form = FormCambiarContraseña(request.POST)
         if form.is_valid():
             c=form.cleaned_data
-            user.password=make_password(c['password'])
-            user.save()
-            login(request, user)
-            exito=True
-        return render(request, 'demo1/change_password.html', {'form': form,'exito':exito,'user':user})
+            if user.check_password(c['actual']):
+                user.password=make_password(c['nueva'])
+                user.save()
+                login(request, user)
+                exito=True
+                mensaje="Su contraseña fue modificada con exito"
+            else:
+                mensaje="La contraseña ingresada como actual es invalida"
     else:
         form = FormCambiarContraseña()
-    return render(request, 'demo1/change_password.html', {'form': form,'exito':exito,'user':user})
+    return render(request, 'demo1/change_password.html', {'form': form,'exito':exito,'user':user,"mensaje":mensaje})
 
 def armarInfo(pk, estado2):
     pasajero=Persona.objects.get(usuario=pk)
@@ -83,7 +87,7 @@ def registrar_ausencia(request,pk):
     mensaje=""
     
     pasaje=Pasaje.objects.get(id=pk)
-    if (pasaje.viaje.fecha == date.today() and pasaje.viaje.ruta.hora < (datetime.now() - timedelta(minutes=30)).time() and pasaje.estado =="PENDIENTE"):
+    if (((datetime.combine(pasaje.viaje.fecha,pasaje.viaje.ruta.hora) - timedelta(minutes=30)) < datetime.now()) and pasaje.estado =="PENDIENTE"):
         Pasaje.objects.filter(id=pk).update(estado="AUSENTE")
         
     else:
@@ -218,14 +222,6 @@ def iniciarViaje(request,pk):
         ok=False
         mensaje="No puede iniciar el viaje porque tiene un viaje en curso"
     if ok:
-        pasajes=Pasaje.objects.filter(activo=True).filter(viaje=viaje).filter(estado="AUSENTE")
-        if pasajes.exists():
-            for pasaje in pasajes:
-                pasaje.estado='CANCELADO'
-                Viaje.objects.filter(id=pasaje.viaje_id).update(asientos=F("asientos")+pasaje.cantidad)
-                Viaje.objects.filter(id=pasaje.viaje_id).update(vendidos=F("vendidos") - pasaje.cantidad)
-                Pasaje.objects.filter(id=pasaje.pk).update(costoDevuelto=0)
-                pasaje.save()
         pasajes=Pasaje.objects.filter(activo=True).filter(viaje=viaje).filter(estado="ACEPTADO")
         if pasajes.exists():
             for pasaje in pasajes:
@@ -233,6 +229,14 @@ def iniciarViaje(request,pk):
                 pasaje.save()
             viaje.estado='ENCURSO'
             viaje.save()
+            pasajes=Pasaje.objects.filter(activo=True).filter(viaje=viaje).filter(estado="AUSENTE")
+            if pasajes.exists():
+                for pasaje in pasajes:
+                    pasaje.estado='CANCELADO'
+                    Viaje.objects.filter(id=pasaje.viaje_id).update(asientos=F("asientos")+pasaje.cantidad)
+                    Viaje.objects.filter(id=pasaje.viaje_id).update(vendidos=F("vendidos") - pasaje.cantidad)
+                    Pasaje.objects.filter(id=pasaje.pk).update(costoDevuelto=0)
+                    pasaje.save()
             mensaje='El viaje fue iniciado correctamente'
         else:
             ok=False
@@ -260,6 +264,11 @@ def finalizarViaje(request):
                 pasaje.save()
     return render(request, "demo1/home_usuario_chofer.html", {"enCurso":enCurso,"mensaje":mensaje,"viaje":viaje}) 
 
+
+
+
+
+
 def registrarSintomas(request,pk):
     
     ok=False
@@ -272,9 +281,8 @@ def registrarSintomas(request,pk):
 
     except:
         dicPasajeros1[pk]=pasaje.cantidad
-
     if pasaje.estado=="PENDIENTE" or pasaje.estado=="AUSENTE":
-        if (pasaje.viaje.fecha == date.today() and pasaje.viaje.ruta.hora < (datetime.now() - timedelta(minutes=30)).time()):
+        if ((datetime.combine(pasaje.viaje.fecha,pasaje.viaje.ruta.hora) - timedelta(minutes=30)) < datetime.now()):
             ok=True
             mensaje=""
         else:

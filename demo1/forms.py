@@ -26,7 +26,8 @@ class FormPasajero(forms.Form):
     tipo =forms.ChoiceField(widget=forms.RadioSelect, choices=tipos)
 
 class FormCambiarContraseña(forms.Form):
-    password = forms.CharField(required=True,label="Contraseña Nueva",min_length=6)
+    actual= forms.CharField(required=True,label="Contraseña Actual",min_length=6, widget=forms.PasswordInput())
+    nueva = forms.CharField(required=True,label="Contraseña Nueva",min_length=6, widget=forms.PasswordInput())
 
 class FormPasajeroModi2(forms.Form):
     año=int(date.today().year)

@@ -38,7 +38,7 @@
                     <tr>
                         <td>{{viaje.ruta.origen}}</td>
                         <td>{{viaje.ruta.destino}}</td>
-                        <td>{{viaje.fecha}}</td>
+                        <td>{{viaje.fecha}}&nbsp;{{viaje.ruta.hora}}</td>
                         <td>{{viaje.ruta.combi}}</td>
                     </tr>    
             </tbody>
@@ -68,7 +68,7 @@
                         <td>{{p.pasajero.usuario.first_name}}, {{p.pasajero.usuario.last_name}}</td>
                         <td>{{p.viaje.ruta.origen.nombre_de_lugar}}</td>
                         <td>{{p.viaje.ruta.destino.nombre_de_lugar}}</td>
-                        <td>{{p.viaje.fecha}}</td>
+                        <td>{{p.viaje.fecha}}&nbsp;{{p.viaje.ruta.hora}}</td>
                         <td>{{p.cantidad}}</td>
                         <td>{{p.costoTotal}}</td>
                         <td>{{p.estado}}</td>
