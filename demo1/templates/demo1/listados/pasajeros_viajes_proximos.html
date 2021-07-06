@@ -38,7 +38,7 @@
                     <tr>
                         <td>{{viaje.ruta.origen}}</td>
                         <td>{{viaje.ruta.destino}}</td>
-                        <td>{{viaje.fecha}}</td>
+                        <td>{{viaje.fecha}}, {{viaje.ruta.hora}}</td>
                         <td>{{viaje.ruta.combi}}</td>
                     </tr>    
             </tbody>
@@ -51,13 +51,11 @@
             <table class="tablalista" width=100% border="1">
                 <tbody>
                     <tr>
-                        <td align="center" colspan="9">Pasajeros</td>
+                        <td align="center" colspan="7">Pasajeros</td>
                     </tr>
                     <tr>
-                        <td align="center">Nombre y Apellido</td>
-                        <td align="center">Origen</td>
-                        <td align="center">Destino</td>
-                        <td align="center">Fecha y Hora de Viaje</td>
+                        <td align="center">Nombre</td>
+                        <td align="center">Apellido</td>
                         <td align="center">Cant. Pasajes</td>
                         <td align="center">Costo Total</td>
                         <td align="center">Estado</td>
@@ -65,10 +63,8 @@
                     </tr>
                     {% for p in lista %}
                     <tr>
-                        <td>{{p.pasajero.usuario.first_name}}, {{p.pasajero.usuario.last_name}}</td>
-                        <td>{{p.viaje.ruta.origen.nombre_de_lugar}}</td>
-                        <td>{{p.viaje.ruta.destino.nombre_de_lugar}}</td>
-                        <td>{{p.viaje.fecha}}</td>
+                        <td>{{p.pasajero.usuario.first_name}}</td>
+                        <td>{{p.pasajero.usuario.last_name}}</td>
                         <td>{{p.cantidad}}</td>
                         <td>{{p.costoTotal}}</td>
                         <td>{{p.estado}}</td>
